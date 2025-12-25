@@ -290,5 +290,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`✅ Servidor seguro rodando na porta ${PORT}`);
     console.log(`📊 Users: ${users.length} | UsersFarm: ${usersFarm.length}`);
-    console.log('📁 Dados salvos em: data/users.json e data/usersfarm.json');
+    console.log('📁 Dados salvos em: data/users.json / data/usersfarm.json');
 });
