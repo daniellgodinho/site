@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Drama, UserPlus, Trash2, Save, LogOut, Calendar, Clock, Infinity, CheckCircle, XCircle } from 'lucide-react';
+import { Drama, UserPlus, Trash2, LogOut, Calendar, Clock, Infinity, XCircle, Github, Loader2, Check } from 'lucide-react';
 
 export default function UserManager() {
   const [email, setEmail] = useState('');
@@ -343,7 +343,7 @@ export default function UserManager() {
       setTimeout(() => setSaveStatus(''), 3000);
     } catch (error) {
       console.error('Erro ao salvar no GitHub:', error);
-      alert(`❌ Erro ao sincronizar com GitHub: ${error.message}\n\nVerifique o console para mais detalhes.`);
+      alert(`Erro ao sincronizar com GitHub: ${error.message}\n\nVerifique o console para mais detalhes.`);
       setSaveStatus('erro');
       setTimeout(() => setSaveStatus(''), 3000);
     }
@@ -383,9 +383,9 @@ export default function UserManager() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                className="w-full px-4 py-4 bg-gray-900/50 border border-gray-800 rounded-xl text-white focus:outline-none focus:border-gray-600 focus:bg-gray-900/70 transition-all duration-300"
-                placeholder="seu@email.com"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-4 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors duration-200"
+                placeholder="admin@dnmenu.com"
+                disabled={isLoading}
               />
             </div>
 
@@ -397,14 +397,14 @@ export default function UserManager() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                className="w-full px-4 py-4 bg-gray-900/50 border border-gray-800 rounded-xl text-white focus:outline-none focus:border-gray-600 focus:bg-gray-900/70 transition-all duration-300"
+                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-4 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors duration-200"
                 placeholder="••••••••"
+                disabled={isLoading}
               />
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm font-medium animate-shake">
+              <div className="bg-red-900/30 border border-red-700 rounded-xl p-3 text-red-300 text-sm text-center animate-fade-in">
                 {error}
               </div>
             )}
@@ -412,13 +412,13 @@ export default function UserManager() {
             <button
               onClick={handleLogin}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-4 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Entrando...
-                </span>
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Carregando...
+                </>
               ) : (
                 'Entrar'
               )}
@@ -429,221 +429,119 @@ export default function UserManager() {
     );
   }
 
-  const currentList = activeTab === 'users' ? users : usersFarm;
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6 animate-fade-in">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-black/60 backdrop-blur-xl rounded-3xl shadow-2xl p-6 mb-6 border border-gray-800 transform hover:scale-[1.01] transition-all duration-300">
-          <div className="flex justify-between items-center flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-br from-gray-700 to-gray-900 p-3 rounded-2xl">
-                <Drama className="w-8 h-8 text-gray-300" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-black bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
-                  DNMenu Manager
-                </h1>
-                <p className="text-gray-500 text-sm font-medium">Sistema de Controle de Acesso Roblox</p>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-8 text-gray-200 relative overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gray-800 rounded-full opacity-5 blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gray-700 rounded-full opacity-5 blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={exportToGitHub}
-                disabled={saveStatus === 'salvando'}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 font-bold shadow-lg ${saveStatus === 'salvando'
-                  ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                  : saveStatus === 'erro'
-                    ? 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-500 hover:to-red-600'
-                    : saveStatus === 'salvo'
-                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white'
-                      : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white'
-                  }`}
-              >
-                {saveStatus === 'salvando' ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Salvando...
-                  </>
-                ) : saveStatus === 'salvo' ? (
-                  <>
-                    <CheckCircle className="w-5 h-5" />
-                    Sincronizado!
-                  </>
-                ) : saveStatus === 'erro' ? (
-                  <>
-                    <XCircle className="w-5 h-5" />
-                    Erro ao Sincronizar
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-5 h-5" />
-                    Sincronizar GitHub
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 font-bold shadow-lg"
-              >
-                <LogOut className="w-5 h-5" />
-                Sair
-              </button>
-            </div>
+      <div className="max-w-4xl mx-auto relative">
+        <header className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent flex items-center gap-3">
+            <Drama className="w-8 h-8 text-indigo-400" />
+            DNMenu Manager
+          </h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-2 px-4 rounded-xl transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Sair
+            </button>
+            <button
+              onClick={exportToGitHub}
+              className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              title="Sincronizar com GitHub"
+            >
+              {saveStatus === 'salvando' ? (
+                <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
+              ) : saveStatus === 'salvo' ? (
+                <Check className="w-5 h-5 text-green-400" />
+              ) : saveStatus === 'erro' ? (
+                <XCircle className="w-5 h-5 text-red-400" />
+              ) : (
+                <Github className="w-5 h-5 text-gray-300" />
+              )}
+            </button>
           </div>
-        </div>
+        </header>
 
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`flex-1 py-4 rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 ${activeTab === 'users'
-              ? 'bg-gradient-to-r from-gray-700 to-gray-800 text-white shadow-xl'
-              : 'bg-gray-900/50 text-gray-500 hover:bg-gray-900/70 border border-gray-800'
-              }`}
-          >
-            Users ({users.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('usersfarm')}
-            className={`flex-1 py-4 rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 ${activeTab === 'usersfarm'
-              ? 'bg-gradient-to-r from-gray-700 to-gray-800 text-white shadow-xl'
-              : 'bg-gray-900/50 text-gray-500 hover:bg-gray-900/70 border border-gray-800'
-              }`}
-          >
-            Users Farm ({usersFarm.length})
-          </button>
-        </div>
+        <div className="bg-black/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-gray-800">
+          <div className="flex mb-6 gap-4">
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors ${activeTab === 'users' ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+            >
+              Users
+            </button>
+            <button
+              onClick={() => setActiveTab('usersfarm')}
+              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors ${activeTab === 'usersfarm' ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+            >
+              Users Farm
+            </button>
+          </div>
 
-        <div className="bg-black/60 backdrop-blur-xl rounded-3xl shadow-2xl p-6 border border-gray-800">
-          <div className="mb-6 space-y-4">
-            <div className="flex gap-3">
+          <div className="mb-6">
+            <div className="flex gap-4">
               <input
-                type="text"
                 value={activeTab === 'users' ? newUser : newUserFarm}
                 onChange={(e) => activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addUser()}
-                placeholder="Username do Roblox"
-                className="flex-1 px-5 py-4 bg-gray-900/50 border border-gray-800 rounded-xl text-white focus:outline-none focus:border-gray-600 focus:bg-gray-900/70 transition-all duration-300 font-medium"
+                placeholder="Username do usuário"
+                className="flex-1 bg-gray-900/50 border border-gray-700 rounded-xl p-4 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
               />
+              <select
+                value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
+                onChange={(e) => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
+                className="bg-gray-900/50 border border-gray-700 rounded-xl p-4 text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors"
+              >
+                <option value="daily">Diário</option>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensal</option>
+                <option value="lifetime">Vitalício</option>
+              </select>
               <button
                 onClick={addUser}
-                className="flex items-center gap-2 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white px-8 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 font-bold shadow-lg"
+                className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium py-2 px-6 rounded-xl transition-all"
               >
                 <UserPlus className="w-5 h-5" />
                 Adicionar
               </button>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { value: 'daily', label: 'Diário', icon: <Clock className="w-4 h-4" /> },
-                { value: 'weekly', label: 'Semanal', icon: <Calendar className="w-4 h-4" /> },
-                { value: 'monthly', label: 'Mensal', icon: <Calendar className="w-4 h-4" /> },
-                { value: 'lifetime', label: 'Vitalício', icon: <Infinity className="w-4 h-4" /> }
-              ].map((dur) => (
-                <button
-                  key={dur.value}
-                  onClick={() => activeTab === 'users' ? setSelectedDuration(dur.value) : setSelectedDurationFarm(dur.value)}
-                  className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${(activeTab === 'users' ? selectedDuration : selectedDurationFarm) === dur.value
-                    ? 'bg-gradient-to-r from-gray-700 to-gray-800 text-white shadow-lg'
-                    : 'bg-gray-900/30 text-gray-500 hover:bg-gray-900/50 border border-gray-800'
-                    }`}
-                >
-                  {dur.icon}
-                  {dur.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-xl font-black text-gray-300 mb-4">
-              Lista de Usuários - {activeTab === 'users' ? 'Users' : 'Users Farm'}
-            </h3>
-
-            {currentList.length === 0 ? (
-              <div className="text-center py-20 text-gray-600">
-                <Drama className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                <p className="font-medium">Nenhum usuário adicionado ainda</p>
-              </div>
-            ) : (
-              <div className="grid gap-3">
-                {currentList.map((user, index) => (
-                  <div
-                    key={`${user.username}-${index}`}
-                    className="flex items-center justify-between bg-gray-900/50 px-5 py-4 rounded-xl hover:bg-gray-900/70 transition-all duration-300 border border-gray-800 transform hover:scale-[1.02] group"
-                  >
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <span className="text-white font-bold text-lg">{user.username}</span>
-                      <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${getDurationColor(user.duration)} bg-gray-800/50`}>
-                        {getDurationIcon(user.duration)}
-                        <span className="text-sm font-bold">{formatTimeRemaining(user.expiration)}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeUser(activeTab, user.username)}
-                      className="text-red-400 hover:text-red-300 transition-all duration-300 transform group-hover:scale-110 p-2 hover:bg-red-500/10 rounded-lg"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+            {(activeTab === 'users' ? users : usersFarm).map((user) => (
+              <div
+                key={user.username}
+                className="bg-gray-900/50 border border-gray-700 rounded-xl p-4 flex items-center justify-between hover:border-indigo-500 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`p-2 rounded-full bg-gray-800 ${getDurationColor(user.duration)}`}>
+                    {getDurationIcon(user.duration)}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-gray-800">
-            <details className="cursor-pointer group">
-              <summary className="text-gray-400 hover:text-gray-200 transition-all duration-300 font-bold text-lg list-none">
-                📄 Visualizar Conteúdo para GitHub
-              </summary>
-              <div className="mt-4 space-y-4 animate-fade-in">
-                <div>
-                  <p className="text-sm text-gray-500 mb-2 font-bold">security/users:</p>
-                  <pre className="bg-gray-900 p-4 rounded-xl text-green-400 text-sm overflow-x-auto border border-gray-800 font-mono">
-                    {users.map(u => u.username).join('\n') || '(vazio)'}
-                  </pre>
+                  <div>
+                    <p className="font-medium text-lg">{user.username}</p>
+                    <p className="text-sm text-gray-400">
+                      Expira em: <span className="text-indigo-400">{formatTimeRemaining(user.expiration)}</span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-2 font-bold">security/usersfarm:</p>
-                  <pre className="bg-gray-900 p-4 rounded-xl text-green-400 text-sm overflow-x-auto border border-gray-800 font-mono">
-                    {usersFarm.map(u => u.username).join('\n') || '(vazio)'}
-                  </pre>
-                </div>
+                <button
+                  onClick={() => removeUser(activeTab, user.username)}
+                  className="text-red-400 hover:text-red-300 transition-colors"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
               </div>
-            </details>
+            ))}
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out;
-        }
-        
-        .animate-shake {
-          animation: shake 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

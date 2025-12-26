@@ -31,29 +31,30 @@ function verifyToken(req) {
     const authHeader = req.headers.authorization || req.headers.Authorization;
 
     if (!authHeader) {
-        console.log('❌ Sem header de autorização');
+        console.log('Sem header de autorização');
         return false;
     }
 
     const token = authHeader.split(' ')[1];
 
     if (!token) {
-        console.log('❌ Token não encontrado no header');
+        console.log('Token não encontrado no header');
         return false;
     }
 
     if (!validTokens.has(token)) {
-        console.log('❌ Token inválido ou não encontrado na memória');
+        console.log('Token inválido ou não encontrado na memória');
         return false;
     }
 
-    const tokenData = { userId: 'admin', expiresAt };  // Mantenha o resto
-    if (tokenData.expiresAt && tokenData.expiresAt < Date.now()) {  // Adicione o "tokenData.expiresAt &&"
+    const tokenData = validTokens.get(token);
+    if (tokenData.expiresAt && tokenData.expiresAt < Date.now()) {  // Adicionado "tokenData.expiresAt &&" para permitir null
+        console.log('Token expirado');
         validTokens.delete(token);
         return false;
     }
 
-    console.log('✅ Token válido');
+    console.log('Token válido');
     return true;
 }
 
@@ -76,12 +77,12 @@ function calculateExpiration(duration) {
 // Função para carregar dados do GitHub
 async function loadFromGitHub() {
     if (!GITHUB_TOKEN) {
-        console.log('⚠️ GITHUB_TOKEN não configurado, pulando carregamento do GitHub');
+        console.log('GITHUB_TOKEN não configurado, pulando carregamento do GitHub');
         return;
     }
 
     try {
-        console.log('🔄 Carregando dados do GitHub...');
+        console.log('Carregando dados do GitHub...');
 
         // Carregar users
         try {
@@ -107,12 +108,12 @@ async function loadFromGitHub() {
                     addedAt: new Date().toISOString()
                 }));
 
-                console.log(`✅ Carregados ${users.length} users do GitHub`);
+                console.log(`Carregados ${users.length} users do GitHub`);
             } else {
-                console.log('⚠️ Arquivo security/users não encontrado no GitHub');
+                console.log('Arquivo security/users não encontrado no GitHub');
             }
         } catch (error) {
-            console.error('❌ Erro ao carregar users:', error.message);
+            console.error('Erro ao carregar users:', error.message);
         }
 
         // Carregar usersfarm
@@ -139,17 +140,17 @@ async function loadFromGitHub() {
                     addedAt: new Date().toISOString()
                 }));
 
-                console.log(`✅ Carregados ${usersFarm.length} usersfarm do GitHub`);
+                console.log(`Carregados ${usersFarm.length} usersfarm do GitHub`);
             } else {
-                console.log('⚠️ Arquivo security/usersfarm não encontrado no GitHub');
+                console.log('Arquivo security/usersfarm não encontrado no GitHub');
             }
         } catch (error) {
-            console.error('❌ Erro ao carregar usersfarm:', error.message);
+            console.error('Erro ao carregar usersfarm:', error.message);
         }
 
-        console.log(`✅ Inicialização completa: ${users.length} users, ${usersFarm.length} usersfarm`);
+        console.log(`Inicialização completa: ${users.length} users, ${usersFarm.length} usersfarm`);
     } catch (error) {
-        console.error('❌ Erro geral ao carregar do GitHub:', error);
+        console.error('Erro geral ao carregar do GitHub:', error);
     }
 }
 
@@ -215,26 +216,26 @@ module.exports = async (req, res) => {
 
             if (email === ADMIN_EMAIL && passwordHash === ADMIN_PASSWORD_HASH) {
                 const token = generateToken();
-                const expiresAt = null;  // Sem expiração (ou Date.now() + 365 * 24 * 60 * 60 * 1000 para 1 ano)
+                const expiresAt = null;  // Sem expiração
 
                 validTokens.set(token, { expiresAt });
 
-                // Limpar tokens expirados
+                // Limpar tokens expirados (mas como null, não expira)
                 for (const [key, value] of validTokens.entries()) {
-                    if (value.expiresAt < Date.now()) {
+                    if (value.expiresAt && value.expiresAt < Date.now()) {
                         validTokens.delete(key);
                     }
                 }
 
-                console.log(`✅ Login bem-sucedido para ${email}. Tokens ativos: ${validTokens.size}`);
+                console.log(`Login bem-sucedido para ${email}. Tokens ativos: ${validTokens.size}`);
 
                 return res.status(200).json({
                     token,
-                    expiresIn: null
+                    expiresIn: null  // Sem expiração
                 });
             }
 
-            console.log(`❌ Credenciais inválidas para ${email}`);
+            console.log(`Credenciais inválidas para ${email}`);
             return res.status(401).json({ error: 'Email ou senha incorretos' });
         } catch (error) {
             console.error('Erro no login:', error);
@@ -245,7 +246,7 @@ module.exports = async (req, res) => {
     // ROTAS PROTEGIDAS
 
     if (!verifyToken(req)) {
-        console.log(`❌ Acesso negado para ${path}`);
+        console.log(`Acesso negado para ${path}`);
         return res.status(401).json({ error: 'Não autorizado' });
     }
 
@@ -253,7 +254,7 @@ module.exports = async (req, res) => {
     if (method === 'POST' && path === '/api/logout') {
         const token = req.headers.authorization?.split(' ')[1];
         validTokens.delete(token);
-        console.log(`✅ Logout realizado. Tokens ativos: ${validTokens.size}`);
+        console.log(`Logout realizado. Tokens ativos: ${validTokens.size}`);
         return res.status(200).json({ success: true });
     }
 
@@ -268,7 +269,7 @@ module.exports = async (req, res) => {
             if (!u.expiration) return true;
             return new Date(u.expiration) > new Date();
         });
-        console.log(`✅ Retornando ${users.length} users`);
+        console.log(`Retornando ${users.length} users`);
         return res.status(200).json({ users });
     }
 
@@ -278,7 +279,7 @@ module.exports = async (req, res) => {
             if (!u.expiration) return true;
             return new Date(u.expiration) > new Date();
         });
-        console.log(`✅ Retornando ${usersFarm.length} usersfarm`);
+        console.log(`Retornando ${usersFarm.length} usersfarm`);
         return res.status(200).json({ usersFarm });
     }
 
@@ -303,7 +304,7 @@ module.exports = async (req, res) => {
             };
 
             users.push(newUser);
-            console.log(`✅ User adicionado: ${username} (${duration}). Total: ${users.length}`);
+            console.log(`User adicionado: ${username} (${duration}). Total: ${users.length}`);
             return res.status(201).json({ success: true, user: newUser });
         } catch (error) {
             console.error('Erro ao adicionar user:', error);
@@ -332,7 +333,7 @@ module.exports = async (req, res) => {
             };
 
             usersFarm.push(newUser);
-            console.log(`✅ UserFarm adicionado: ${username} (${duration}). Total: ${usersFarm.length}`);
+            console.log(`UserFarm adicionado: ${username} (${duration}). Total: ${usersFarm.length}`);
             return res.status(201).json({ success: true, user: newUser });
         } catch (error) {
             console.error('Erro ao adicionar userfarm:', error);
@@ -347,7 +348,7 @@ module.exports = async (req, res) => {
         users = users.filter(u => u.username !== username);
 
         if (users.length < initialLength) {
-            console.log(`✅ User removido: ${username}. Total: ${users.length}`);
+            console.log(`User removido: ${username}. Total: ${users.length}`);
             return res.status(200).json({ success: true });
         }
 
@@ -361,7 +362,7 @@ module.exports = async (req, res) => {
         usersFarm = usersFarm.filter(u => u.username !== username);
 
         if (usersFarm.length < initialLength) {
-            console.log(`✅ UserFarm removido: ${username}. Total: ${usersFarm.length}`);
+            console.log(`UserFarm removido: ${username}. Total: ${usersFarm.length}`);
             return res.status(200).json({ success: true });
         }
 
@@ -369,6 +370,6 @@ module.exports = async (req, res) => {
     }
 
     // Rota não encontrada
-    console.log(`❌ Rota não encontrada: ${method} ${path}`);
+    console.log(`Rota não encontrada: ${method} ${path}`);
     return res.status(404).json({ error: 'Rota não encontrada' });
 };
