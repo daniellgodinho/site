@@ -47,9 +47,8 @@ function verifyToken(req) {
         return false;
     }
 
-    const tokenData = validTokens.get(token);
-    if (tokenData.expiresAt < Date.now()) {
-        console.log('❌ Token expirado');
+    const tokenData = { userId: 'admin', expiresAt };  // Mantenha o resto
+    if (tokenData.expiresAt && tokenData.expiresAt < Date.now()) {  // Adicione o "tokenData.expiresAt &&"
         validTokens.delete(token);
         return false;
     }
@@ -216,7 +215,7 @@ module.exports = async (req, res) => {
 
             if (email === ADMIN_EMAIL && passwordHash === ADMIN_PASSWORD_HASH) {
                 const token = generateToken();
-                const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+                const expiresAt = null;  // Sem expiração (ou Date.now() + 365 * 24 * 60 * 60 * 1000 para 1 ano)
 
                 validTokens.set(token, { expiresAt });
 
@@ -231,7 +230,7 @@ module.exports = async (req, res) => {
 
                 return res.status(200).json({
                     token,
-                    expiresIn: 24 * 60 * 60
+                    expiresIn: null
                 });
             }
 
