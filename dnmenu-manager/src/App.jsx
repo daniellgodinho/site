@@ -123,7 +123,7 @@ export default function UserManager() {
 
     if (error) {
       console.error('Erro ao atualizar listas:', error);
-      alert('❌ Erro ao salvar mudanças');
+      alert('Erro ao salvar mudanças');
       return false;
     }
     return true;
@@ -154,7 +154,8 @@ export default function UserManager() {
         setUsersFarm(newList);
         setNewUserFarm('');
       }
-      alert(`✅ ${username} adicionado com sucesso!`);
+      alert(`${username} adicionado com sucesso!`);
+      await exportToGitHub(); // Auto-save após adicionar
     }
   };
 
@@ -173,7 +174,8 @@ export default function UserManager() {
     if (success) {
       if (isUsersTab) setUsers(newList);
       else setUsersFarm(newList);
-      alert(`✅ ${username} removido com sucesso!`);
+      alert(`${username} removido com sucesso!`);
+      await exportToGitHub(); // Auto-save após remover
     }
   };
 
@@ -229,9 +231,35 @@ export default function UserManager() {
     }
 
     try {
-      const usersContent = users.map(u => u.username).join('\n');
-      const usersFarmContent = usersFarm.map(u => u.username).join('\n');
+      // Buscar todas as listas de todos os resellers/owners
+      const { data: allLists, error } = await supabase
+        .from('user_lists')
+        .select('*');
 
+      if (error) throw error;
+
+      const allUsers = new Set();
+      const allFarm = new Set();
+
+      allLists.forEach(list => {
+        if (list.users) {
+          list.users.split(',').forEach(str => {
+            const [username] = str.split('|');
+            if (username) allUsers.add(username.trim());
+          });
+        }
+        if (list.users_farm) {
+          list.users_farm.split(',').forEach(str => {
+            const [username] = str.split('|');
+            if (username) allFarm.add(username.trim());
+          });
+        }
+      });
+
+      const usersContent = Array.from(allUsers).join('\n');
+      const usersFarmContent = Array.from(allFarm).join('\n');
+
+      // Obter SHA e atualizar users
       const usersGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`, {
         headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
       });
@@ -249,6 +277,7 @@ export default function UserManager() {
         })
       });
 
+      // Obter SHA e atualizar usersfarm
       const farmGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`, {
         headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
       });
@@ -270,7 +299,7 @@ export default function UserManager() {
       setTimeout(() => setSaveStatus(''), 3000);
     } catch (error) {
       console.error('Erro ao exportar para GitHub:', error);
-      alert('❌ Erro ao exportar para GitHub');
+      alert('Erro ao exportar para GitHub');
       setSaveStatus('erro');
       setTimeout(() => setSaveStatus(''), 3000);
     }
@@ -316,60 +345,44 @@ export default function UserManager() {
               </div>
             </motion.div>
           </div>
-
-          <h1 className="text-5xl font-extrabold text-center bg-gradient-to-r from-purple-300 to-purple-500 bg-clip-text text-transparent mb-4">
+          <motion.h1
+            className="text-4xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 animate-gradient-x"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
             DNMenu Manager
-          </h1>
-          <p className="text-gray-300 text-center mb-12 font-semibold text-lg tracking-wide">
-            Gerencie seus acessos com segurança e eficiência
-          </p>
+          </motion.h1>
 
-          <div className="space-y-6">
-            <motion.div initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
-              <label className="block text-sm font-bold text-gray-200 mb-2 uppercase tracking-wider">
-                Email
-              </label>
+          <motion.div
+            className="space-y-6"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <div className="relative">
               <input
                 type="email"
+                placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-purple-900/30 border border-purple-600 rounded-2xl p-4 text-gray-100 placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-md"
-                placeholder="seu@email.com"
+                className="w-full px-6 py-4 bg-black/50 border border-purple-700/50 rounded-2xl text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-purple-500 transition-all duration-300"
               />
-            </motion.div>
+            </div>
 
-            <motion.div initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-              <label className="block text-sm font-bold text-gray-200 mb-2 uppercase tracking-wider">
-                Senha
-              </label>
+            <div className="relative">
               <input
                 type="password"
+                placeholder="Senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-purple-900/30 border border-purple-600 rounded-2xl p-4 text-gray-100 placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-md"
-                placeholder="********"
+                className="w-full px-6 py-4 bg-black/50 border border-purple-700/50 rounded-2xl text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-purple-500 transition-all duration-300"
               />
-            </motion.div>
-
-            <motion.div initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-              <label className="block text-sm font-bold text-gray-200 mb-2 uppercase tracking-wider">
-                Reseller
-              </label>
-              <select
-                value={selectedReseller}
-                onChange={(e) => setSelectedReseller(e.target.value)}
-                className="w-full bg-purple-900/30 border border-purple-600 rounded-2xl p-4 text-gray-100 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-md"
-              >
-                <option value="Reseller 1">Reseller 1</option>
-                <option value="Reseller 2">Reseller 2</option>
-                <option value="Reseller 3">Reseller 3</option>
-                <option value="Reseller 4">Reseller 4</option>
-              </select>
-            </motion.div>
+            </div>
 
             {error && (
               <motion.p
-                className="text-red-500 text-sm text-center font-medium"
+                className="text-red-400 text-center animate-shake"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
@@ -381,176 +394,185 @@ export default function UserManager() {
             <motion.button
               onClick={handleLogin}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-400 text-white font-bold py-4 rounded-2xl hover:from-purple-500 hover:to-purple-300 transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 animate-gradient-x shadow-lg"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl text-white font-semibold hover:from-purple-500 hover:to-pink-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
-              {isLoading && <Clock className="w-5 h-5 animate-spin" />}
+              <span className="relative z-10">{isLoading ? 'Entrando...' : 'Login'}</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shine_1s]" />
             </motion.button>
-          </div>
+          </motion.div>
         </motion.div>
       </motion.div>
     );
   }
 
   return (
-    <motion.div
-      className="min-h-screen bg-gradient-to-br from-purple-950 via-black to-purple-950 p-8 overflow-hidden relative"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-    >
-      <div className="absolute inset-0 overflow-hidden opacity-40">
-        <div className="absolute -top-1/3 -left-1/3 w-2/3 h-2/3 bg-purple-700 rounded-full blur-3xl animate-bounce-slow"></div>
-        <div className="absolute -bottom-1/3 -right-1/3 w-2/3 h-2/3 bg-purple-500 rounded-full blur-3xl animate-bounce-slow" style={{ animationDelay: '0.7s' }}></div>
-      </div>
-
-      <header className="relative flex justify-between items-center mb-12">
-        <motion.h1
-          className="text-5xl font-extrabold bg-gradient-to-r from-purple-300 to-purple-500 bg-clip-text text-transparent"
-          initial={{ y: -30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          DNMenu Manager - {selectedReseller}
-        </motion.h1>
-        <motion.button
-          onClick={handleLogout}
-          className="flex items-center gap-3 text-gray-300 hover:text-purple-300 transition-colors text-lg font-semibold"
-          whileHover={{ scale: 1.05 }}
-        >
-          <LogOut className="w-6 h-6" />
-          Sair
-        </motion.button>
-      </header>
-
-      <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-        <div className="bg-gradient-to-br from-purple-900/50 to-black/50 p-6 rounded-2xl shadow-lg border border-purple-700/30 text-center">
-          <h3 className="text-2xl font-bold text-purple-300">Usuários Totais</h3>
-          <p className="text-4xl font-extrabold text-white mt-2">{totalUsers}</p>
-        </div>
-        <div className="bg-gradient-to-br from-purple-900/50 to-black/50 p-6 rounded-2xl shadow-lg border border-purple-700/30 text-center">
-          <h3 className="text-2xl font-bold text-purple-300">Tokens Ativos</h3>
-          <p className="text-4xl font-extrabold text-white mt-2">{activeTokens}</p>
-        </div>
-        <div className="bg-gradient-to-br from-purple-900/50 to-black/50 p-6 rounded-2xl shadow-lg border border-purple-700/30 text-center">
-          <h3 className="text-2xl font-bold text-purple-300">Última Atualização</h3>
-          <p className="text-4xl font-extrabold text-white mt-2">{new Date().toLocaleDateString()}</p>
-        </div>
-      </motion.div>
-
-      <motion.div
-        className="flex gap-8 mb-10"
-        initial={{ x: -50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-      >
-        <button
-          onClick={() => setActiveTab('users')}
-          className={`px-8 py-4 rounded-2xl font-bold transition-all shadow-md ${activeTab === 'users' ? 'bg-gradient-to-r from-purple-600 to-purple-400 text-white' : 'bg-purple-900/40 text-gray-300 hover:bg-purple-800/60'}`}
-        >
-          Users
-        </button>
-        <button
-          onClick={() => setActiveTab('usersFarm')}
-          className={`px-8 py-4 rounded-2xl font-bold transition-all shadow-md ${activeTab === 'usersFarm' ? 'bg-gradient-to-r from-purple-600 to-purple-400 text-white' : 'bg-purple-900/40 text-gray-300 hover:bg-purple-800/60'}`}
-        >
-          Users Farm
-        </button>
-      </motion.div>
-
-      <motion.div
-        className="bg-gradient-to-br from-purple-900/60 to-black/60 backdrop-blur-xl p-10 rounded-3xl shadow-2xl border border-purple-700/40 animate-glow"
-        initial={{ scale: 0.97, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.4 }}
-      >
-        <div className="flex flex-col gap-6 mb-8">
-          <div className="flex gap-5">
-            <input
-              value={activeTab === 'users' ? newUser : newUserFarm}
-              onChange={(e) => activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)}
-              className="flex-1 bg-purple-900/40 border border-purple-600 rounded-2xl p-5 text-gray-100 placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-sm"
-              placeholder="Adicionar username"
-            />
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-black to-purple-950 p-8 text-purple-100">
+      <div className="max-w-6xl mx-auto bg-black/60 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-purple-700/30">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+            DNMenu Manager - {selectedReseller}
+          </h1>
+          <div className="flex items-center space-x-4">
             <select
-              value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
-              onChange={(e) => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
-              className="bg-purple-900/40 border border-purple-600 rounded-2xl p-5 text-gray-100 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-sm"
+              value={selectedReseller}
+              onChange={(e) => setSelectedReseller(e.target.value)}
+              className="bg-black/50 border border-purple-700/50 rounded-lg px-4 py-2 text-purple-100 focus:outline-none focus:border-purple-500"
             >
-              <option value="daily">Diário</option>
-              <option value="weekly">Semanal</option>
-              <option value="monthly">Mensal</option>
-              <option value="lifetime">Vitalício</option>
+              <option value="Reseller 1">Reseller 1</option>
+              <option value="Reseller 2">Reseller 2</option>
+              {/* Adicione mais resellers conforme necessário */}
             </select>
-            <motion.button
-              onClick={addUser}
-              className="bg-gradient-to-r from-purple-600 to-purple-400 text-white px-8 py-5 rounded-2xl hover:from-purple-500 hover:to-purple-300 flex items-center gap-3 animate-gradient-x shadow-md"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+            <button
+              onClick={exportToGitHub}
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all duration-300"
             >
-              <UserPlus className="w-6 h-6" />
-              Adicionar
-            </motion.button>
-          </div>
-
-          <div className="relative">
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-purple-900/40 border border-purple-600 rounded-2xl p-5 text-gray-100 placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-all duration-300 pl-12 shadow-sm"
-              placeholder="Buscar usuário..."
-            />
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
+              <Github className="w-5 h-5" />
+              <span>Salvar no GitHub</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-2 px-6 py-3 bg-red-600/80 rounded-xl hover:bg-red-500 transition-all duration-300"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredUsers.map((user, index) => (
-            <motion.div
-              key={user.username}
-              className="bg-gradient-to-br from-purple-900/50 to-black/50 border border-purple-700/50 p-8 rounded-2xl flex flex-col justify-between transition-all hover:bg-purple-900/70 hover:shadow-purple-400/40 hover:scale-105 shadow-md animate-glow"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <div className="flex justify-between items-start">
-                <span className="text-xl font-bold text-purple-200">{user.username}</span>
-                <motion.button
-                  onClick={() => removeUser(activeTab, user.username)}
-                  className="text-red-400 hover:text-red-300"
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                >
-                  <Trash2 className="w-6 h-6" />
-                </motion.button>
-              </div>
-              <div className="mt-6 flex items-center gap-3 text-base">
-                <span className={getDurationColor(user.duration) + ' font-semibold'}>{formatTimeRemaining(user.expiration)}</span>
-                {getDurationIcon(user.duration)}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      <motion.button
-        onClick={exportToGitHub}
-        className="fixed bottom-8 right-8 bg-gradient-to-br from-purple-600 to-purple-400 p-4 rounded-full shadow-lg hover:from-purple-500 hover:to-purple-300 transition-all duration-300 flex items-center justify-center animate-gradient-x"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        title="Salvar no GitHub"
-      >
-        {saveStatus === 'salvando' ? (
-          <Clock className="w-6 h-6 animate-spin text-white" />
-        ) : saveStatus === 'salvo' ? (
-          <CheckCircle className="w-6 h-6 text-green-200" />
-        ) : saveStatus === 'erro' ? (
-          <XCircle className="w-6 h-6 text-red-200" />
-        ) : (
-          <Github className="w-6 h-6 text-white" />
+        {saveStatus && (
+          <div className={`p-4 rounded-xl mb-6 ${saveStatus === 'salvo' ? 'bg-green-900/50' : saveStatus === 'erro' ? 'bg-red-900/50' : 'bg-blue-900/50'}`}>
+            {saveStatus === 'salvando' && 'Salvando no GitHub...'}
+            {saveStatus === 'salvo' && 'Salvo com sucesso!'}
+            {saveStatus === 'erro' && 'Erro ao salvar'}
+          </div>
         )}
-      </motion.button>
-    </motion.div>
+
+        <div className="grid grid-cols-3 gap-6 mb-8">
+          <div className="p-6 bg-black/40 rounded-2xl border border-purple-700/30">
+            <h3 className="text-lg font-semibold mb-2">Total de Usuários</h3>
+            <p className="text-3xl font-bold text-purple-400">{totalUsers}</p>
+          </div>
+          <div className="p-6 bg-black/40 rounded-2xl border border-purple-700/30">
+            <h3 className="text-lg font-semibold mb-2">Tokens Ativos</h3>
+            <p className="text-3xl font-bold text-green-400">{activeTokens}</p>
+          </div>
+          <div className="p-6 bg-black/40 rounded-2xl border border-purple-700/30">
+            <h3 className="text-lg font-semibold mb-2">Tokens Expirados</h3>
+            <p className="text-3xl font-bold text-red-400">{totalUsers - activeTokens}</p>
+          </div>
+        </div>
+
+        <div className="flex space-x-4 mb-6">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'users'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600'
+                : 'bg-black/40 border border-purple-700/30 hover:bg-black/60'
+              }`}
+          >
+            Users
+          </button>
+          <button
+            onClick={() => setActiveTab('usersfarm')}
+            className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'usersfarm'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600'
+                : 'bg-black/40 border border-purple-700/30 hover:bg-black/60'
+              }`}
+          >
+            Users Farm
+          </button>
+        </div>
+
+        <div className="mb-6 flex space-x-4">
+          <input
+            type="text"
+            placeholder={activeTab === 'users' ? 'Novo user' : 'Novo user farm'}
+            value={activeTab === 'users' ? newUser : newUserFarm}
+            onChange={(e) => activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)}
+            className="flex-grow px-6 py-4 bg-black/50 border border-purple-700/50 rounded-2xl text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-purple-500"
+          />
+          <select
+            value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
+            onChange={(e) => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
+            className="px-6 py-4 bg-black/50 border border-purple-700/50 rounded-2xl text-purple-100 focus:outline-none focus:border-purple-500"
+          >
+            <option value="daily">Diário</option>
+            <option value="weekly">Semanal</option>
+            <option value="monthly">Mensal</option>
+            <option value="lifetime">Vitalício</option>
+          </select>
+          <button
+            onClick={addUser}
+            className="flex items-center space-x-2 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl hover:from-purple-500 hover:to-pink-500 transition-all duration-300"
+          >
+            <UserPlus className="w-5 h-5" />
+            <span>Adicionar</span>
+          </button>
+        </div>
+
+        <div className="mb-6 relative">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-400/50" />
+          <input
+            type="text"
+            placeholder="Buscar usuário..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-12 py-4 bg-black/50 border border-purple-700/50 rounded-2xl text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-purple-500"
+          />
+        </div>
+
+        <div className="overflow-x-auto rounded-2xl border border-purple-700/30">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-black/50">
+                <th className="px-6 py-4 text-left">Username</th>
+                <th className="px-6 py-4 text-left">Duração</th>
+                <th className="px-6 py-4 text-left">Tempo Restante</th>
+                <th className="px-6 py-4 text-left">Status</th>
+                <th className="px-6 py-4 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.map((user) => (
+                <tr key={user.username} className="border-t border-purple-700/20 hover:bg-black/30 transition-colors">
+                  <td className="px-6 py-4">{user.username}</td>
+                  <td className="px-6 py-4">
+                    <div className={`flex items-center space-x-2 ${getDurationColor(user.duration)}`}>
+                      {getDurationIcon(user.duration)}
+                      <span>{user.duration.charAt(0).toUpperCase() + user.duration.slice(1)}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">{formatTimeRemaining(user.expiration)}</td>
+                  <td className="px-6 py-4">
+                    {user.expiration === null || new Date(user.expiration) > new Date() ? (
+                      <CheckCircle className="w-5 h-5 text-green-400" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-red-400" />
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={() => removeUser(activeTab, user.username)}
+                      className="p-2 hover:bg-red-600/20 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-5 h-5 text-red-400" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {filteredUsers.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="px-6 py-4 text-center text-purple-400/50">
+                    Nenhum usuário encontrado
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }
