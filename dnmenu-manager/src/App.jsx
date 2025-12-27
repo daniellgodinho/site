@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Drama, UserPlus, Trash2, Save, LogOut, Calendar, Clock, Infinity, CheckCircle, XCircle, Search } from 'lucide-react';
+import { Drama, UserPlus, Trash2, Save, LogOut, Calendar, Clock, Infinity, CheckCircle, XCircle, Search, Github } from 'lucide-react';
 import { supabase } from './supabase';
 
 export default function UserManager() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedReseller, setSelectedReseller] = useState('Reseller 1');
   const [error, setError] = useState('');
   const [users, setUsers] = useState([]);
   const [usersFarm, setUsersFarm] = useState([]);
@@ -27,6 +28,7 @@ export default function UserManager() {
       .from('user_lists')
       .select('*')
       .eq('owner_id', session.user.id)
+      .eq('reseller', selectedReseller)
       .single();
 
     if (error && error.code !== 'PGRST116') {
@@ -50,7 +52,7 @@ export default function UserManager() {
     } else {
       const { data: newData, error: insertError } = await supabase
         .from('user_lists')
-        .insert({ owner_id: session.user.id, users: '', users_farm: '' })
+        .insert({ owner_id: session.user.id, reseller: selectedReseller, users: '', users_farm: '' })
         .select()
         .single();
 
@@ -62,7 +64,7 @@ export default function UserManager() {
         setUsersFarm([]);
       }
     }
-  }, [session]);
+  }, [session, selectedReseller]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -92,15 +94,6 @@ export default function UserManager() {
     setIsLoading(false);
   };
 
-  const handleSignup = async () => {
-    setIsLoading(true);
-    setError('');
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) setError(error.message);
-    else alert('Confirme seu email para ativar a conta!');
-    setIsLoading(false);
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -125,7 +118,8 @@ export default function UserManager() {
     const { error } = await supabase
       .from('user_lists')
       .update({ users: usersStr, users_farm: farmStr })
-      .eq('id', userListId);
+      .eq('id', userListId)
+      .eq('reseller', selectedReseller);
 
     if (error) {
       console.error('Erro ao atualizar listas:', error);
@@ -241,6 +235,7 @@ export default function UserManager() {
       const usersGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`, {
         headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
       });
+      if (!usersGetRes.ok) throw new Error('Failed to fetch users SHA');
       const usersData = await usersGetRes.json();
 
       await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`, {
@@ -257,6 +252,7 @@ export default function UserManager() {
       const farmGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`, {
         headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
       });
+      if (!farmGetRes.ok) throw new Error('Failed to fetch usersfarm SHA');
       const farmData = await farmGetRes.json();
 
       await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`, {
@@ -287,74 +283,90 @@ export default function UserManager() {
   if (!session) {
     return (
       <motion.div
-        className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-900 flex items-center justify-center p-4 overflow-hidden"
+        className="min-h-screen bg-gradient-to-br from-purple-950 to-black flex items-center justify-center p-4 overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
       >
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-purple-800 rounded-full opacity-10 blur-3xl animate-pulse-slow"></div>
-          <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-purple-700 rounded-full opacity-10 blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-purple-900/20 to-transparent animate-slide"></div>
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent to-purple-900/20 animate-slide-fast"></div>
+          <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-purple-800 rounded-full opacity-20 blur-3xl animate-pulse-slow"></div>
+          <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-purple-600 rounded-full opacity-20 blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-purple-900/30 to-transparent animate-slide"></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent to-purple-900/30 animate-slide-fast"></div>
         </div>
 
         <motion.div
-          className="relative bg-black/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-md border border-purple-800 animate-glow"
-          initial={{ scale: 0.9, opacity: 0 }}
+          className="relative bg-gradient-to-br from-purple-900/80 to-black/80 backdrop-blur-2xl rounded-3xl shadow-2xl p-10 w-full max-w-lg border border-purple-700/50 animate-glow"
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-8">
             <motion.div
               className="relative"
-              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileHover={{ scale: 1.05, rotate: 3 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="absolute inset-0 bg-purple-600 rounded-full blur-xl opacity-50 animate-pulse-slow"></div>
-              <div className="relative bg-gradient-to-br from-purple-700 to-purple-900 p-5 rounded-full">
-                <Drama className="w-10 h-10 text-purple-300 animate-spin-slow" />
+              <div className="absolute inset-0 bg-purple-500 rounded-full blur-2xl opacity-40 animate-pulse-slow"></div>
+              <div className="relative bg-gradient-to-br from-purple-800 to-purple-600 p-6 rounded-full shadow-lg">
+                <Drama className="w-12 h-12 text-purple-200 animate-spin-slow" />
               </div>
             </motion.div>
           </div>
 
-          <h1 className="text-4xl font-black text-center bg-gradient-to-r from-purple-200 to-purple-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-5xl font-extrabold text-center bg-gradient-to-r from-purple-300 to-purple-500 bg-clip-text text-transparent mb-3">
             DNMenu Manager
           </h1>
-          <p className="text-gray-400 text-center mb-8 font-medium">
-            Sistema de Gerenciamento de Acesso
+          <p className="text-gray-300 text-center mb-10 font-semibold text-lg">
+            Gerencie seus acessos com segurança
           </p>
 
-          <div className="space-y-5">
-            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
-              <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
+          <div className="space-y-6">
+            <motion.div initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
+              <label className="block text-sm font-bold text-gray-200 mb-2 uppercase tracking-wider">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-purple-900/50 border border-purple-700 rounded-xl p-4 text-gray-200 placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-all duration-300 hover:border-purple-600 hover:scale-105"
+                className="w-full bg-purple-900/30 border border-purple-600 rounded-2xl p-4 text-gray-100 placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-md"
                 placeholder="seu@email.com"
               />
             </motion.div>
 
-            <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-              <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
+            <motion.div initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+              <label className="block text-sm font-bold text-gray-200 mb-2 uppercase tracking-wider">
                 Senha
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-purple-900/50 border border-purple-700 rounded-xl p-4 text-gray-200 placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-all duration-300 hover:border-purple-600 hover:scale-105"
+                className="w-full bg-purple-900/30 border border-purple-600 rounded-2xl p-4 text-gray-100 placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-md"
                 placeholder="********"
               />
             </motion.div>
 
+            <motion.div initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
+              <label className="block text-sm font-bold text-gray-200 mb-2 uppercase tracking-wider">
+                Reseller
+              </label>
+              <select
+                value={selectedReseller}
+                onChange={(e) => setSelectedReseller(e.target.value)}
+                className="w-full bg-purple-900/30 border border-purple-600 rounded-2xl p-4 text-gray-100 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-md"
+              >
+                <option value="Reseller 1">Reseller 1</option>
+                <option value="Reseller 2">Reseller 2</option>
+                <option value="Reseller 3">Reseller 3</option>
+                <option value="Reseller 4">Reseller 4</option>
+              </select>
+            </motion.div>
+
             {error && (
               <motion.p
-                className="text-red-400 text-sm text-center"
+                className="text-red-500 text-sm text-center font-medium"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
@@ -366,22 +378,12 @@ export default function UserManager() {
             <motion.button
               onClick={handleLogin}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold py-4 rounded-xl hover:from-purple-500 hover:to-purple-600 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 animate-gradient-x"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-400 text-white font-bold py-4 rounded-2xl hover:from-purple-500 hover:to-purple-300 transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2 animate-gradient-x shadow-lg"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
               {isLoading ? 'Entrando...' : 'Entrar'}
               {isLoading && <Clock className="w-5 h-5 animate-spin" />}
-            </motion.button>
-
-            <motion.button
-              onClick={handleSignup}
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold py-4 rounded-xl hover:from-gray-500 hover:to-gray-600 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {isLoading ? 'Cadastrando...' : 'Cadastrar'}
             </motion.button>
           </div>
         </motion.div>
@@ -391,73 +393,73 @@ export default function UserManager() {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-900 p-6 overflow-hidden"
+      className="min-h-screen bg-gradient-to-br from-purple-950 to-black p-8 overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
-      <div className="absolute inset-0 overflow-hidden opacity-50">
-        <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-purple-800 rounded-full blur-3xl animate-bounce-slow"></div>
-        <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-purple-700 rounded-full blur-3xl animate-bounce-slow" style={{ animationDelay: '0.5s' }}></div>
+      <div className="absolute inset-0 overflow-hidden opacity-40">
+        <div className="absolute -top-1/3 -left-1/3 w-2/3 h-2/3 bg-purple-700 rounded-full blur-3xl animate-bounce-slow"></div>
+        <div className="absolute -bottom-1/3 -right-1/3 w-2/3 h-2/3 bg-purple-500 rounded-full blur-3xl animate-bounce-slow" style={{ animationDelay: '0.7s' }}></div>
       </div>
 
-      <header className="relative flex justify-between items-center mb-10">
+      <header className="relative flex justify-between items-center mb-12">
         <motion.h1
-          className="text-4xl font-black bg-gradient-to-r from-purple-200 to-purple-400 bg-clip-text text-transparent"
-          initial={{ y: -20, opacity: 0 }}
+          className="text-5xl font-extrabold bg-gradient-to-r from-purple-300 to-purple-500 bg-clip-text text-transparent"
+          initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          DNMenu Manager
+          DNMenu Manager - {selectedReseller}
         </motion.h1>
         <motion.button
           onClick={handleLogout}
-          className="flex items-center gap-2 text-gray-300 hover:text-purple-300 transition-colors"
-          whileHover={{ scale: 1.1 }}
+          className="flex items-center gap-3 text-gray-300 hover:text-purple-300 transition-colors text-lg font-semibold"
+          whileHover={{ scale: 1.05 }}
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-6 h-6" />
           Sair
         </motion.button>
       </header>
 
       <motion.div
-        className="flex gap-6 mb-8"
+        className="flex gap-8 mb-10"
         initial={{ x: -50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
         <button
           onClick={() => setActiveTab('users')}
-          className={`px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'users' ? 'bg-purple-700 text-white shadow-lg' : 'bg-purple-900/50 text-gray-300 hover:bg-purple-800'}`}
+          className={`px-8 py-4 rounded-2xl font-bold transition-all shadow-md ${activeTab === 'users' ? 'bg-gradient-to-r from-purple-600 to-purple-400 text-white' : 'bg-purple-900/40 text-gray-300 hover:bg-purple-800/60'}`}
         >
           Users
         </button>
         <button
           onClick={() => setActiveTab('usersFarm')}
-          className={`px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'usersFarm' ? 'bg-purple-700 text-white shadow-lg' : 'bg-purple-900/50 text-gray-300 hover:bg-purple-800'}`}
+          className={`px-8 py-4 rounded-2xl font-bold transition-all shadow-md ${activeTab === 'usersFarm' ? 'bg-gradient-to-r from-purple-600 to-purple-400 text-white' : 'bg-purple-900/40 text-gray-300 hover:bg-purple-800/60'}`}
         >
           Users Farm
         </button>
       </motion.div>
 
       <motion.div
-        className="bg-black/60 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-purple-800 animate-glow"
-        initial={{ scale: 0.95, opacity: 0 }}
+        className="bg-gradient-to-br from-purple-900/50 to-black/50 backdrop-blur-xl p-10 rounded-3xl shadow-2xl border border-purple-700/30 animate-glow"
+        initial={{ scale: 0.97, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <div className="flex flex-col gap-6 mb-6">
-          <div className="flex gap-4">
+        <div className="flex flex-col gap-6 mb-8">
+          <div className="flex gap-5">
             <input
               value={activeTab === 'users' ? newUser : newUserFarm}
               onChange={(e) => activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)}
-              className="flex-1 bg-purple-900/50 border border-purple-700 rounded-xl p-4 text-gray-200 placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-all duration-300 hover:scale-105"
+              className="flex-1 bg-purple-900/30 border border-purple-600 rounded-2xl p-5 text-gray-100 placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-sm"
               placeholder="Adicionar username"
             />
             <select
               value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
               onChange={(e) => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
-              className="bg-purple-900/50 border border-purple-700 rounded-xl p-4 text-gray-200 focus:border-purple-500 focus:outline-none transition-all duration-300 hover:scale-105"
+              className="bg-purple-900/30 border border-purple-600 rounded-2xl p-5 text-gray-100 focus:border-purple-400 focus:outline-none transition-all duration-300 hover:border-purple-500 hover:scale-102 shadow-sm"
             >
               <option value="daily">Diário</option>
               <option value="weekly">Semanal</option>
@@ -466,11 +468,11 @@ export default function UserManager() {
             </select>
             <motion.button
               onClick={addUser}
-              className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4 rounded-xl hover:from-purple-500 hover:to-purple-600 flex items-center gap-2 animate-gradient-x"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-purple-600 to-purple-400 text-white px-8 py-5 rounded-2xl hover:from-purple-500 hover:to-purple-300 flex items-center gap-3 animate-gradient-x shadow-md"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
-              <UserPlus className="w-5 h-5" />
+              <UserPlus className="w-6 h-6" />
               Adicionar
             </motion.button>
           </div>
@@ -479,34 +481,34 @@ export default function UserManager() {
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-purple-900/50 border border-purple-700 rounded-xl p-4 text-gray-200 placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-all duration-300 pl-10"
+              className="w-full bg-purple-900/30 border border-purple-600 rounded-2xl p-5 text-gray-100 placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-all duration-300 pl-12 shadow-sm"
               placeholder="Buscar usuário..."
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredUsers.map((user, index) => (
             <motion.div
               key={user.username}
-              className="bg-purple-900/30 border border-purple-800 p-6 rounded-xl flex flex-col justify-between transition-all hover:bg-purple-900/50 hover:shadow-purple-500/20 hover:scale-105"
-              initial={{ opacity: 0, y: 20 }}
+              className="bg-gradient-to-br from-purple-900/40 to-black/40 border border-purple-700/50 p-8 rounded-2xl flex flex-col justify-between transition-all hover:bg-purple-900/60 hover:shadow-purple-400/30 hover:scale-105 shadow-md"
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
               <div className="flex justify-between items-start">
-                <span className="text-lg font-bold text-purple-200">{user.username}</span>
+                <span className="text-xl font-bold text-purple-200">{user.username}</span>
                 <motion.button
                   onClick={() => removeUser(activeTab, user.username)}
                   className="text-red-400 hover:text-red-300"
-                  whileHover={{ scale: 1.2, rotate: 90 }}
+                  whileHover={{ scale: 1.1, rotate: 90 }}
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-6 h-6" />
                 </motion.button>
               </div>
-              <div className="mt-4 flex items-center gap-2 text-sm">
-                <span className={getDurationColor(user.duration)}>{formatTimeRemaining(user.expiration)}</span>
+              <div className="mt-6 flex items-center gap-3 text-base">
+                <span className={`${getDurationColor(user.duration)} font-semibold`}>{formatTimeRemaining(user.expiration)}</span>
                 {getDurationIcon(user.duration)}
               </div>
             </motion.div>
@@ -516,14 +518,20 @@ export default function UserManager() {
 
       <motion.button
         onClick={exportToGitHub}
-        className="mt-10 w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold py-4 rounded-xl hover:from-purple-500 hover:to-purple-600 transition-all duration-300 flex items-center justify-center gap-2 animate-gradient-x"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-8 right-8 bg-gradient-to-br from-purple-600 to-purple-400 p-4 rounded-full shadow-lg hover:from-purple-500 hover:to-purple-300 transition-all duration-300 flex items-center justify-center animate-gradient-x"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        title="Salvar no GitHub"
       >
-        <Save className="w-5 h-5" />
-        Salvar no GitHub {saveStatus === 'salvando' ? '...' : ''}
-        {saveStatus === 'salvo' && <CheckCircle className="w-5 h-5 text-green-400" />}
-        {saveStatus === 'erro' && <XCircle className="w-5 h-5 text-red-400" />}
+        {saveStatus === 'salvando' ? (
+          <Clock className="w-6 h-6 animate-spin text-white" />
+        ) : saveStatus === 'salvo' ? (
+          <CheckCircle className="w-6 h-6 text-green-200" />
+        ) : saveStatus === 'erro' ? (
+          <XCircle className="w-6 h-6 text-red-200" />
+        ) : (
+          <Github className="w-6 h-6 text-white" />
+        )}
       </motion.button>
     </motion.div>
   );
