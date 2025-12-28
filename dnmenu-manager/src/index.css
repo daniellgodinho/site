@@ -1,3 +1,4 @@
+/* src/index.css (unchanged from original) */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -143,7 +144,6 @@
 @keyframes glow {
   0% {
     box-shadow: 0 0 5px rgba(168, 85, 247, 0.3);
-    /* purple-500 */
   }
 
   50% {
