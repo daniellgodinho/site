@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Drama, UserPlus, Trash2, LogOut, Calendar, Clock, Infinity, CheckCircle, XCircle, Search, Github } from 'lucide-react';
+import { UserPlus, Trash2, LogOut, Calendar, Clock, Infinity, CheckCircle, XCircle, Search, Github } from 'lucide-react';
 import { supabase } from './supabase';
 import { CustomSelect } from './components/CustomSelect';
 import monkeyLogo from './assets/monkeyLogo.png';
