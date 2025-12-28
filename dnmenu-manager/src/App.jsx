@@ -466,7 +466,7 @@ export default function UserManager() {
               className="relative w-full py-4 bg-purple-600 rounded-2xl text-white font-semibold hover:bg-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              style={{ boxShadow: '0 10px 40px rgba(168, 85, 247, 0.5)' }}
+              style={{ boxShadow: '0 10px 40px rgba(182, 21, 236, 0.5)' }}
             >
               <span className="relative z-10">{isLoading ? 'Entrando...' : 'Entrar'}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shine_1s]" />
