@@ -490,7 +490,7 @@ export default function UserManager() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">
-                  DN Menu, Dashboard
+                  Dashboard
                 </h1>
                 <p className="text-gray-400 text-sm">{selectedReseller}</p>
               </div>
