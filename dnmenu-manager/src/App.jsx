@@ -421,17 +421,6 @@ export default function UserManager() {
             </motion.div>
           </div>
 
-          <motion.h1
-            className="text-5xl font-bold text-center mb-1 text-white"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            Login
-          </motion.h1>
-
-          <p className="text-center text-gray-400 mb-8 text-base">DN Menu</p>
-
           <motion.div
             className="space-y-6"
             initial={{ y: 20, opacity: 0 }}
