@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Drama, UserPlus, Trash2, LogOut, Calendar, Clock, Infinity, CheckCircle, XCircle, Search, Github } from 'lucide-react';
 import { supabase } from './supabase';
 import { CustomSelect } from './components/CustomSelect';
-import monkeyLogo from 'figma:asset/a4b05a161e9f9b291475fbb27f806759c31cfacd.png';
+import monkeyLogo from './assets/monkeyLogo.png';
 
 export default function UserManager() {
   const [email, setEmail] = useState('');
