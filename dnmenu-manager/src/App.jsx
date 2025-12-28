@@ -263,7 +263,7 @@ export default function UserManager() {
       const usersGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`, {
         headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
       });
-      if (!usersGetRes.ok) throw new Error('Falha ao buscar SHA de users');
+      if (!usersGetRes.ok) throw new Error('Falha ao buscar SHA do users');
       const usersData = await usersGetRes.json();
 
       await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`, {
@@ -280,7 +280,7 @@ export default function UserManager() {
       const farmGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`, {
         headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
       });
-      if (!farmGetRes.ok) throw new Error('Falha ao buscar SHA de usersfarm');
+      if (!farmGetRes.ok) throw new Error('Falha ao buscar SHA do usersfarm');
       const farmData = await farmGetRes.json();
 
       await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`, {
@@ -323,35 +323,56 @@ export default function UserManager() {
     { value: 'Indefinido', label: 'Indefinido' }
   ];
 
-  const GridBackground = () => {
-    useEffect(() => {
-      const gridItems = document.querySelectorAll(".grid-background > div");
-      gridItems.forEach((item) => {
-        const delay = Math.floor(Math.random() * 5);
-        const duration = Math.floor(Math.random() * 4) + 3;
-        item.style.animationDelay = `${delay}s`;
-        item.style.animationDuration = `${duration}s`;
-      });
-    }, []);
+  const GridBackground = () => (
+    <div className="grid-background absolute inset-0 p-2 grid grid-cols-12 gap-2 transform -skew-y-12 scale-150 opacity-40 overflow-hidden">
+      <div className="col-span-2 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '0s', animationDuration: '4s' }}></div>
+      <div className="col-span-5 bg-black rounded animate-pulse-slow" style={{ animationDelay: '2s', animationDuration: '5s' }}></div>
+      <div className="col-span-1 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '1s', animationDuration: '3s' }}></div>
+      <div className="col-span-4 bg-black rounded animate-pulse-slow" style={{ animationDelay: '3s', animationDuration: '6s' }}></div>
 
-    return (
-      <div className="grid-background absolute inset-0 p-2 grid grid-cols-12 gap-2 transform -skew-y-12 scale-125 opacity-40">
-        {[...Array(10)].map((_, rowIndex) => (
-          <React.Fragment key={rowIndex}>
-            <div className="col-span-2 bg-gray-800 rounded animate-pulse"></div>
-            <div className="col-span-5 bg-gray-800 rounded animate-pulse"></div>
-            <div className="col-span-1 bg-gray-800 rounded animate-pulse"></div>
-            <div className="col-span-4 bg-gray-800 rounded animate-pulse"></div>
-          </React.Fragment>
-        ))}
-      </div>
-    );
-  };
+      <div className="col-span-5 bg-black rounded animate-pulse-slow" style={{ animationDelay: '1s', animationDuration: '4s' }}></div>
+      <div className="col-span-3 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '4s', animationDuration: '5s' }}></div>
+      <div className="col-span-2 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '0s', animationDuration: '3s' }}></div>
+      <div className="col-span-2 bg-black rounded animate-pulse-slow" style={{ animationDelay: '2s', animationDuration: '4s' }}></div>
+
+      <div className="col-span-4 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '3s', animationDuration: '5s' }}></div>
+      <div className="col-span-7 bg-black rounded animate-pulse-slow" style={{ animationDelay: '1s', animationDuration: '6s' }}></div>
+      <div className="col-span-1 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '2s', animationDuration: '3s' }}></div>
+
+      <div className="col-span-2 bg-black rounded animate-pulse-slow" style={{ animationDelay: '0s', animationDuration: '4s' }}></div>
+      <div className="col-span-4 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '3s', animationDuration: '5s' }}></div>
+      <div className="col-span-6 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '1s', animationDuration: '6s' }}></div>
+
+      <div className="col-span-5 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '2s', animationDuration: '4s' }}></div>
+      <div className="col-span-5 bg-black rounded animate-pulse-slow" style={{ animationDelay: '4s', animationDuration: '3s' }}></div>
+      <div className="col-span-2 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '0s', animationDuration: '5s' }}></div>
+
+      <div className="col-span-4 bg-black rounded animate-pulse-slow" style={{ animationDelay: '1s', animationDuration: '6s' }}></div>
+      <div className="col-span-7 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '3s', animationDuration: '4s' }}></div>
+      <div className="col-span-1 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '2s', animationDuration: '5s' }}></div>
+
+      <div className="col-span-4 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '4s', animationDuration: '3s' }}></div>
+      <div className="col-span-7 bg-black rounded animate-pulse-slow" style={{ animationDelay: '0s', animationDuration: '6s' }}></div>
+      <div className="col-span-1 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '1s', animationDuration: '4s' }}></div>
+
+      <div className="col-span-3 bg-black rounded animate-pulse-slow" style={{ animationDelay: '2s', animationDuration: '5s' }}></div>
+      <div className="col-span-6 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '1s', animationDuration: '4s' }}></div>
+      <div className="col-span-3 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '3s', animationDuration: '6s' }}></div>
+
+      <div className="col-span-5 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '0s', animationDuration: '3s' }}></div>
+      <div className="col-span-4 bg-black rounded animate-pulse-slow" style={{ animationDelay: '4s', animationDuration: '5s' }}></div>
+      <div className="col-span-3 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '2s', animationDuration: '4s' }}></div>
+
+      <div className="col-span-2 bg-purple-950 rounded animate-pulse-slow" style={{ animationDelay: '1s', animationDuration: '6s' }}></div>
+      <div className="col-span-7 bg-black rounded animate-pulse-slow" style={{ animationDelay: '3s', animationDuration: '4s' }}></div>
+      <div className="col-span-3 bg-purple-900 rounded animate-pulse-slow" style={{ animationDelay: '0s', animationDuration: '5s' }}></div>
+    </div>
+  );
 
   if (!session) {
     return (
       <motion.div
-        className="relative min-h-screen flex items-center justify-center bg-gray-900 overflow-hidden"
+        className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
@@ -444,7 +465,7 @@ export default function UserManager() {
 
   return (
     <motion.div
-      className="relative min-h-screen bg-gray-900 overflow-hidden p-8"
+      className="relative min-h-screen bg-black overflow-hidden p-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
@@ -493,7 +514,7 @@ export default function UserManager() {
 
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-2 px-6 py-3 bg-red-800/80 border-2 border-red-600/50 rounded-xl hover:bg-red-700/80 hover:border-red-500/70 transition-all duration-300 shadow-lg shadow-red-800/40"
+                className="flex items-center space-x-2 px-6 py-3 bg-red-900/80 border border-red-700/50 rounded-xl hover:bg-red-800 transition-all duration-300 shadow-lg shadow-red-900/30"
               >
                 <LogOut className="w-5 h-5 text-[#efefef]" />
                 <span className="text-[#efefef]">Sair</span>
@@ -554,20 +575,20 @@ export default function UserManager() {
             <button
               onClick={() => setActiveTab('users')}
               className={`px-8 py-3 rounded-xl transition-all duration-300 ${activeTab === 'users'
-                ? 'bg-purple-600 shadow-lg shadow-purple-600/30 text-[#efefef]'
-                : 'bg-gray-800 border border-gray-700 hover:border-purple-600/40 text-[#efefef]'
+                ? 'bg-purple-600 shadow-lg shadow-purple-600/30'
+                : 'bg-gray-800 border border-gray-700 hover:border-purple-600/40'
                 }`}
             >
-              Users ({users.length})
+              <span className="text-[#efefef]">Users ({users.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('usersfarm')}
               className={`px-8 py-3 rounded-xl transition-all duration-300 ${activeTab === 'usersfarm'
-                ? 'bg-purple-600 shadow-lg shadow-purple-600/30 text-[#efefef]'
-                : 'bg-gray-800 border border-gray-700 hover:border-purple-600/40 text-[#efefef]'
+                ? 'bg-purple-600 shadow-lg shadow-purple-600/30'
+                : 'bg-gray-800 border border-gray-700 hover:border-purple-600/40'
                 }`}
             >
-              Users Farm ({usersFarm.length})
+              <span className="text-[#efefef]">Users Farm ({usersFarm.length})</span>
             </button>
           </div>
 
@@ -592,10 +613,10 @@ export default function UserManager() {
 
             <button
               onClick={addUser}
-              className="flex items-center space-x-2 px-8 py-4 bg-purple-600 rounded-xl hover:bg-purple-700 transition-all duration-300 shadow-lg shadow-purple-600/30 overflow-hidden group text-[#efefef]"
+              className="flex items-center space-x-2 px-8 py-4 bg-purple-600 rounded-xl hover:bg-purple-700 transition-all duration-300 shadow-lg shadow-purple-600/30 overflow-hidden group"
             >
               <UserPlus className="w-5 h-5 text-[#efefef]" />
-              <span>Adicionar</span>
+              <span className="text-[#efefef]">Adicionar</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shine_1s]" />
             </button>
           </div>
@@ -636,7 +657,7 @@ export default function UserManager() {
                     <td className="px-6 py-4">
                       <div className={`flex items-center space-x-2 ${getDurationColor(user.duration)}`}>
                         {getDurationIcon(user.duration)}
-                        <span className="capitalize">{user.duration}</span>
+                        <span className="capitalize">{user.duration === 'daily' ? 'Diário' : user.duration === 'weekly' ? 'Semanal' : user.duration === 'monthly' ? 'Mensal' : 'Vitalício'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-300">{formatTimeRemaining(user.expiration)}</td>
