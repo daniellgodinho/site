@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="DN Menu" />
 
-  <!-- Favicons gerados (substitua o atual) -->
+  <!-- Favicons gerados -->
   <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="96x96" href="%PUBLIC_URL%/favicon-96x96.png">
@@ -15,17 +15,95 @@
   <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon-180x180.png">
   <link rel="icon" type="image/png" sizes="192x192" href="%PUBLIC_URL%/android-chrome-192x192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="%PUBLIC_URL%/android-chrome-512x512.png">
-  <!-- Essa é a versão "bem grande" para Android/PWAs -->
 
-  <!-- Se você quiser um manifest para PWA (opcional, mas recomendado para ícones grandes) -->
+  <!-- Manifest para PWA -->
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
 
   <title>DN Menu</title>
+
+  <style>
+    /* Animação suave para os blocos do grid */
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 0.4;
+      }
+
+      50% {
+        opacity: 0.8;
+      }
+    }
+
+    .grid-background>div {
+      animation: pulse 3s ease-in-out infinite;
+    }
+  </style>
 </head>
 
 <body>
   <noscript>Você precisa habilitar JavaScript para rodar esta aplicação.</noscript>
   <div id="root"></div>
+
+  <script>
+    // Função para adicionar animações aleatórias aos elementos do grid
+    function initGridAnimation() {
+      // Espera o React renderizar o grid
+      setTimeout(() => {
+        const gridItems = document.querySelectorAll(".grid-background > div");
+
+        if (gridItems.length > 0) {
+          gridItems.forEach((item) => {
+            // Calcula valores aleatórios para delay e duration
+            const delay = getRandomInt(0, 5);
+            const duration = getRandomInt(3, 6);
+
+            // Aplica os valores
+            item.style.animationDelay = `${delay}s`;
+            item.style.animationDuration = `${duration}s`;
+          });
+        } else {
+          // Se o grid ainda não foi renderizado, tenta novamente
+          initGridAnimation();
+        }
+      }, 100);
+    }
+
+    // Função auxiliar para gerar números aleatórios
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Observa mudanças no DOM para reinicializar as animações quando necessário
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach((node) => {
+            if (node.classList && node.classList.contains('grid-background')) {
+              initGridAnimation();
+            }
+          });
+        }
+      });
+    });
+
+    // Inicia o observer quando o DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', () => {
+      // Inicializa as animações
+      initGridAnimation();
+
+      // Observa mudanças no root para capturar quando o React renderizar o grid
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        observer.observe(rootElement, {
+          childList: true,
+          subtree: true
+        });
+      }
+    });
+  </script>
 </body>
 
 </html>
