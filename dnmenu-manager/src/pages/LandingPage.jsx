@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
     Menu, X, Package, Crosshair, Shield, Eye, MousePointer, Car, Users as UsersIcon,
-    Lock, Zap, Gauge, Activity, Box, CheckCircle
+    Lock, Zap, Gauge, Activity, Building2, CheckCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
@@ -490,7 +490,6 @@ function Pricing() {
                 "Todas as 51 funções",
                 "Suporte via Discord"
             ],
-            color: "from-indigo-600 to-indigo-500",
             highlighted: false
         },
         {
@@ -503,8 +502,7 @@ function Pricing() {
                 "Atualizações incluídas",
                 "Suporte prioritário"
             ],
-            color: "from-purple-600 to-purple-500",
-            highlighted: true
+            highlighted: false
         },
         {
             name: "Mensal",
@@ -516,7 +514,6 @@ function Pricing() {
                 "Atualizações constantes",
                 "Suporte prioritário VIP"
             ],
-            color: "from-blue-600 to-blue-500",
             highlighted: false
         },
         {
@@ -528,28 +525,31 @@ function Pricing() {
                 "Todas as 51 funções",
                 "Atualizações constantes",
                 "Suporte VIP vitalício",
-                "Acesso a novos recursos"
+                "Acesso prioritário a novos recursos",
+                "Nunca expira"
             ],
-            color: "from-pink-600 to-pink-500",
-            highlighted: false
+            highlighted: true,
+            badge: "Mais Vendido"
         },
         {
             name: "Revenda",
             price: "R$ 120",
-            duration: "Sistema completo",
+            duration: "Painel completo",
             features: [
-                "Painel de revenda",
-                "Gerenciamento de clientes",
-                "Todas as funcionalidades",
-                "Suporte técnico dedicado"
+                "Painel de revenda completo",
+                "Gerencie clientes ilimitados",
+                "Crie keys automáticas",
+                "Todas as 51 funções incluídas",
+                "Suporte técnico dedicado",
+                "Ganhe dinheiro vendendo o menu mais procurado do cenário"
             ],
-            color: "from-gray-600 to-gray-500",
-            highlighted: false
+            highlighted: true,
+            badge: "Melhor Opção"
         }
     ];
 
     return (
-        <section id="pricing" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 relative">
+        <section id="pricing" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 relative bg-gradient-to-b from-black via-purple-900/5 to-black">
             <div className="max-w-7xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -561,49 +561,56 @@ function Pricing() {
                         Planos Disponíveis
                     </h2>
                     <p className="text-xl text-gray-400">
-                        Escolha o plano que melhor se adequa ao seu uso
+                        Escolha o plano ideal para você ou comece a revender
                     </p>
                 </motion.div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
                     {plans.map((plan, index) => (
                         <motion.div
                             key={index}
-                            initial={{ opacity: 0, y: 30 }}
+                            initial={{ opacity: 0, y: 40 }}
                             animate={isInView ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
-                            whileHover={{ y: -5 }}
-                            className={`relative p-6 rounded-2xl border transition-all duration-300 ${plan.highlighted
-                                ? 'bg-gradient-to-br from-purple-600/20 to-purple-600/10 border-purple-500 shadow-xl shadow-purple-600/30'
-                                : 'bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border-purple-600/20'
+                            transition={{ duration: 0.6, delay: index * 0.1 }}
+                            whileHover={{ y: -10, scale: 1.03 }}
+                            className={`relative p-8 rounded-2xl border-2 transition-all duration-500 ${plan.highlighted
+                                ? 'bg-gradient-to-br from-purple-900/30 to-purple-900/10 border-purple-500 shadow-2xl shadow-purple-600/40 scale-105'
+                                : 'bg-gradient-to-br from-zinc-950/90 to-black/90 border-purple-600/30 hover:border-purple-600/60'
                                 }`}
                         >
-                            {plan.highlighted && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-purple-600 to-purple-500 rounded-full text-sm font-semibold shadow-lg">
-                                    Recomendado
+                            {plan.badge && (
+                                <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold text-sm shadow-xl ${plan.name === "Revenda"
+                                    ? 'bg-gradient-to-r from-purple-400 to-purple-300 text-black'
+                                    : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white'
+                                    }`}>
+                                    {plan.badge}
                                 </div>
                             )}
-                            <div className="text-center mb-6">
-                                <h3 className="text-2xl font-bold mb-2 text-white">{plan.name}</h3>
-                                <div className={`text-4xl font-bold mb-1 bg-gradient-to-r ${plan.color} bg-clip-text text-transparent`}>
+
+                            <div className="text-center mb-8">
+                                <h3 className="text-2xl font-bold mb-4 text-white">{plan.name}</h3>
+                                <div className="text-5xl font-extrabold mb-2 bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
                                     {plan.price}
                                 </div>
                                 <p className="text-gray-400 text-sm">{plan.duration}</p>
                             </div>
-                            <ul className="space-y-3 mb-6">
-                                {plan.features.map((feature, idx) => (
-                                    <li key={idx} className="flex items-start text-gray-300 text-sm">
-                                        <CheckCircle className="w-4 h-4 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
-                                        <span>{feature}</span>
+
+                            <ul className="space-y-4 mb-8">
+                                {plan.features.map((feature, i) => (
+                                    <li key={i} className="flex items-start text-gray-300">
+                                        <CheckCircle className="w-5 h-5 text-purple-400 mr-3 flex-shrink-0 mt-0.5" />
+                                        <span className="text-sm leading-relaxed">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
+
                             <a
                                 href="https://discord.gg/k3CUqNs3UW"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={`block w-full py-3 rounded-xl text-center font-semibold transition-all duration-300 ${plan.highlighted
-                                    ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white shadow-lg shadow-purple-600/50'
-                                    : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+                                className={`block w-full py-4 rounded-xl text-center font-bold text-lg transition-all duration-300 shadow-lg ${plan.highlighted
+                                    ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white'
+                                    : 'bg-white/10 hover:bg-white/20 text-white border border-purple-600/30'
                                     }`}
                             >
                                 Adquirir
@@ -611,15 +618,15 @@ function Pricing() {
                         </motion.div>
                     ))}
                 </div>
+
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 0.8, delay: 0.6 }}
-                    className="mt-12 text-center"
+                    className="mt-16 text-center"
                 >
-                    <p className="text-gray-400 text-sm">
-                        Planos Semanal e superiores recebem atualizações constantes. <br />
-                        Ativação imediata via Discord.
+                    <p className="text-gray-400 text-lg">
+                        Ativação imediata via Discord • Atualizações constantes nos planos superiores
                     </p>
                 </motion.div>
             </div>
@@ -663,7 +670,7 @@ function Compatibility() {
                             </p>
                         </div>
                         <div className="flex items-start gap-3">
-                            <Box className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
+                            <Building2 className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
                             <p>
                                 <strong className="text-white">Servidores de Roleplay:</strong> Funciona em todas as principais cidades de RP que utilizam os sistemas mencionados.
                             </p>
