@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';  // ← Corrigido aqui
+import { supabase } from '../supabase';
 import { Logo } from '../components/Logo';
 
 export default function LoginPage() {
@@ -16,10 +16,7 @@ export default function LoginPage() {
         setIsLoading(true);
         setError('');
 
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
             setError(error.message);
@@ -29,71 +26,51 @@ export default function LoginPage() {
         setIsLoading(false);
     };
 
-    // O resto do componente continua exatamente igual ao que eu te mandei antes
     return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Animated Background */}
-            <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-purple-900/10"></div>
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-black to-black"></div>
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.6 }}
                 className="relative z-10 w-full max-w-md"
             >
-                <div className="bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-3xl p-8 border border-purple-600/30 shadow-2xl">
-                    <div className="text-center mb-8">
-                        <div className="flex items-center justify-center space-x-3 mb-4">
-                            <Logo className="w-12 h-12" />
-                            <span className="font-bold text-3xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
-                                DN Menu
-                            </span>
-                        </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">Dashboard</h2>
-                        <p className="text-gray-400">Acesse o painel administrativo</p>
+                {/* Fundo do card mais escuro com gradiente preto */}
+                <div className="bg-gradient-to-br from-zinc-950/95 to-black/95 rounded-3xl p-10 border border-purple-600/20 shadow-2xl backdrop-blur-xl">
+                    <div className="text-center mb-10">
+                        <Logo className="w-20 h-20 mx-auto mb-6 drop-shadow-2xl" />
+                        <h2 className="text-2xl font-bold text-white">Dashboard</h2>
+                        <p className="text-gray-400 mt-2">Acesse o painel administrativo</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                                Email
-                            </label>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
                             <input
                                 type="email"
-                                id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 bg-black/50 border border-purple-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 transition-all duration-300"
+                                className="w-full px-4 py-3 bg-zinc-900/70 border border-purple-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
                                 placeholder="seu@email.com"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                                Senha
-                            </label>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">Senha</label>
                             <input
                                 type="password"
-                                id="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 bg-black/50 border border-purple-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 transition-all duration-300"
+                                className="w-full px-4 py-3 bg-zinc-900/70 border border-purple-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
                                 placeholder="••••••••"
                                 required
                             />
                         </div>
 
                         {error && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 text-sm"
-                            >
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-3 bg-red-900/30 border border-red-600/50 rounded-xl text-red-400 text-sm">
                                 {error}
                             </motion.div>
                         )}
@@ -101,14 +78,14 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-600/30"
+                            className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-purple-600/50 disabled:opacity-70"
                         >
                             {isLoading ? 'Entrando...' : 'Entrar'}
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center">
-                        <Link to="/" className="text-purple-400 hover:text-purple-300 text-sm">
+                    <div className="mt-8 text-center">
+                        <Link to="/" className="text-purple-400 hover:text-purple-300 text-sm transition">
                             ← Voltar para Home
                         </Link>
                     </div>

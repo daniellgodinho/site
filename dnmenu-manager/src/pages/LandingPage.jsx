@@ -1,21 +1,10 @@
+// src/pages/LandingPage.jsx - Complete with all logic, monkey logo, darker gradients, improved cards, smooth transitions
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
-    Menu,
-    X,
-    Package,
-    Crosshair,
-    Shield,
-    Eye,
-    MousePointer,
-    Car,
-    Users as UsersIcon,
-    Lock,
-    Gauge,
-    Zap,
-    Activity,
-    Box,
-    CheckCircle
+    Menu, X, Package, Crosshair, Shield, Eye, MousePointer, Car, Users as UsersIcon,
+    Lock, Zap, Gauge, Activity, Box, CheckCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
@@ -24,7 +13,7 @@ export default function LandingPage() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-black text-white overflow-x-hidden">
+        <div className="min-h-screen bg-gradient-to-b from-black to-zinc-950 text-white overflow-x-hidden">
             <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
             <Hero />
             <Problem />
@@ -38,20 +27,20 @@ export default function LandingPage() {
     );
 }
 
-/* ==================== HEADER ==================== */
 function Header({ mobileMenuOpen, setMobileMenuOpen }) {
     const [scrolled, setScrolled] = useState(false);
-
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 50);
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50);
+        };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     return (
         <motion.header
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8 }}
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-black/90 backdrop-blur-xl border-b border-purple-600/20' : 'bg-transparent'
                 }`}
@@ -64,29 +53,54 @@ function Header({ mobileMenuOpen, setMobileMenuOpen }) {
                             DN Menu
                         </span>
                     </Link>
-
+                    {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
-                        <a href="#features" className="text-gray-300 hover:text-white transition">Funções</a>
-                        <a href="#pricing" className="text-gray-300 hover:text-white transition">Preços</a>
-                        <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition">
+                        <a href="#features" className="text-gray-300 hover:text-white transition-colors">
+                            Funções
+                        </a>
+                        <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">
+                            Preços
+                        </a>
+                        <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
                             Discord
                         </a>
-                        <Link to="/login" className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all shadow-lg shadow-purple-600/30">
+                        <Link
+                            to="/login"
+                            className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all duration-300 shadow-lg shadow-purple-600/30"
+                        >
                             Dashboard
                         </Link>
                     </nav>
-
-                    <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden text-white p-2">
+                    {/* Mobile Menu Button */}
+                    <button
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="md:hidden text-white p-2"
+                    >
                         {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                     </button>
                 </div>
-
+                {/* Mobile Navigation */}
                 {mobileMenuOpen && (
-                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="md:hidden py-4 space-y-4">
-                        <a href="#features" className="block text-gray-300 hover:text-white py-2">Funções</a>
-                        <a href="#pricing" className="block text-gray-300 hover:text-white py-2">Preços</a>
-                        <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white py-2">Discord</a>
-                        <Link to="/login" className="block px-6 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-center">Dashboard</Link>
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="md:hidden py-4 space-y-4"
+                    >
+                        <a href="#features" className="block text-gray-300 hover:text-white transition-colors py-2">
+                            Funções
+                        </a>
+                        <a href="#pricing" className="block text-gray-300 hover:text-white transition-colors py-2">
+                            Preços
+                        </a>
+                        <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white transition-colors py-2">
+                            Discord
+                        </a>
+                        <Link
+                            to="/login"
+                            className="block px-6 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all duration-300 text-center"
+                        >
+                            Dashboard
+                        </Link>
                     </motion.div>
                 )}
             </div>
@@ -94,19 +108,18 @@ function Header({ mobileMenuOpen, setMobileMenuOpen }) {
     );
 }
 
-/* ==================== HERO ==================== */
 function Hero() {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
         <section ref={ref} className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+            {/* Animated Background */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-purple-900/10"></div>
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse"></div>
                 <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
             </div>
-
             <div className="max-w-7xl mx-auto relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 50 }}
@@ -159,10 +172,9 @@ function Hero() {
     );
 }
 
-/* ==================== PROBLEM ==================== */
 function Problem() {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once: true });
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
         <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
@@ -173,7 +185,9 @@ function Problem() {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-12"
                 >
-                    <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">O Desafio</h2>
+                    <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
+                        O Desafio
+                    </h2>
                     <p className="text-xl text-gray-400 leading-relaxed">
                         Servidores de Roleplay no Roblox são competitivos por natureza. Jogadores limitados por mecânicas padrão frequentemente encontram dificuldades em situações críticas, seja em combate, mobilidade ou gestão de recursos. A diferença entre sobreviver e perder tudo pode ser questão de milissegundos.
                     </p>
@@ -183,10 +197,9 @@ function Problem() {
     );
 }
 
-/* ==================== SOLUTION ==================== */
 function Solution() {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once: true });
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
         <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8">
@@ -197,12 +210,13 @@ function Solution() {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-12"
                 >
-                    <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">A Solução</h2>
+                    <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
+                        A Solução
+                    </h2>
                     <p className="text-xl text-gray-400 leading-relaxed mb-8">
                         DN Menu oferece controle total sobre o ambiente de jogo. Com 51 funções cuidadosamente desenvolvidas, você obtém vantagens táticas que transformam cada sessão. Não é sobre força bruta, mas sim sobre ter as ferramentas certas no momento certo.
                     </p>
                 </motion.div>
-
                 <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-purple-600/20 blur-3xl"></div>
                     <div className="relative bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-3xl p-8 border border-purple-600/30 shadow-2xl">
@@ -229,20 +243,51 @@ function Solution() {
     );
 }
 
-/* ==================== KEY FEATURES ==================== */
 function KeyFeatures() {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once: true });
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     const keyFeatures = [
-        { icon: Package, title: "Manipulação de Porta-Malas", description: "Visualize e clone itens de qualquer porta-malas. Transferência instantânea de inventário sem interação direta." },
-        { icon: Crosshair, title: "Gun Pull Ghost", description: "Puxe armas sem gerar logs de eliminação. Sistema ACS completamente bypassado para ações silenciosas." },
-        { icon: Shield, title: "God Mode Ativo", description: "Invulnerabilidade completa contra dano. Ignore todas as mecânicas de combate adversas." },
-        { icon: Eye, title: "ESP Completo", description: "Visualização através de paredes com Skeleton, RGB e detecção de administradores. Chams personalizáveis." },
-        { icon: MousePointer, title: "Aimbot Configurável", description: "FOV ajustável, smoothness personalizável e wall check. Configurações para aparência legítima." },
-        { icon: Car, title: "Controle de Veículos", description: "Destrave, delete ou lance veículos. Vehicle fly e noclip para mobilidade absoluta." },
-        { icon: UsersIcon, title: "Manipulação de Jogadores", description: "Grude jogadores, elimine todos do servidor ou execute ações individuais direcionadas." },
-        { icon: Lock, title: "Sistema de Bypass", description: "Proteção contra telagem e screenshare. Limpeza automática ao fechar o menu." },
+        {
+            icon: Package,
+            title: "Manipulação de Porta-Malas",
+            description: "Visualize e roube itens de qualquer porta-malas. Transferência instantânea de inventário sem interação direta."
+        },
+        {
+            icon: Crosshair,
+            title: "Puxar Armas Ghost",
+            description: "Puxe armas sem gerar logs de eliminação. Sistema completamente bypassado para ações silenciosas."
+        },
+        {
+            icon: Shield,
+            title: "God Mode (Em desenvolvimento)",
+            description: "Invulnerabilidade completa contra dano. Ignore todas as mecânicas de combate da cidade."
+        },
+        {
+            icon: Eye,
+            title: "ESP Completo",
+            description: "Visualização através de paredes com Skeleton, RGB e detecção de administradores. Chams personalizáveis."
+        },
+        {
+            icon: MousePointer,
+            title: "Aimbot e Silent Configurável",
+            description: "FOV ajustável, smoothness personalizável e wall check. Configurações suficientes para aparência legit."
+        },
+        {
+            icon: Car,
+            title: "Controle de Veículos",
+            description: "Destranque, delete ou lance veículos de outras pessoas. Vehicle fly e noclip para se mover sem ser detectado."
+        },
+        {
+            icon: UsersIcon,
+            title: "Manipulação de Jogadores",
+            description: "Comer jogadores (+18), elimine todos do servidor ou execute ações individuais específicas."
+        },
+        {
+            icon: Lock,
+            title: "Sistema de Bypass",
+            description: "Proteção contra telagem e screenshare. Limpeza automática ao fechar o menu."
+        }
     ];
 
     return (
@@ -254,10 +299,13 @@ function KeyFeatures() {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-16"
                 >
-                    <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">Funções Principais</h2>
-                    <p className="text-xl text-gray-400">Recursos mais solicitados pelos usuários avançados</p>
+                    <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+                        Funções Principais
+                    </h2>
+                    <p className="text-xl text-gray-400">
+                        Recursos mais solicitados pelos usuários avançados
+                    </p>
                 </motion.div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {keyFeatures.map((feature, index) => (
                         <motion.div
@@ -268,7 +316,7 @@ function KeyFeatures() {
                             whileHover={{ y: -5 }}
                             className="group relative p-6 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl border border-purple-600/20 hover:border-purple-600/50 transition-all duration-300"
                         >
-                            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                                 <feature.icon className="w-6 h-6 text-white" />
                             </div>
                             <h3 className="text-lg font-bold mb-2 text-white">{feature.title}</h3>
@@ -281,20 +329,101 @@ function KeyFeatures() {
     );
 }
 
-/* ==================== ALL FEATURES ==================== */
 function AllFeatures() {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once: true });
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     const allFeatures = {
-        "Jogador": { icon: Gauge, features: ["Speed Hack", "Velocidade ajustável", "Invulnerabilidade", "Noclip", "Invisible Solo Session"] },
-        "Visuais": { icon: Eye, features: ["ESP Jogadores", "ESP Skeleton", "ESP RGB", "ESP Admins", "Chams", "Fullbright", "Personalização de cores ESP", "Personalização Admin ESP", "Cores Chams personalizáveis"] },
-        "Combate": { icon: Crosshair, features: ["Aimbot", "Silent Aim", "FOV Aimbot", "FOV Silent Aim", "Wall Check", "Smoothness", "Hitbox Expander", "Tamanho da Hitbox", "Transparência da Hitbox", "Lista de Amigos"] },
-        "Exploits": { icon: Zap, features: ["Gun Pull", "Bang Player", "Exorcismo", "Kill All", "Otimização de Performance"] },
-        "Veículos": { icon: Car, features: ["Destrancar Todos", "Auto Unlock", "Vehicle Fly", "Vehicle Noclip", "Vehicle Delete", "Teleporte para Veículo", "Vehicle Launcher"] },
-        "Porta-Malas": { icon: Package, features: ["Visualizar Porta-Malas", "Clonar Inventário", "Clonar Porta-Malas", "Limpar Clones"] },
-        "Lista de Jogadores": { icon: UsersIcon, features: ["Selecionar Jogador", "Atualizar Lista", "Teleportar para Jogador", "Adicionar Amigo", "Remover Amigo"] },
-        "Segurança": { icon: Lock, features: ["Bypass Telagem", "Bypass Screenshare", "Sistema de Autorização", "Desativar Funções", "Bypass Automático"] },
+        "Jogador": {
+            icon: Gauge,
+            features: [
+                "Speed Hack",
+                "Velocidade ajustável",
+                "Invulnerabilidade",
+                "Noclip",
+                "Invisible Solo Session"
+            ]
+        },
+        "Visuais": {
+            icon: Eye,
+            features: [
+                "ESP Jogadores",
+                "ESP Skeleton",
+                "ESP RGB",
+                "ESP Admins",
+                "Chams",
+                "Fullbright",
+                "Personalização de cores ESP",
+                "Personalização Admin ESP",
+                "Cores Chams personalizáveis"
+            ]
+        },
+        "Combate": {
+            icon: Crosshair,
+            features: [
+                "Aimbot",
+                "Silent Aim",
+                "FOV Aimbot",
+                "FOV Silent Aim",
+                "Wall Check",
+                "Smoothness",
+                "Hitbox Expander",
+                "Tamanho da Hitbox",
+                "Transparência da Hitbox",
+                "Lista de Amigos"
+            ]
+        },
+        "Exploits": {
+            icon: Zap,
+            features: [
+                "Puxar armas sem logs/verificação de time",
+                "Comer jogadores (+18)",
+                "Exorcismo",
+                "Matar todos os jogadores (Kill All)",
+                "Otimização de Performance"
+            ]
+        },
+        "Veículos": {
+            icon: Car,
+            features: [
+                "Destrancar Todos",
+                "Auto Unlock",
+                "Vehicle Fly",
+                "Vehicle Noclip",
+                "Vehicle Delete",
+                "Teleporte para Veículo mais próximo",
+                "Nem meu nem seu (Arremesar Veículo)"
+            ]
+        },
+        "Porta-Malas": {
+            icon: Package,
+            features: [
+                "Visualizar Porta-Malas de outras pessoas",
+                "Clonar Inventário",
+                "Roubar itens do Porta-Malas de outras pessoas",
+                "Limpar UI do Porta-Malas, caso bugue"
+            ]
+        },
+        "Lista de Jogadores": {
+            icon: UsersIcon,
+            features: [
+                "Selecionar Jogador",
+                "Limbar jogador com carro (Inspirado no Shark Menu Fivem)",
+                "Teleportar para Jogador",
+                "Adicionar Amigo (Anti TK)",
+                "Remover Amigo"
+            ]
+        },
+        "Segurança": {
+            icon: Lock,
+            features: [
+                "Bypass Anti Cheat",
+                "Bypass Screenshare/Telagem",
+                "Menu único",
+                "Desativar Funções",
+                "Bypass Automático"
+            ]
+        }
     };
 
     return (
@@ -306,19 +435,22 @@ function AllFeatures() {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-16"
                 >
-                    <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">51 Funções Disponíveis</h2>
-                    <p className="text-xl text-gray-400">Arsenal completo organizado por categoria</p>
+                    <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+                        51 Funções Disponíveis
+                    </h2>
+                    <p className="text-xl text-gray-400">
+                        Arsenal completo organizado por categoria
+                    </p>
                 </motion.div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {Object.entries(allFeatures).map(([category, data], index) => {
+                    {Object.entries(allFeatures).map(([category, data], catIndex) => {
                         const Icon = data.icon;
                         return (
                             <motion.div
                                 key={category}
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={isInView ? { opacity: 1, y: 0 } : {}}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
+                                transition={{ duration: 0.5, delay: catIndex * 0.1 }}
                                 className="bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-6 border border-purple-600/20"
                             >
                                 <div className="flex items-center gap-3 mb-4">
@@ -328,10 +460,10 @@ function AllFeatures() {
                                     <h3 className="text-lg font-bold text-white">{category}</h3>
                                 </div>
                                 <ul className="space-y-2">
-                                    {data.features.map((feat, i) => (
-                                        <li key={i} className="flex items-start gap-2 text-gray-300">
+                                    {data.features.map((feature, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-gray-300">
                                             <span className="text-purple-400 mt-1 text-xs">▸</span>
-                                            <span className="text-sm">{feat}</span>
+                                            <span className="text-sm">{feature}</span>
                                         </li>
                                     ))}
                                 </ul>
@@ -344,17 +476,76 @@ function AllFeatures() {
     );
 }
 
-/* ==================== PRICING ==================== */
 function Pricing() {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once: true });
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     const plans = [
-        { name: "Diário", price: "R$ 20", duration: "24 horas", features: ["Acesso completo por 24h", "Todas as 51 funções", "Suporte via Discord"], color: "from-yellow-600 to-yellow-500", highlighted: false },
-        { name: "Semanal", price: "R$ 35", duration: "7 dias", features: ["Acesso completo por 7 dias", "Todas as 51 funções", "Atualizações incluídas", "Suporte prioritário"], color: "from-purple-600 to-purple-500", highlighted: true },
-        { name: "Mensal", price: "R$ 50", duration: "30 dias", features: ["Acesso completo por 30 dias", "Todas as 51 funções", "Atualizações constantes", "Suporte prioritário VIP"], color: "from-green-600 to-green-500", highlighted: false },
-        { name: "Lifetime", price: "R$ 160", duration: "Permanente", features: ["Acesso vitalício", "Todas as 51 funções", "Atualizações constantes", "Suporte VIP vitalício", "Acesso a novos recursos"], color: "from-blue-600 to-blue-500", highlighted: false },
-        { name: "Revenda", price: "R$ 120", duration: "Sistema completo", features: ["Painel de revenda", "Gerenciamento de clientes", "Todas as funcionalidades", "Suporte técnico dedicado"], color: "from-red-600 to-red-500", highlighted: false },
+        {
+            name: "Diário",
+            price: "R$ 20",
+            duration: "24 horas",
+            features: [
+                "Acesso completo por 24h",
+                "Todas as 51 funções",
+                "Suporte via Discord"
+            ],
+            color: "from-indigo-600 to-indigo-500",
+            highlighted: false
+        },
+        {
+            name: "Semanal",
+            price: "R$ 35",
+            duration: "7 dias",
+            features: [
+                "Acesso completo por 7 dias",
+                "Todas as 51 funções",
+                "Atualizações incluídas",
+                "Suporte prioritário"
+            ],
+            color: "from-purple-600 to-purple-500",
+            highlighted: true
+        },
+        {
+            name: "Mensal",
+            price: "R$ 50",
+            duration: "30 dias",
+            features: [
+                "Acesso completo por 30 dias",
+                "Todas as 51 funções",
+                "Atualizações constantes",
+                "Suporte prioritário VIP"
+            ],
+            color: "from-blue-600 to-blue-500",
+            highlighted: false
+        },
+        {
+            name: "Lifetime",
+            price: "R$ 160",
+            duration: "Permanente",
+            features: [
+                "Acesso vitalício",
+                "Todas as 51 funções",
+                "Atualizações constantes",
+                "Suporte VIP vitalício",
+                "Acesso a novos recursos"
+            ],
+            color: "from-pink-600 to-pink-500",
+            highlighted: false
+        },
+        {
+            name: "Revenda",
+            price: "R$ 120",
+            duration: "Sistema completo",
+            features: [
+                "Painel de revenda",
+                "Gerenciamento de clientes",
+                "Todas as funcionalidades",
+                "Suporte técnico dedicado"
+            ],
+            color: "from-gray-600 to-gray-500",
+            highlighted: false
+        }
     ];
 
     return (
@@ -366,10 +557,13 @@ function Pricing() {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-16"
                 >
-                    <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">Planos Disponíveis</h2>
-                    <p className="text-xl text-gray-400">Escolha o plano que melhor se adequa ao seu uso</p>
+                    <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+                        Planos Disponíveis
+                    </h2>
+                    <p className="text-xl text-gray-400">
+                        Escolha o plano que melhor se adequa ao seu uso
+                    </p>
                 </motion.div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                     {plans.map((plan, index) => (
                         <motion.div
@@ -396,10 +590,10 @@ function Pricing() {
                                 <p className="text-gray-400 text-sm">{plan.duration}</p>
                             </div>
                             <ul className="space-y-3 mb-6">
-                                {plan.features.map((feat, i) => (
-                                    <li key={i} className="flex items-start text-gray-300 text-sm">
+                                {plan.features.map((feature, idx) => (
+                                    <li key={idx} className="flex items-start text-gray-300 text-sm">
                                         <CheckCircle className="w-4 h-4 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
-                                        <span>{feat}</span>
+                                        <span>{feature}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -408,7 +602,7 @@ function Pricing() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className={`block w-full py-3 rounded-xl text-center font-semibold transition-all duration-300 ${plan.highlighted
-                                    ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white shadow-lg'
+                                    ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white shadow-lg shadow-purple-600/50'
                                     : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
                                     }`}
                             >
@@ -417,25 +611,25 @@ function Pricing() {
                         </motion.div>
                     ))}
                 </div>
-
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 0.8, delay: 0.6 }}
-                    className="mt-12 text-center text-gray-400 text-sm"
+                    className="mt-12 text-center"
                 >
-                    Planos Semanal e superiores recebem atualizações constantes. <br />
-                    Ativação imediata via Discord.
+                    <p className="text-gray-400 text-sm">
+                        Planos Semanal e superiores recebem atualizações constantes. <br />
+                        Ativação imediata via Discord.
+                    </p>
                 </motion.div>
             </div>
         </section>
     );
 }
 
-/* ==================== COMPATIBILITY ==================== */
 function Compatibility() {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once: true });
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
         <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
@@ -446,23 +640,33 @@ function Compatibility() {
                     transition={{ duration: 0.8 }}
                     className="bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-8 border border-purple-600/30"
                 >
-                    <h2 className="text-3xl font-bold mb-6 text-center text-white">Compatibilidade</h2>
+                    <h2 className="text-3xl font-bold mb-6 text-center text-white">
+                        Compatibilidade
+                    </h2>
                     <div className="space-y-4 text-gray-300">
                         <div className="flex items-start gap-3">
                             <Activity className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
-                            <p><strong className="text-white">A-Chassis:</strong> Compatível com todos os servidores que utilizam o sistema A-Chassis para veículos.</p>
+                            <p>
+                                <strong className="text-white">A-Chassis:</strong> Compatível com todos os servidores que utilizam o sistema A-Chassis para veículos.
+                            </p>
                         </div>
                         <div className="flex items-start gap-3">
                             <Crosshair className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
-                            <p><strong className="text-white">ACS (Advanced Combat System):</strong> Suporte completo para servidores com sistema ACS de combate.</p>
+                            <p>
+                                <strong className="text-white">ACS (Advanced Combat System):</strong> Suporte completo para servidores com sistema ACS de combate.
+                            </p>
                         </div>
                         <div className="flex items-start gap-3">
                             <Shield className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
-                            <p><strong className="text-white">Sistema de Proteção:</strong> Bypass integrado contra telagem e screenshare. Limpeza automática de rastros.</p>
+                            <p>
+                                <strong className="text-white">Sistema de Proteção:</strong> Bypass integrado contra telagem e screenshare. Limpeza automática de rastros.
+                            </p>
                         </div>
                         <div className="flex items-start gap-3">
                             <Box className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
-                            <p><strong className="text-white">Servidores de Roleplay:</strong> Funciona em todas as principais cidades de RP que utilizam os sistemas mencionados.</p>
+                            <p>
+                                <strong className="text-white">Servidores de Roleplay:</strong> Funciona em todas as principais cidades de RP que utilizam os sistemas mencionados.
+                            </p>
                         </div>
                     </div>
                 </motion.div>
@@ -471,7 +675,6 @@ function Compatibility() {
     );
 }
 
-/* ==================== FOOTER ==================== */
 function Footer() {
     return (
         <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-purple-600/20">
@@ -484,20 +687,38 @@ function Footer() {
                                 DN Menu
                             </span>
                         </div>
-                        <p className="text-gray-400 text-sm">O menu mais avançado para Roleplay no Roblox.</p>
+                        <p className="text-gray-400 text-sm">
+                            O menu mais avançado para Roleplay no Roblox.
+                        </p>
                     </div>
                     <div>
                         <h3 className="font-bold text-white mb-4">Links</h3>
                         <ul className="space-y-2 text-sm">
-                            <li><a href="#features" className="text-gray-400 hover:text-white transition">Funções</a></li>
-                            <li><a href="#pricing" className="text-gray-400 hover:text-white transition">Preços</a></li>
-                            <li><Link to="/login" className="text-gray-400 hover:text-white transition">Dashboard</Link></li>
+                            <li>
+                                <a href="#features" className="text-gray-400 hover:text-white transition-colors">
+                                    Funções
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#pricing" className="text-gray-400 hover:text-white transition-colors">
+                                    Preços
+                                </a>
+                            </li>
+                            <li>
+                                <Link to="/login" className="text-gray-400 hover:text-white transition-colors">
+                                    Dashboard
+                                </Link>
+                            </li>
                         </ul>
                     </div>
                     <div>
                         <h3 className="font-bold text-white mb-4">Comunidade</h3>
                         <ul className="space-y-2 text-sm">
-                            <li><a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">Discord</a></li>
+                            <li>
+                                <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                                    Discord
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
