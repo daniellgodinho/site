@@ -216,7 +216,7 @@ export default function Dashboard() {
 
     const exportToGitHub = async () => {
         setSaveStatus('salvando');
-        const GITHUB_TOKEN = import.meta.env.REACT_APP_GITHUB_TOKEN;
+        const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN;
         const REPO_OWNER = 'Aephic';
         const REPO_NAME = 'dnmenu';
         const BRANCH = 'main';
