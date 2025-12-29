@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
     Menu, X, Package, Crosshair, Shield, Eye, MousePointer, Car, Users as UsersIcon,
-    Lock, Zap, Gauge, Toolbox, Building2, CheckCircle
+    Lock, Bomb, User, Toolbox, Building2, CheckCircle, HandFist
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
@@ -335,7 +335,7 @@ function AllFeatures() {
 
     const allFeatures = {
         "Jogador": {
-            icon: Gauge,
+            icon: User,
             features: [
                 "Speed Hack",
                 "Velocidade ajustável",
@@ -359,7 +359,7 @@ function AllFeatures() {
             ]
         },
         "Combate": {
-            icon: Crosshair,
+            icon: HandFist,
             features: [
                 "Aimbot",
                 "Silent Aim",
@@ -370,11 +370,11 @@ function AllFeatures() {
                 "Hitbox Expander",
                 "Tamanho da Hitbox",
                 "Transparência da Hitbox",
-                "Lista de Amigos"
+                "Lista de Amigos (Anti TK)"
             ]
         },
         "Exploits": {
-            icon: Zap,
+            icon: Bomb,
             features: [
                 "Puxar armas sem logs/verificação de time",
                 "Comer jogadores (+18)",
