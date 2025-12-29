@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
     Menu, X, Package, Crosshair, Shield, Eye, MousePointer, Car, Users as UsersIcon,
-    Lock, Zap, Gauge, Activity, Building2, CheckCircle
+    Lock, Zap, Gauge, Toolbox, Building2, CheckCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
@@ -657,7 +657,7 @@ function Compatibility() {
                     </h2>
                     <div className="space-y-4 text-gray-300">
                         <div className="flex items-start gap-3">
-                            <Activity className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
+                            <Toolbox className="w-6 h-6 text-purple-400 flex-shrink-0 mt-0.5" />
                             <p>
                                 <strong className="text-white">A-Chassis:</strong> Compatível com todos os servidores que utilizam o sistema A-Chassis para veículos.
                             </p>
