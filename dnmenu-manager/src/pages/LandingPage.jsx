@@ -519,9 +519,9 @@ function Pricing() {
         {
             name: "Lifetime",
             price: "R$ 160",
-            duration: "Permanente",
+            duration: "Vitalício",
             features: [
-                "Acesso vitalício",
+                "Acesso permanente",
                 "Todas as 51 funções",
                 "Atualizações constantes",
                 "Suporte VIP vitalício",
@@ -537,49 +537,51 @@ function Pricing() {
             duration: "Painel completo",
             features: [
                 "Painel de revenda completo",
-                "Gerencie clientes ilimitados",
-                "Crie keys automáticas",
-                "Todas as 51 funções incluídas",
+                "Clientes ilimitados",
+                "Criação automática de keys",
+                "Todas as 51 funções",
                 "Suporte técnico dedicado",
                 "Ganhe dinheiro vendendo o menu mais procurado do cenário"
             ],
             highlighted: true,
-            badge: "Melhor Opção"
+            badge: "Ganhe Dinheiro"
         }
     ];
 
     return (
-        <section id="pricing" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 relative bg-gradient-to-b from-black via-purple-900/5 to-black">
+        <section id="pricing" ref={ref} className="py-24 px-4 sm:px-6 lg:px-8 relative bg-gradient-to-b from-black via-purple-900/5 to-black">
             <div className="max-w-7xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.8 }}
-                    className="text-center mb-16"
+                    className="text-center mb-20"
                 >
                     <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
-                        Planos Disponíveis
+                        Escolha seu Plano
                     </h2>
-                    <p className="text-xl text-gray-400">
-                        Escolha o plano ideal para você ou comece a revender
+                    <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                        Acesso imediato • Atualizações constantes • Suporte no Discord
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
+                {/* Grid com 5 cards bem espaçados e "gordinhos" */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 max-w-7xl mx-auto">
                     {plans.map((plan, index) => (
                         <motion.div
                             key={index}
-                            initial={{ opacity: 0, y: 40 }}
+                            initial={{ opacity: 0, y: 50 }}
                             animate={isInView ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 0.6, delay: index * 0.1 }}
-                            whileHover={{ y: -10, scale: 1.03 }}
-                            className={`relative p-8 rounded-2xl border-2 transition-all duration-500 ${plan.highlighted
-                                ? 'bg-gradient-to-br from-purple-900/30 to-purple-900/10 border-purple-500 shadow-2xl shadow-purple-600/40 scale-105'
-                                : 'bg-gradient-to-br from-zinc-950/90 to-black/90 border-purple-600/30 hover:border-purple-600/60'
+                            transition={{ duration: 0.6, delay: index * 0.15 }}
+                            whileHover={{ y: -12, scale: 1.04 }}
+                            className={`relative p-10 rounded-3xl border-2 transition-all duration-500 shadow-2xl ${plan.highlighted
+                                ? 'bg-gradient-to-br from-purple-900/40 to-purple-900/20 border-purple-500 shadow-purple-600/40'
+                                : 'bg-gradient-to-br from-zinc-950/90 to-black/95 border-purple-600/30 hover:border-purple-600/60'
                                 }`}
                         >
+                            {/* Badge */}
                             {plan.badge && (
-                                <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold text-sm shadow-xl ${plan.name === "Revenda"
+                                <div className={`absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold text-sm shadow-2xl whitespace-nowrap ${plan.name === "Revenda"
                                     ? 'bg-gradient-to-r from-purple-400 to-purple-300 text-black'
                                     : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white'
                                     }`}>
@@ -587,46 +589,54 @@ function Pricing() {
                                 </div>
                             )}
 
+                            {/* Nome do plano */}
+                            <h3 className="text-2xl font-bold text-center mb-6 text-white">
+                                {plan.name}
+                            </h3>
+
+                            {/* Preço com gradiente igual ao DN Menu */}
                             <div className="text-center mb-8">
-                                <h3 className="text-2xl font-bold mb-4 text-white">{plan.name}</h3>
-                                <div className="text-5xl font-extrabold mb-2 bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
+                                <div className="text-6xl font-extrabold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
                                     {plan.price}
                                 </div>
-                                <p className="text-gray-400 text-sm">{plan.duration}</p>
+                                <p className="text-gray-400 mt-2 text-lg">{plan.duration}</p>
                             </div>
 
-                            <ul className="space-y-4 mb-8">
+                            {/* Lista de features com mais espaço */}
+                            <ul className="space-y-5 mb-10">
                                 {plan.features.map((feature, i) => (
                                     <li key={i} className="flex items-start text-gray-300">
-                                        <CheckCircle className="w-5 h-5 text-purple-400 mr-3 flex-shrink-0 mt-0.5" />
-                                        <span className="text-sm leading-relaxed">{feature}</span>
+                                        <CheckCircle className="w-6 h-6 text-purple-400 mr-4 flex-shrink-0 mt-0.5" />
+                                        <span className="text-base leading-relaxed">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
 
+                            {/* Botão */}
                             <a
                                 href="https://discord.gg/k3CUqNs3UW"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={`block w-full py-4 rounded-xl text-center font-bold text-lg transition-all duration-300 shadow-lg ${plan.highlighted
+                                className={`block w-full py-4 rounded-2xl text-center font-bold text-lg transition-all duration-300 shadow-lg ${plan.highlighted
                                     ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white'
                                     : 'bg-white/10 hover:bg-white/20 text-white border border-purple-600/30'
                                     }`}
                             >
-                                Adquirir
+                                Adquirir Agora
                             </a>
                         </motion.div>
                     ))}
                 </div>
 
+                {/* Texto final */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={isInView ? { opacity: 1 } : {}}
-                    transition={{ duration: 0.8, delay: 0.6 }}
-                    className="mt-16 text-center"
+                    transition={{ duration: 0.8, delay: 0.8 }}
+                    className="mt-20 text-center"
                 >
                     <p className="text-gray-400 text-lg">
-                        Ativação imediata via Discord • Atualizações constantes nos planos superiores
+                        Todos os planos incluem as 51 funções • Pagamento seguro • Ativação instantânea
                     </p>
                 </motion.div>
             </div>

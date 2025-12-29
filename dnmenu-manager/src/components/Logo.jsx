@@ -1,7 +1,7 @@
 import React from 'react';
 import monkeyLogo from '../assets/monkeyLogo.png';
 
-export function Logo({ className = "w-20 h-20" }) {
+export function Logo({ className = "w-24 h-24" }) {
     return (
         <img
             src={monkeyLogo}
