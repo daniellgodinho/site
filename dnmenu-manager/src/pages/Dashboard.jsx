@@ -339,7 +339,7 @@ export default function Dashboard() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex items-center space-x-4">
-                            <Logo className="w-20 h-20 md:w-24 h-24" />  {/* Pequeno no mobile, grande no desktop */}
+                            <Logo className="w-32 h-32 md:w-40 h-40 lg:w-48 h-48 mx-auto mb-8 drop-shadow-2xl" />
                             <div>
                                 <h1 className="text-2xl font-bold text-white">Dashboard</h1>
                                 <p className="text-gray-400 text-sm">{selectedReseller}</p>

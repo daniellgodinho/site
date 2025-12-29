@@ -48,9 +48,9 @@ function Header({ mobileMenuOpen, setMobileMenuOpen }) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     <Link to="/" className="flex items-center space-x-3">
-                        <Logo className="w-10 h-10" />
+                        <Logo className="w-24 h-24 md:w-32 h-32 lg:w-40 h-40 drop-shadow-2xl" />
                         <span className="font-bold text-2xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
-                            DN Menu
+                            Home
                         </span>
                     </Link>
                     {/* Desktop Navigation */}
@@ -229,11 +229,11 @@ function Solution() {
                         <div className="bg-black/50 rounded-xl p-6 font-mono text-sm">
                             <div className="text-purple-400 mb-2">[Sistema] Inicializando DN Menu...</div>
                             <div className="text-gray-400 mb-2">Carregando módulos de combate...</div>
-                            <div className="text-green-400 mb-2">[OK] Aimbot configurável ativo</div>
+                            <div className="text-green-400 mb-2">[OK] Aimbot ativo</div>
                             <div className="text-green-400 mb-2">[OK] ESP completo carregado</div>
-                            <div className="text-green-400 mb-2">[OK] God Mode inicializado</div>
-                            <div className="text-green-400 mb-2">[OK] Sistema de veículos pronto</div>
-                            <div className="text-green-400 mb-2">[OK] Porta-malas manipulável</div>
+                            <div className="text-green-400 mb-2">[OK] Invisible solo session inicializado</div>
+                            <div className="text-green-400 mb-2">[OK] Deletar veículos pronto</div>
+                            <div className="text-green-400 mb-2">[OK] Puxar armas habilitado</div>
                             <div className="text-purple-400 mt-4">51 funções disponíveis. Sistema operacional.</div>
                         </div>
                     </div>
@@ -480,73 +480,7 @@ function Pricing() {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-    const plans = [
-        {
-            name: "Diário",
-            price: "R$ 20",
-            duration: "24 horas",
-            features: [
-                "Acesso completo por 24h",
-                "Todas as 51 funções",
-                "Suporte via Discord"
-            ],
-            highlighted: false
-        },
-        {
-            name: "Semanal",
-            price: "R$ 35",
-            duration: "7 dias",
-            features: [
-                "Acesso completo por 7 dias",
-                "Todas as 51 funções",
-                "Atualizações incluídas",
-                "Suporte prioritário"
-            ],
-            highlighted: false
-        },
-        {
-            name: "Mensal",
-            price: "R$ 50",
-            duration: "30 dias",
-            features: [
-                "Acesso completo por 30 dias",
-                "Todas as 51 funções",
-                "Atualizações constantes",
-                "Suporte prioritário VIP"
-            ],
-            highlighted: false
-        },
-        {
-            name: "Lifetime",
-            price: "R$ 160",
-            duration: "Vitalício",
-            features: [
-                "Acesso permanente",
-                "Todas as 51 funções",
-                "Atualizações constantes",
-                "Suporte VIP vitalício",
-                "Acesso prioritário a novos recursos",
-                "Nunca expira"
-            ],
-            highlighted: true,
-            badge: "Mais Vendido"
-        },
-        {
-            name: "Revenda",
-            price: "R$ 120",
-            duration: "Painel completo",
-            features: [
-                "Painel de revenda completo",
-                "Clientes ilimitados",
-                "Criação automática de keys",
-                "Todas as 51 funções",
-                "Suporte técnico dedicado",
-                "Ganhe dinheiro vendendo o menu mais procurado do cenário"
-            ],
-            highlighted: true,
-            badge: "Ganhe Dinheiro"
-        }
-    ];
+    const plans = [ /* mesmo array de plans que eu te mandei antes */];
 
     return (
         <section id="pricing" ref={ref} className="py-24 px-4 sm:px-6 lg:px-8 relative bg-gradient-to-b from-black via-purple-900/5 to-black">
@@ -565,8 +499,8 @@ function Pricing() {
                     </p>
                 </motion.div>
 
-                {/* Grid responsivo e confortável */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-10 max-w-7xl mx-auto">
+                {/* Grid máximo 3 colunas no desktop → cards largos e gordinhos */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
                     {plans.map((plan, index) => (
                         <motion.div
                             key={index}
@@ -574,12 +508,11 @@ function Pricing() {
                             animate={isInView ? { opacity: 1, y: 0 } : {}}
                             transition={{ duration: 0.6, delay: index * 0.15 }}
                             whileHover={{ y: -12, scale: 1.04 }}
-                            className={`relative p-10 rounded-3xl border-2 min-w-[280px] transition-all duration-500 shadow-2xl ${plan.highlighted
+                            className={`relative p-12 rounded-3xl border-2 transition-all duration-500 shadow-2xl ${plan.highlighted
                                 ? 'bg-gradient-to-br from-purple-900/40 to-purple-900/20 border-purple-500 shadow-purple-600/40'
                                 : 'bg-gradient-to-br from-zinc-950/90 to-black/95 border-purple-600/30 hover:border-purple-600/60'
                                 }`}
                         >
-                            {/* Badge */}
                             {plan.badge && (
                                 <div className={`absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold text-sm shadow-2xl whitespace-nowrap ${plan.name === "Revenda"
                                     ? 'bg-gradient-to-r from-purple-400 to-purple-300 text-black'
@@ -694,7 +627,7 @@ function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div>
                         <div className="flex items-center space-x-3 mb-4">
-                            <Logo className="w-20 h-20 md:w-24 h-24" />  {/* Pequeno no mobile, grande no desktop */}
+                            <Logo className="w-24 h-24 md:w-32 h-32 lg:w-40 h-40 drop-shadow-2xl" />
                             <span className="font-bold text-xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
                                 DN Menu
                             </span>

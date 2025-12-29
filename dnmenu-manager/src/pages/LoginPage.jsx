@@ -39,7 +39,7 @@ export default function LoginPage() {
                 {/* Fundo do card mais escuro com gradiente preto */}
                 <div className="bg-gradient-to-br from-zinc-950/95 to-black/95 rounded-3xl p-10 border border-purple-600/20 shadow-2xl backdrop-blur-xl">
                     <div className="text-center mb-10">
-                        <Logo className="w-28 h-28 mx-auto mb-8 drop-shadow-2xl" />  {/* Macacão dominante no login */}
+                        <Logo className="w-32 h-32 md:w-40 h-40 lg:w-48 h-48 mx-auto mb-8 drop-shadow-2xl" />
                         <h2 className="text-2xl font-bold text-white">Dashboard</h2>
                         <p className="text-gray-400 mt-2">Acesse o painel administrativo</p>
                     </div>
