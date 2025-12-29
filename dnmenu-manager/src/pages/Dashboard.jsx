@@ -339,7 +339,7 @@ export default function Dashboard() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex items-center space-x-4">
-                            <Logo className="w-12 h-12 flex-shrink-0" />
+                            <Logo className="w-20 h-20 md:w-24 h-24" />  {/* Pequeno no mobile, grande no desktop */}
                             <div>
                                 <h1 className="text-2xl font-bold text-white">Dashboard</h1>
                                 <p className="text-gray-400 text-sm">{selectedReseller}</p>
@@ -375,10 +375,10 @@ export default function Dashboard() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`p-4 rounded-xl mb-6 border ${saveStatus === 'salvo'
-                                ? 'bg-green-900/30 border-green-500/30 text-green-400'
-                                : saveStatus === 'erro'
-                                    ? 'bg-red-900/30 border-red-500/30 text-red-400'
-                                    : 'bg-blue-900/30 border-blue-500/30 text-blue-400'
+                            ? 'bg-green-900/30 border-green-500/30 text-green-400'
+                            : saveStatus === 'erro'
+                                ? 'bg-red-900/30 border-red-500/30 text-red-400'
+                                : 'bg-blue-900/30 border-blue-500/30 text-blue-400'
                             }`}
                     >
                         {saveStatus === 'salvando' && 'Salvando no GitHub...'}
@@ -413,8 +413,8 @@ export default function Dashboard() {
                     <button
                         onClick={() => setActiveTab('users')}
                         className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'users'
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                                : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
+                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                            : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
                             }`}
                     >
                         Users ({users.length})
@@ -422,8 +422,8 @@ export default function Dashboard() {
                     <button
                         onClick={() => setActiveTab('usersfarm')}
                         className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'usersfarm'
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                                : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
+                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                            : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
                             }`}
                     >
                         Users Farm ({usersFarm.length})

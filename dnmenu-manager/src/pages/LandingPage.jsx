@@ -565,8 +565,8 @@ function Pricing() {
                     </p>
                 </motion.div>
 
-                {/* Grid com 5 cards bem espaçados e "gordinhos" */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 max-w-7xl mx-auto">
+                {/* Grid responsivo e confortável */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-10 max-w-7xl mx-auto">
                     {plans.map((plan, index) => (
                         <motion.div
                             key={index}
@@ -574,7 +574,7 @@ function Pricing() {
                             animate={isInView ? { opacity: 1, y: 0 } : {}}
                             transition={{ duration: 0.6, delay: index * 0.15 }}
                             whileHover={{ y: -12, scale: 1.04 }}
-                            className={`relative p-10 rounded-3xl border-2 transition-all duration-500 shadow-2xl ${plan.highlighted
+                            className={`relative p-10 rounded-3xl border-2 min-w-[280px] transition-all duration-500 shadow-2xl ${plan.highlighted
                                 ? 'bg-gradient-to-br from-purple-900/40 to-purple-900/20 border-purple-500 shadow-purple-600/40'
                                 : 'bg-gradient-to-br from-zinc-950/90 to-black/95 border-purple-600/30 hover:border-purple-600/60'
                                 }`}
@@ -589,21 +589,18 @@ function Pricing() {
                                 </div>
                             )}
 
-                            {/* Nome do plano */}
-                            <h3 className="text-2xl font-bold text-center mb-6 text-white">
+                            <h3 className="text-2xl font-bold text-center mb-8 text-white">
                                 {plan.name}
                             </h3>
 
-                            {/* Preço com gradiente igual ao DN Menu */}
-                            <div className="text-center mb-8">
+                            <div className="text-center mb-10">
                                 <div className="text-6xl font-extrabold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
                                     {plan.price}
                                 </div>
-                                <p className="text-gray-400 mt-2 text-lg">{plan.duration}</p>
+                                <p className="text-gray-400 mt-3 text-lg">{plan.duration}</p>
                             </div>
 
-                            {/* Lista de features com mais espaço */}
-                            <ul className="space-y-5 mb-10">
+                            <ul className="space-y-5 mb-12">
                                 {plan.features.map((feature, i) => (
                                     <li key={i} className="flex items-start text-gray-300">
                                         <CheckCircle className="w-6 h-6 text-purple-400 mr-4 flex-shrink-0 mt-0.5" />
@@ -612,12 +609,11 @@ function Pricing() {
                                 ))}
                             </ul>
 
-                            {/* Botão */}
                             <a
                                 href="https://discord.gg/k3CUqNs3UW"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={`block w-full py-4 rounded-2xl text-center font-bold text-lg transition-all duration-300 shadow-lg ${plan.highlighted
+                                className={`block w-full py-5 rounded-2xl text-center font-bold text-lg transition-all duration-300 shadow-lg ${plan.highlighted
                                     ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white'
                                     : 'bg-white/10 hover:bg-white/20 text-white border border-purple-600/30'
                                     }`}
@@ -628,7 +624,6 @@ function Pricing() {
                     ))}
                 </div>
 
-                {/* Texto final */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={isInView ? { opacity: 1 } : {}}
@@ -699,7 +694,7 @@ function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div>
                         <div className="flex items-center space-x-3 mb-4">
-                            <Logo className="w-10 h-10" />
+                            <Logo className="w-20 h-20 md:w-24 h-24" />  {/* Pequeno no mobile, grande no desktop */}
                             <span className="font-bold text-xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
                                 DN Menu
                             </span>
