@@ -518,7 +518,7 @@ function Pricing() {
         },
         {
             name: "Lifetime",
-            price: "R$ 160",
+            price: "R$ 97,99",
             duration: "Vitalício",
             features: [
                 "Acesso permanente",
