@@ -1,7 +1,158 @@
+/* App.css (updated with landing styles and color changes) */
 .App {
   text-align: center;
 }
 
+.app {
+  background-color: #121212;
+  color: #ffffff;
+  font-family: 'Arial', sans-serif;
+  min-height: 100vh;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #4b0082;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #8a2be2;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  background-color: #8a2be2;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: #6a1bb2;
+}
+
+.btn-secondary {
+  background-color: #4b0082;
+}
+
+.btn-secondary:hover {
+  background-color: #3a0062;
+}
+
+.hero,
+.features,
+.pricing,
+.testimonials,
+.admin-login {
+  padding: 150px 20px 80px;
+  text-align: center;
+}
+
+.hero {
+  background: linear-gradient(to bottom, #4b0082, #121212);
+}
+
+h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: #8a2be2;
+}
+
+h2 {
+  font-size: 36px;
+  margin-bottom: 40px;
+  color: #8a2be2;
+}
+
+.feature-grid,
+.pricing-grid,
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature,
+.price-card,
+.testimonial {
+  background-color: #2e2e2e;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+.price {
+  font-size: 24px;
+  color: #2ecc71;
+  margin: 10px 0;
+}
+
+.admin-login {
+  max-width: 400px;
+  margin: 0 auto;
+  background-color: #2e2e2e;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #8a2be2;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #4b0082;
+  border-radius: 5px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+
+.footer {
+  background-color: #4b0082;
+  padding: 20px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* Add styles for dashboard with #2e2e2e */
+.grid-background div {
+  background-color: #2e2e2e !important;
+  /* Override to darker color */
+}
+
+/* Other dashboard styles from original App.css if needed */
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -14,7 +165,8 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #2e2e2e;
+  /* Changed to darker */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -32,6 +184,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
