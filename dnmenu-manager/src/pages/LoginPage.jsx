@@ -21,7 +21,7 @@ export default function LoginPage() {
         if (error) {
             setError(error.message);
         } else {
-            navigate('/dashboard');
+            navigate('/reseller-auth');  // ← Redireciona para a tela de senha
         }
         setIsLoading(false);
     };

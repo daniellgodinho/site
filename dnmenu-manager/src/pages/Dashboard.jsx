@@ -5,12 +5,13 @@ import {
     CheckCircle, XCircle, Search, Github
 } from 'lucide-react';
 import { supabase } from '../supabase';
-import { CustomSelect } from '../components/CustomSelect';
 import { Logo } from '../components/Logo';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
-    const [selectedReseller, setSelectedReseller] = useState('Neverpure Codes');
+    // Reseller fixo vindo da tela de senha (sessionStorage)
+    const selectedReseller = sessionStorage.getItem('reseller') || 'Neverpure Codes';
+
     const [users, setUsers] = useState([]);
     const [usersFarm, setUsersFarm] = useState([]);
     const [newUser, setNewUser] = useState('');
@@ -26,16 +27,19 @@ export default function Dashboard() {
 
     const fetchUserLists = useCallback(async () => {
         if (!session) return;
+
         const { data, error } = await supabase
             .from('user_lists')
             .select('*')
             .eq('owner_id', session.user.id)
             .eq('reseller', selectedReseller)
             .single();
+
         if (error && error.code !== 'PGRST116') {
             console.error('Erro ao buscar listas:', error);
             return;
         }
+
         if (data) {
             setUserListId(data.id);
             const parsedUsers = data.users
@@ -45,6 +49,7 @@ export default function Dashboard() {
                 })
                 : [];
             setUsers(parsedUsers);
+
             const parsedFarm = data.users_farm
                 ? data.users_farm.split(',').map((str) => {
                     const [username, duration, expiration] = str.split('|');
@@ -63,6 +68,7 @@ export default function Dashboard() {
                 })
                 .select()
                 .single();
+
             if (insertError) {
                 console.error('Erro ao criar lista:', insertError);
             } else {
@@ -79,11 +85,13 @@ export default function Dashboard() {
             setSession(session);
         };
         getSession();
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             (_event, session) => {
                 setSession(session);
             }
         );
+
         return () => subscription.unsubscribe();
     }, []);
 
@@ -95,6 +103,7 @@ export default function Dashboard() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
+        sessionStorage.removeItem('reseller');
         navigate('/login');
     };
 
@@ -108,17 +117,14 @@ export default function Dashboard() {
     };
 
     const updateListsInSupabase = async (newUsers, newFarm) => {
-        const usersStr = newUsers
-            .map((u) => `${u.username}|${u.duration}|${u.expiration || ''}`)
-            .join(',');
-        const farmStr = newFarm
-            .map((u) => `${u.username}|${u.duration}|${u.expiration || ''}`)
-            .join(',');
+        const usersStr = newUsers.map((u) => `${u.username}|${u.duration}|${u.expiration || ''}`).join(',');
+        const farmStr = newFarm.map((u) => `${u.username}|${u.duration}|${u.expiration || ''}`).join(',');
         const { error } = await supabase
             .from('user_lists')
             .update({ users: usersStr, users_farm: farmStr })
             .eq('id', userListId)
             .eq('reseller', selectedReseller);
+
         if (error) {
             console.error('Erro ao atualizar listas:', error);
             alert('Erro ao salvar mudanças');
@@ -136,10 +142,12 @@ export default function Dashboard() {
         const newEntry = { username, duration, expiration };
         const currentList = isUsersTab ? users : usersFarm;
         const newList = [...currentList, newEntry];
+
         const success = await updateListsInSupabase(
             isUsersTab ? newList : users,
             isUsersTab ? usersFarm : newList
         );
+
         if (success) {
             if (isUsersTab) {
                 setUsers(newList);
@@ -158,10 +166,12 @@ export default function Dashboard() {
         const isUsersTab = tab === 'users';
         const currentList = isUsersTab ? users : usersFarm;
         const newList = currentList.filter((u) => u.username !== username);
+
         const success = await updateListsInSupabase(
             isUsersTab ? newList : users,
             isUsersTab ? usersFarm : newList
         );
+
         if (success) {
             if (isUsersTab) setUsers(newList);
             else setUsersFarm(newList);
@@ -186,31 +196,21 @@ export default function Dashboard() {
 
     const getDurationIcon = (duration) => {
         switch (duration) {
-            case 'daily':
-                return <Clock className="w-4 h-4" />;
-            case 'weekly':
-                return <Calendar className="w-4 h-4" />;
-            case 'monthly':
-                return <Calendar className="w-4 h-4" />;
-            case 'lifetime':
-                return <Infinity className="w-4 h-4" />;
-            default:
-                return <Clock className="w-4 h-4" />;
+            case 'daily': return <Clock className="w-4 h-4" />;
+            case 'weekly': return <Calendar className="w-4 h-4" />;
+            case 'monthly': return <Calendar className="w-4 h-4" />;
+            case 'lifetime': return <Infinity className="w-4 h-4" />;
+            default: return <Clock className="w-4 h-4" />;
         }
     };
 
     const getDurationColor = (duration) => {
         switch (duration) {
-            case 'daily':
-                return 'text-yellow-400';
-            case 'weekly':
-                return 'text-blue-400';
-            case 'monthly':
-                return 'text-purple-400';
-            case 'lifetime':
-                return 'text-green-400';
-            default:
-                return 'text-gray-400';
+            case 'daily': return 'text-yellow-400';
+            case 'weekly': return 'text-blue-400';
+            case 'monthly': return 'text-purple-400';
+            case 'lifetime': return 'text-green-400';
+            default: return 'text-gray-400';
         }
     };
 
@@ -220,19 +220,21 @@ export default function Dashboard() {
         const REPO_OWNER = 'Aephic';
         const REPO_NAME = 'dnmenu';
         const BRANCH = 'main';
+
         if (!GITHUB_TOKEN) {
             alert('Token do GitHub não configurado.');
             setSaveStatus('erro');
             setTimeout(() => setSaveStatus(''), 3000);
             return;
         }
+
         try {
-            const { data: allLists, error } = await supabase
-                .from('user_lists')
-                .select('*');
+            const { data: allLists, error } = await supabase.from('user_lists').select('*');
             if (error) throw error;
+
             const allUsers = new Set();
             const allFarm = new Set();
+
             allLists.forEach((list) => {
                 if (list.users) {
                     list.users.split(',').forEach((str) => {
@@ -247,60 +249,46 @@ export default function Dashboard() {
                     });
                 }
             });
+
             const usersContent = Array.from(allUsers).join('\n');
             const usersFarmContent = Array.from(allFarm).join('\n');
-            const usersGetRes = await fetch(
-                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${GITHUB_TOKEN}`,
-                    },
-                }
-            );
+
+            // Atualiza users
+            const usersGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`, {
+                headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }
+            });
             if (!usersGetRes.ok) throw new Error('Falha ao buscar SHA do users');
             const usersData = await usersGetRes.json();
-            await fetch(
-                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`,
-                {
-                    method: 'PUT',
-                    headers: {
-                        Authorization: `Bearer ${GITHUB_TOKEN}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: 'Atualizar users via DNMenu Manager',
-                        content: btoa(unescape(encodeURIComponent(usersContent))),
-                        branch: BRANCH,
-                        sha: usersData.sha,
-                    }),
-                }
-            );
-            const farmGetRes = await fetch(
-                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${GITHUB_TOKEN}`,
-                    },
-                }
-            );
+
+            await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: 'Atualizar users via DNMenu Manager',
+                    content: btoa(unescape(encodeURIComponent(usersContent))),
+                    branch: BRANCH,
+                    sha: usersData.sha,
+                }),
+            });
+
+            // Atualiza usersfarm
+            const farmGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`, {
+                headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }
+            });
             if (!farmGetRes.ok) throw new Error('Falha ao buscar SHA do usersfarm');
             const farmData = await farmGetRes.json();
-            await fetch(
-                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`,
-                {
-                    method: 'PUT',
-                    headers: {
-                        Authorization: `Bearer ${GITHUB_TOKEN}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: 'Atualizar usersfarm via DNMenu Manager',
-                        content: btoa(unescape(encodeURIComponent(usersFarmContent))),
-                        branch: BRANCH,
-                        sha: farmData.sha,
-                    }),
-                }
-            );
+
+            await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: 'Atualizar usersfarm via DNMenu Manager',
+                    content: btoa(unescape(encodeURIComponent(usersFarmContent))),
+                    branch: BRANCH,
+                    sha: farmData.sha,
+                }),
+            });
+
             setSaveStatus('salvo');
             setTimeout(() => setSaveStatus(''), 3000);
         } catch (error) {
@@ -312,22 +300,19 @@ export default function Dashboard() {
     };
 
     const filteredUsers = (activeTab === 'users' ? users : usersFarm).filter(
-        (user) =>
-            user.username.toLowerCase().includes(searchQuery.toLowerCase())
+        (user) => user.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
     const totalUsers = users.length + usersFarm.length;
     const activeTokens = [...users, ...usersFarm].filter(
         (u) => u.expiration === null || new Date(u.expiration) > new Date()
     ).length;
+
     const durationOptions = [
         { value: 'daily', label: 'Diário' },
         { value: 'weekly', label: 'Semanal' },
         { value: 'monthly', label: 'Mensal' },
         { value: 'lifetime', label: 'Vitalício' },
-    ];
-    const resellerOptions = [
-        { value: 'Neverpure Codes', label: 'Neverpure Codes' },
-        { value: 'Indefinido', label: 'Indefinido' },
     ];
 
     return (
@@ -335,23 +320,19 @@ export default function Dashboard() {
             <div className="absolute inset-0 opacity-20 pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-purple-900/10"></div>
             </div>
+
             <header className="relative z-10 bg-[#1a1a1a]/90 backdrop-blur-xl border-b border-purple-600/20 shadow-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex items-center space-x-4">
-                            <Logo className="w-32 h-32 md:w-40 h-40 lg:w-48 h-48 mx-auto mb-8 drop-shadow-2xl" />
+                            <Logo className="w-24 h-24 md:w-32 h-32 lg:w-40 h-40 drop-shadow-2xl" />
                             <div>
-                                <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-                                <p className="text-gray-400 text-sm">{selectedReseller}</p>
+                                <h1 className="text-2xl font-bold">Dashboard</h1>
+                                <p className="text-purple-400 text-lg font-medium">{selectedReseller}</p>
                             </div>
                         </div>
+
                         <div className="flex items-center gap-3 flex-wrap">
-                            <CustomSelect
-                                value={selectedReseller}
-                                onChange={setSelectedReseller}
-                                options={resellerOptions}
-                                className="w-48"
-                            />
                             <button
                                 onClick={exportToGitHub}
                                 className="flex items-center space-x-2 px-4 py-2 bg-[#2e2e2e] border border-purple-600/30 rounded-lg hover:bg-[#3a3a3a] transition-all duration-300"
@@ -369,16 +350,17 @@ export default function Dashboard() {
                     </div>
                 </div>
             </header>
+
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {saveStatus && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`p-4 rounded-xl mb-6 border ${saveStatus === 'salvo'
-                            ? 'bg-green-900/30 border-green-500/30 text-green-400'
-                            : saveStatus === 'erro'
-                                ? 'bg-red-900/30 border-red-500/30 text-red-400'
-                                : 'bg-blue-900/30 border-blue-500/30 text-blue-400'
+                                ? 'bg-green-900/30 border-green-500/30 text-green-400'
+                                : saveStatus === 'erro'
+                                    ? 'bg-red-900/30 border-red-500/30 text-red-400'
+                                    : 'bg-blue-900/30 border-blue-500/30 text-blue-400'
                             }`}
                     >
                         {saveStatus === 'salvando' && 'Salvando no GitHub...'}
@@ -386,35 +368,28 @@ export default function Dashboard() {
                         {saveStatus === 'erro' && 'Erro ao salvar'}
                     </motion.div>
                 )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                    <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        className="p-6 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl border border-purple-600/20"
-                    >
+                    <motion.div whileHover={{ scale: 1.02 }} className="p-6 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl border border-purple-600/20">
                         <h3 className="text-sm text-gray-400 mb-2">Total de Usuários</h3>
                         <p className="text-4xl font-bold text-purple-400">{totalUsers}</p>
                     </motion.div>
-                    <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        className="p-6 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl border border-purple-600/20"
-                    >
+                    <motion.div whileHover={{ scale: 1.02 }} className="p-6 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl border border-purple-600/20">
                         <h3 className="text-sm text-gray-400 mb-2">Tokens Ativos</h3>
                         <p className="text-4xl font-bold text-green-400">{activeTokens}</p>
                     </motion.div>
-                    <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        className="p-6 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl border border-purple-600/20"
-                    >
+                    <motion.div whileHover={{ scale: 1.02 }} className="p-6 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl border border-purple-600/20">
                         <h3 className="text-sm text-gray-400 mb-2">Tokens Expirados</h3>
                         <p className="text-4xl font-bold text-red-400">{totalUsers - activeTokens}</p>
                     </motion.div>
                 </div>
+
                 <div className="flex space-x-4 mb-6">
                     <button
                         onClick={() => setActiveTab('users')}
                         className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'users'
-                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                            : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
+                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                                : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
                             }`}
                     >
                         Users ({users.length})
@@ -422,13 +397,14 @@ export default function Dashboard() {
                     <button
                         onClick={() => setActiveTab('usersfarm')}
                         className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'usersfarm'
-                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                            : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
+                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                                : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
                             }`}
                     >
                         Users Farm ({usersFarm.length})
                     </button>
                 </div>
+
                 <div className="mb-6 flex flex-col sm:flex-row gap-4">
                     <input
                         type="text"
@@ -439,14 +415,19 @@ export default function Dashboard() {
                         }
                         className="flex-grow px-4 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 transition-all duration-300"
                     />
-                    <CustomSelect
+                    <select
                         value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
-                        onChange={(value) =>
-                            activeTab === 'users' ? setSelectedDuration(value) : setSelectedDurationFarm(value)
+                        onChange={(e) =>
+                            activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)
                         }
-                        options={durationOptions}
-                        className="w-full sm:w-48"
-                    />
+                        className="px-6 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl text-white focus:outline-none focus:border-purple-600 transition-all duration-300"
+                    >
+                        {durationOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value} className="bg-[#1a1a1a]">
+                                {opt.label}
+                            </option>
+                        ))}
+                    </select>
                     <button
                         onClick={addUser}
                         className="flex items-center justify-center space-x-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all duration-300 shadow-lg shadow-purple-600/30"
@@ -455,6 +436,7 @@ export default function Dashboard() {
                         <span className="text-white">Adicionar</span>
                     </button>
                 </div>
+
                 <div className="mb-6 relative">
                     <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
@@ -465,25 +447,16 @@ export default function Dashboard() {
                         className="w-full px-12 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 transition-all duration-300"
                     />
                 </div>
+
                 <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a]">
                     <table className="w-full">
                         <thead>
                             <tr className="bg-[#1a1a1a] border-b border-gray-700">
-                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">
-                                    Nome de Usuário
-                                </th>
-                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">
-                                    Duração
-                                </th>
-                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">
-                                    Tempo Restante
-                                </th>
-                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">
-                                    Status
-                                </th>
-                                <th className="px-6 py-4 text-right text-gray-400 text-sm font-medium">
-                                    Ações
-                                </th>
+                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">Nome de Usuário</th>
+                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">Duração</th>
+                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">Tempo Restante</th>
+                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">Status</th>
+                                <th className="px-6 py-4 text-right text-gray-400 text-sm font-medium">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -497,26 +470,14 @@ export default function Dashboard() {
                                 >
                                     <td className="px-6 py-4 text-white">{user.username}</td>
                                     <td className="px-6 py-4">
-                                        <div
-                                            className={`flex items-center space-x-2 ${getDurationColor(
-                                                user.duration
-                                            )}`}
-                                        >
+                                        <div className={`flex items-center space-x-2 ${getDurationColor(user.duration)}`}>
                                             {getDurationIcon(user.duration)}
                                             <span className="capitalize">
-                                                {user.duration === 'daily'
-                                                    ? 'Diário'
-                                                    : user.duration === 'weekly'
-                                                        ? 'Semanal'
-                                                        : user.duration === 'monthly'
-                                                            ? 'Mensal'
-                                                            : 'Vitalício'}
+                                                {user.duration === 'daily' ? 'Diário' : user.duration === 'weekly' ? 'Semanal' : user.duration === 'monthly' ? 'Mensal' : 'Vitalício'}
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-300">
-                                        {formatTimeRemaining(user.expiration)}
-                                    </td>
+                                    <td className="px-6 py-4 text-gray-300">{formatTimeRemaining(user.expiration)}</td>
                                     <td className="px-6 py-4">
                                         {user.expiration === null || new Date(user.expiration) > new Date() ? (
                                             <div className="flex items-center space-x-2 bg-green-900/20 px-3 py-1 rounded-full border border-green-600/30 w-fit">

@@ -48,9 +48,8 @@ function Header({ mobileMenuOpen, setMobileMenuOpen }) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     <Link to="/" className="flex items-center space-x-3">
-                        <Logo className="w-24 h-24 md:w-32 h-32 lg:w-40 h-40 drop-shadow-2xl" />
-                        <span className="font-bold text-2xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
-                            Home
+                        <Logo className="w-24 h-24 md:w-24 h-24 lg:w-40 h-40 drop-shadow-2xl" />
+                        <span className="font-bold text-2xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">Home
                         </span>
                     </Link>
                     {/* Desktop Navigation */}
@@ -480,93 +479,186 @@ function Pricing() {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-    const plans = [ /* mesmo array de plans que eu te mandei antes */];
+    const plans = [
+        {
+            name: "Diário",
+            price: "R$ 20",
+            duration: "24 horas",
+            features: [
+                "Acesso completo por 24h",
+                "Todas as 51 funções",
+                "Suporte via Discord"
+            ],
+            highlighted: false
+        },
+        {
+            name: "Semanal",
+            price: "R$ 35",
+            duration: "7 dias",
+            features: [
+                "Acesso completo por 7 dias",
+                "Todas as 51 funções",
+                "Atualizações incluídas",
+                "Suporte prioritário"
+            ],
+            highlighted: false
+        },
+        {
+            name: "Mensal",
+            price: "R$ 50",
+            duration: "30 dias",
+            features: [
+                "Acesso completo por 30 dias",
+                "Todas as 51 funções",
+                "Atualizações constantes",
+                "Suporte prioritário VIP"
+            ],
+            highlighted: false
+        },
+        {
+            name: "Lifetime",
+            price: "R$ 160",
+            duration: "Vitalício",
+            features: [
+                "Acesso permanente",
+                "Todas as 51 funções",
+                "Atualizações constantes",
+                "Suporte VIP vitalício",
+                "Acesso prioritário a novos recursos",
+                "Nunca expira"
+            ],
+            highlighted: true,
+            badge: "Mais Vendido"
+        },
+        {
+            name: "Revenda",
+            price: "R$ 120",
+            duration: "Painel completo",
+            features: [
+                "Painel de revenda completo",
+                "Clientes ilimitados",
+                "Criação automática de keys",
+                "Todas as 51 funções",
+                "Suporte técnico dedicado",
+                "Ganhe dinheiro vendendo o menu mais procurado do cenário"
+            ],
+            highlighted: true,
+            badge: "Ganhe Dinheiro"
+        }
+    ];
 
     return (
-        <section id="pricing" ref={ref} className="py-24 px-4 sm:px-6 lg:px-8 relative bg-gradient-to-b from-black via-purple-900/5 to-black">
+        <section id="pricing" ref={ref} className="py-32 px-4 sm:px-6 lg:px-8 relative bg-gradient-to-b from-black via-purple-900/10 to-black">
             <div className="max-w-7xl mx-auto">
+                {/* Título */}
                 <motion.div
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 40 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.8 }}
-                    className="text-center mb-20"
+                    transition={{ duration: 1 }}
+                    className="text-center mb-24"
                 >
-                    <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+                    <h2 className="text-5xl sm:text-6xl font-extrabold mb-6 bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
                         Escolha seu Plano
                     </h2>
-                    <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-                        Acesso imediato • Atualizações constantes • Suporte no Discord
+                    <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                        Acesso imediato • Atualizações constantes • Suporte exclusivo no Discord
                     </p>
                 </motion.div>
 
-                {/* Grid máximo 3 colunas no desktop → cards largos e gordinhos */}
+                {/* Cards gordinhos e responsivos */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
                     {plans.map((plan, index) => (
                         <motion.div
                             key={index}
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={isInView ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 0.6, delay: index * 0.15 }}
-                            whileHover={{ y: -12, scale: 1.04 }}
-                            className={`relative p-12 rounded-3xl border-2 transition-all duration-500 shadow-2xl ${plan.highlighted
-                                ? 'bg-gradient-to-br from-purple-900/40 to-purple-900/20 border-purple-500 shadow-purple-600/40'
-                                : 'bg-gradient-to-br from-zinc-950/90 to-black/95 border-purple-600/30 hover:border-purple-600/60'
+                            initial={{ opacity: 0, y: 60, scale: 0.95 }}
+                            animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                            transition={{ duration: 0.8, delay: index * 0.15 }}
+                            whileHover={{
+                                y: -20,
+                                scale: 1.05,
+                                boxShadow: "0 40px 80px rgba(147, 51, 234, 0.3)"
+                            }}
+                            className={`relative p-12 rounded-3xl border-2 transition-all duration-700 shadow-2xl ${plan.highlighted
+                                ? 'bg-gradient-to-br from-purple-900/40 to-purple-900/20 border-purple-500 shadow-purple-600/50'
+                                : 'bg-gradient-to-br from-zinc-950/95 to-black/95 border-purple-600/40 hover:border-purple-500'
                                 }`}
                         >
+                            {/* Badge animado */}
                             {plan.badge && (
-                                <div className={`absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold text-sm shadow-2xl whitespace-nowrap ${plan.name === "Revenda"
-                                    ? 'bg-gradient-to-r from-purple-400 to-purple-300 text-black'
-                                    : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white'
-                                    }`}>
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ duration: 0.6, delay: 0.4 }}
+                                    className={`absolute -top-6 left-1/2 -translate-x-1/2 px-8 py-3 rounded-full font-extrabold text-sm shadow-2xl whitespace-nowrap ${plan.name === "Revenda"
+                                        ? 'bg-gradient-to-r from-purple-400 to-purple-300 text-black'
+                                        : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white'
+                                        }`}
+                                >
                                     {plan.badge}
-                                </div>
+                                </motion.div>
                             )}
 
-                            <h3 className="text-2xl font-bold text-center mb-8 text-white">
+                            <motion.h3
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.3 }}
+                                className="text-3xl font-bold text-center mb-10 text-white"
+                            >
                                 {plan.name}
-                            </h3>
+                            </motion.h3>
 
-                            <div className="text-center mb-10">
-                                <div className="text-6xl font-extrabold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
+                            <motion.div
+                                initial={{ scale: 0.8 }}
+                                animate={{ scale: 1 }}
+                                transition={{ duration: 0.8, delay: 0.4 }}
+                                className="text-center mb-12"
+                            >
+                                <div className="text-7xl font-extrabold bg-gradient-to-r from-purple-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
                                     {plan.price}
                                 </div>
-                                <p className="text-gray-400 mt-3 text-lg">{plan.duration}</p>
-                            </div>
+                                <p className="text-gray-300 mt-4 text-xl">{plan.duration}</p>
+                            </motion.div>
 
-                            <ul className="space-y-5 mb-12">
+                            <ul className="space-y-6 mb-14">
                                 {plan.features.map((feature, i) => (
-                                    <li key={i} className="flex items-start text-gray-300">
-                                        <CheckCircle className="w-6 h-6 text-purple-400 mr-4 flex-shrink-0 mt-0.5" />
-                                        <span className="text-base leading-relaxed">{feature}</span>
-                                    </li>
+                                    <motion.li
+                                        key={i}
+                                        initial={{ opacity: 0, x: -40 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.5 + i * 0.1 }}
+                                        className="flex items-start text-gray-200"
+                                    >
+                                        <CheckCircle className="w-7 h-7 text-purple-400 mr-4 flex-shrink-0 mt-0.5" />
+                                        <span className="text-lg leading-relaxed">{feature}</span>
+                                    </motion.li>
                                 ))}
                             </ul>
 
-                            <a
+                            <motion.a
                                 href="https://discord.gg/k3CUqNs3UW"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={`block w-full py-5 rounded-2xl text-center font-bold text-lg transition-all duration-300 shadow-lg ${plan.highlighted
+                                whileHover={{ scale: 1.08 }}
+                                whileTap={{ scale: 0.95 }}
+                                className={`block w-full py-6 rounded-2xl text-center font-extrabold text-xl transition-all duration-300 shadow-xl ${plan.highlighted
                                     ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white'
-                                    : 'bg-white/10 hover:bg-white/20 text-white border border-purple-600/30'
+                                    : 'bg-white/10 hover:bg-white/20 text-white border-2 border-purple-600/40'
                                     }`}
                             >
                                 Adquirir Agora
-                            </a>
+                            </motion.a>
                         </motion.div>
                     ))}
                 </div>
 
-                <motion.div
+                <motion.p
                     initial={{ opacity: 0 }}
                     animate={isInView ? { opacity: 1 } : {}}
-                    transition={{ duration: 0.8, delay: 0.8 }}
-                    className="mt-20 text-center"
+                    transition={{ duration: 1, delay: 1 }}
+                    className="text-center mt-24 text-gray-300 text-lg"
                 >
-                    <p className="text-gray-400 text-lg">
-                        Todos os planos incluem as 51 funções • Pagamento seguro • Ativação instantânea
-                    </p>
-                </motion.div>
+                    Todos os planos incluem as 51 funções • Pagamento seguro • Ativação instantânea
+                </motion.p>
             </div>
         </section>
     );
@@ -627,7 +719,7 @@ function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div>
                         <div className="flex items-center space-x-3 mb-4">
-                            <Logo className="w-24 h-24 md:w-32 h-32 lg:w-40 h-40 drop-shadow-2xl" />
+                            <Logo className="w-24 h-24 md:w-24 h-24 lg:w-40 h-40 drop-shadow-2xl" />
                             <span className="font-bold text-xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
                                 DN Menu
                             </span>
