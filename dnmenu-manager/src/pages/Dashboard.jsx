@@ -216,7 +216,7 @@ export default function Dashboard() {
 
     const exportToGitHub = async () => {
         setSaveStatus('salvando');
-        const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
+        const GITHUB_TOKEN = import.meta.env.REACT_APP_GITHUB_TOKEN;
         const REPO_OWNER = 'Aephic';
         const REPO_NAME = 'dnmenu';
         const BRANCH = 'main';
@@ -357,10 +357,10 @@ export default function Dashboard() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`p-4 rounded-xl mb-6 border ${saveStatus === 'salvo'
-                                ? 'bg-green-900/30 border-green-500/30 text-green-400'
-                                : saveStatus === 'erro'
-                                    ? 'bg-red-900/30 border-red-500/30 text-red-400'
-                                    : 'bg-blue-900/30 border-blue-500/30 text-blue-400'
+                            ? 'bg-green-900/30 border-green-500/30 text-green-400'
+                            : saveStatus === 'erro'
+                                ? 'bg-red-900/30 border-red-500/30 text-red-400'
+                                : 'bg-blue-900/30 border-blue-500/30 text-blue-400'
                             }`}
                     >
                         {saveStatus === 'salvando' && 'Salvando no GitHub...'}
@@ -388,8 +388,8 @@ export default function Dashboard() {
                     <button
                         onClick={() => setActiveTab('users')}
                         className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'users'
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                                : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
+                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                            : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
                             }`}
                     >
                         Users ({users.length})
@@ -397,8 +397,8 @@ export default function Dashboard() {
                     <button
                         onClick={() => setActiveTab('usersfarm')}
                         className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'usersfarm'
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                                : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
+                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                            : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
                             }`}
                     >
                         Users Farm ({usersFarm.length})

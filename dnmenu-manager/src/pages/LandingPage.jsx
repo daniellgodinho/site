@@ -48,8 +48,9 @@ function Header({ mobileMenuOpen, setMobileMenuOpen }) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     <Link to="/" className="flex items-center space-x-3">
-                        <Logo className="w-24 h-24 md:w-24 h-24 lg:w-40 h-40 drop-shadow-2xl" />
-                        <span className="font-bold text-2xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">Home
+                        <Logo className="w-20 h-20 md:w-20 h-20 lg:w-40 h-40 drop-shadow-2xl" />
+                        <span className="font-bold text-2xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
+                            Home
                         </span>
                     </Link>
                     {/* Desktop Navigation */}
