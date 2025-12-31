@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import {
     UserCheck, Trash, LogOut, CalendarDays, Clock4, Infinity as InfinityIcon,
     Check, X, Search as SearchXIcon, Copy, Edit3, Save
-
 } from 'lucide-react';
 import { supabase } from '../supabase';
 import { Logo } from '../components/Logo';
