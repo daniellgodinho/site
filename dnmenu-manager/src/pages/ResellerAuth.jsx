@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Logo } from '../components/Logo';
 import { supabase } from '../supabase';
+
 export default function ResellerAuth() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -13,17 +15,25 @@ export default function ResellerAuth() {
         setError('');
         setLoading(true);
 
-        const { data, error } = await supabase
+        console.log('Tentando login com senha:', password); // DEBUG: veja no console
+
+        const { data, error: supabaseError } = await supabase
             .from('resellers')
             .select('*')
             .eq('password', password)
-            .maybeSingle(); // <-- MUDANÇA AQUI: evita erro 406
+            .limit(1)           // Boa prática + ajuda em casos raros
+            .maybeSingle();     // Evita erro 406
 
-        if (error || !data) {
+        console.log('Resposta do Supabase:', { data, error: supabaseError }); // DEBUG: veja aqui o que voltou
+
+        if (supabaseError || !data) {
+            console.log('Falha: senha não encontrada ou erro:', supabaseError);
             setError('Senha inválida. Tente novamente.');
             setLoading(false);
             return;
         }
+
+        console.log('Login sucesso! Revendedor:', data.name);
 
         sessionStorage.setItem('reseller', data.name);
         sessionStorage.setItem('discord_link', data.discord_link || '');
@@ -45,8 +55,9 @@ export default function ResellerAuth() {
             >
                 <div className="bg-gradient-to-br from-zinc-950/95 to-black/95 rounded-3xl p-12 border border-purple-600/30 shadow-2xl backdrop-blur-xl">
                     <div className="text-center mb-10">
+                        <Logo className="w-24 h-24 md:w-24 h-24 lg:w-40 h-40 drop-shadow-2xl" />
                         <h2 className="text-3xl font-bold mb-4">Acesso Revendedor</h2>
-                        <p className="text-gray-400 text-lg">Digite a senha da sua dashboard</p>
+                        <p className="text-gray-400 text-lg">Digite a senha do seu reseller</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
