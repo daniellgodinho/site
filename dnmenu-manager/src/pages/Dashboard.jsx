@@ -2,14 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
     UserPlus, Trash2, LogOut, Calendar, Clock, Infinity,
-    CheckCircle, XCircle, Search, Github
+    CheckCircle, XCircle, Search, Edit
 } from 'lucide-react';
 import { supabase } from '../supabase';
 import { Logo } from '../components/Logo';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
-    // Reseller fixo vindo da tela de senha (sessionStorage)
     const selectedReseller = sessionStorage.getItem('reseller') || 'Neverpure Codes';
 
     const [users, setUsers] = useState([]);
@@ -19,12 +18,16 @@ export default function Dashboard() {
     const [selectedDuration, setSelectedDuration] = useState('lifetime');
     const [selectedDurationFarm, setSelectedDurationFarm] = useState('lifetime');
     const [activeTab, setActiveTab] = useState('users');
-    const [saveStatus, setSaveStatus] = useState('');
     const [session, setSession] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [userListId, setUserListId] = useState(null);
+    const [isMaster, setIsMaster] = useState(false);
+    const [subAdmins, setSubAdmins] = useState([]);
+    const [newSubAdmin, setNewSubAdmin] = useState({ name: '', password: '' });
+
     const navigate = useNavigate();
 
+    // Busca ou cria a lista de usuários do revendedor atual
     const fetchUserLists = useCallback(async () => {
         if (!session) return;
 
@@ -58,6 +61,7 @@ export default function Dashboard() {
                 : [];
             setUsersFarm(parsedFarm);
         } else {
+            // Cria nova lista se não existir
             const { data: newData, error: insertError } = await supabase
                 .from('user_lists')
                 .insert({
@@ -79,31 +83,50 @@ export default function Dashboard() {
         }
     }, [session, selectedReseller]);
 
+    // Busca todas as sub-dashboards (apenas para master)
+    const fetchSubAdmins = useCallback(async () => {
+        if (!isMaster) return;
+        const { data, error } = await supabase.from('sub_admins').select('*');
+        if (error) console.error('Erro ao buscar sub-admins:', error);
+        else setSubAdmins(data || []);
+    }, [isMaster]);
+
+    // Verifica sessão e se é master (senha 'indef' no localStorage)
     useEffect(() => {
         const getSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             setSession(session);
+
+            if (session) {
+                const masterPass = localStorage.getItem('admin_password');
+                setIsMaster(masterPass === 'indef');
+            }
         };
         getSession();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (_event, session) => {
-                setSession(session);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            if (session) {
+                const masterPass = localStorage.getItem('admin_password');
+                setIsMaster(masterPass === 'indef');
             }
-        );
+        });
 
         return () => subscription.unsubscribe();
     }, []);
 
+    // Carrega dados quando sessão ou master mudar
     useEffect(() => {
         if (session) {
             fetchUserLists();
+            fetchSubAdmins();
         }
-    }, [session, fetchUserLists]);
+    }, [session, fetchUserLists, fetchSubAdmins]);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
         sessionStorage.removeItem('reseller');
+        localStorage.removeItem('admin_password');
         navigate('/login');
     };
 
@@ -122,12 +145,11 @@ export default function Dashboard() {
         const { error } = await supabase
             .from('user_lists')
             .update({ users: usersStr, users_farm: farmStr })
-            .eq('id', userListId)
-            .eq('reseller', selectedReseller);
+            .eq('id', userListId);
 
         if (error) {
-            console.error('Erro ao atualizar listas:', error);
-            alert('Erro ao salvar mudanças');
+            console.error('Erro ao atualizar:', error);
+            alert('Erro ao salvar');
             return false;
         }
         return true;
@@ -136,18 +158,16 @@ export default function Dashboard() {
     const addUser = async () => {
         const isUsersTab = activeTab === 'users';
         const username = isUsersTab ? newUser.trim() : newUserFarm.trim();
-        if (!username) return alert('Por favor, insira um nome de usuário');
+        if (!username) return alert('Insira um nome de usuário');
+
         const duration = isUsersTab ? selectedDuration : selectedDurationFarm;
         const expiration = calculateExpiration(duration);
         const newEntry = { username, duration, expiration };
+
         const currentList = isUsersTab ? users : usersFarm;
         const newList = [...currentList, newEntry];
 
-        const success = await updateListsInSupabase(
-            isUsersTab ? newList : users,
-            isUsersTab ? usersFarm : newList
-        );
-
+        const success = await updateListsInSupabase(isUsersTab ? newList : users, isUsersTab ? usersFarm : newList);
         if (success) {
             if (isUsersTab) {
                 setUsers(newList);
@@ -157,34 +177,65 @@ export default function Dashboard() {
                 setNewUserFarm('');
             }
             alert(`${username} adicionado com sucesso!`);
-            await exportToGitHub();
         }
     };
 
     const removeUser = async (tab, username) => {
-        if (!window.confirm(`Tem certeza que deseja remover ${username}?`)) return;
+        if (!window.confirm(`Remover ${username}?`)) return;
+
         const isUsersTab = tab === 'users';
         const currentList = isUsersTab ? users : usersFarm;
         const newList = currentList.filter((u) => u.username !== username);
 
-        const success = await updateListsInSupabase(
-            isUsersTab ? newList : users,
-            isUsersTab ? usersFarm : newList
-        );
-
+        const success = await updateListsInSupabase(isUsersTab ? newList : users, isUsersTab ? usersFarm : newList);
         if (success) {
-            if (isUsersTab) setUsers(newList);
-            else setUsersFarm(newList);
-            alert(`${username} removido com sucesso!`);
-            await exportToGitHub();
+            isUsersTab ? setUsers(newList) : setUsersFarm(newList);
+            alert(`${username} removido!`);
+        }
+    };
+
+    // Funções exclusivas do Master
+    const addSubAdmin = async () => {
+        const { name, password } = newSubAdmin;
+        if (!name || !password) return alert('Nome e senha obrigatórios');
+
+        const { error } = await supabase.from('sub_admins').insert({ name, password });
+        if (error) {
+            console.error('Erro ao criar sub-dashboard:', error);
+            alert('Erro ao criar');
+        } else {
+            setNewSubAdmin({ name: '', password: '' });
+            fetchSubAdmins();
+            alert('Sub-dashboard criada com sucesso!');
+        }
+    };
+
+    const editSubAdmin = async (id, currentName, currentPassword) => {
+        const newName = prompt('Novo nome:', currentName);
+        const newPassword = prompt('Nova senha:', currentPassword);
+        if (newName && newPassword) {
+            const { error } = await supabase.from('sub_admins').update({ name: newName, password: newPassword }).eq('id', id);
+            if (error) alert('Erro ao editar');
+            else {
+                fetchSubAdmins();
+                alert('Editado com sucesso!');
+            }
+        }
+    };
+
+    const deleteSubAdmin = async (id) => {
+        if (!window.confirm('Deletar esta sub-dashboard e todos os dados dela?')) return;
+        const { error } = await supabase.from('sub_admins').delete().eq('id', id);
+        if (error) alert('Erro ao deletar');
+        else {
+            fetchSubAdmins();
+            alert('Sub-dashboard deletada!');
         }
     };
 
     const formatTimeRemaining = (expiration) => {
         if (!expiration) return 'Vitalício';
-        const now = new Date();
-        const exp = new Date(expiration);
-        const diff = exp.getTime() - now.getTime();
+        const diff = new Date(expiration) - new Date();
         if (diff <= 0) return 'Expirado';
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -214,99 +265,12 @@ export default function Dashboard() {
         }
     };
 
-    const exportToGitHub = async () => {
-        setSaveStatus('salvando');
-        const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN;
-        const REPO_OWNER = 'Aephic';
-        const REPO_NAME = 'dnmenu';
-        const BRANCH = 'main';
-
-        if (!GITHUB_TOKEN) {
-            alert('Token do GitHub não configurado.');
-            setSaveStatus('erro');
-            setTimeout(() => setSaveStatus(''), 3000);
-            return;
-        }
-
-        try {
-            const { data: allLists, error } = await supabase.from('user_lists').select('*');
-            if (error) throw error;
-
-            const allUsers = new Set();
-            const allFarm = new Set();
-
-            allLists.forEach((list) => {
-                if (list.users) {
-                    list.users.split(',').forEach((str) => {
-                        const [username] = str.split('|');
-                        if (username) allUsers.add(username.trim());
-                    });
-                }
-                if (list.users_farm) {
-                    list.users_farm.split(',').forEach((str) => {
-                        const [username] = str.split('|');
-                        if (username) allFarm.add(username.trim());
-                    });
-                }
-            });
-
-            const usersContent = Array.from(allUsers).join('\n');
-            const usersFarmContent = Array.from(allFarm).join('\n');
-
-            // Atualiza users
-            const usersGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`, {
-                headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }
-            });
-            if (!usersGetRes.ok) throw new Error('Falha ao buscar SHA do users');
-            const usersData = await usersGetRes.json();
-
-            await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`, {
-                method: 'PUT',
-                headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: 'Atualizar users via DNMenu Manager',
-                    content: btoa(unescape(encodeURIComponent(usersContent))),
-                    branch: BRANCH,
-                    sha: usersData.sha,
-                }),
-            });
-
-            // Atualiza usersfarm
-            const farmGetRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`, {
-                headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }
-            });
-            if (!farmGetRes.ok) throw new Error('Falha ao buscar SHA do usersfarm');
-            const farmData = await farmGetRes.json();
-
-            await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`, {
-                method: 'PUT',
-                headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: 'Atualizar usersfarm via DNMenu Manager',
-                    content: btoa(unescape(encodeURIComponent(usersFarmContent))),
-                    branch: BRANCH,
-                    sha: farmData.sha,
-                }),
-            });
-
-            setSaveStatus('salvo');
-            setTimeout(() => setSaveStatus(''), 3000);
-        } catch (error) {
-            console.error('Erro ao exportar para GitHub:', error);
-            alert('Erro ao exportar para GitHub');
-            setSaveStatus('erro');
-            setTimeout(() => setSaveStatus(''), 3000);
-        }
-    };
-
-    const filteredUsers = (activeTab === 'users' ? users : usersFarm).filter(
-        (user) => user.username.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredUsers = (activeTab === 'users' ? users : usersFarm).filter(user =>
+        user.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const totalUsers = users.length + usersFarm.length;
-    const activeTokens = [...users, ...usersFarm].filter(
-        (u) => u.expiration === null || new Date(u.expiration) > new Date()
-    ).length;
+    const activeTokens = [...users, ...usersFarm].filter(u => u.expiration === null || new Date(u.expiration) > new Date()).length;
 
     const durationOptions = [
         { value: 'daily', label: 'Diário' },
@@ -329,46 +293,22 @@ export default function Dashboard() {
                             <div>
                                 <h1 className="text-2xl font-bold">Dashboard</h1>
                                 <p className="text-purple-400 text-lg font-medium">{selectedReseller}</p>
+                                {isMaster && <p className="text-green-400 text-sm font-bold">MESTRE</p>}
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <button
-                                onClick={exportToGitHub}
-                                className="flex items-center space-x-2 px-4 py-2 bg-[#2e2e2e] border border-purple-600/30 rounded-lg hover:bg-[#3a3a3a] transition-all duration-300"
-                            >
-                                <Github className="w-5 h-5 text-white" />
-                            </button>
-                            <button
-                                onClick={handleLogout}
-                                className="flex items-center space-x-2 px-4 py-2 bg-red-600/80 hover:bg-red-600 border border-red-700/50 rounded-lg transition-all duration-300"
-                            >
-                                <LogOut className="w-5 h-5 text-white" />
-                                <span className="text-white">Sair</span>
-                            </button>
-                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center space-x-2 px-4 py-2 bg-red-600/80 hover:bg-red-600 border border-red-700/50 rounded-lg transition-all duration-300"
+                        >
+                            <LogOut className="w-5 h-5" />
+                            <span>Sair</span>
+                        </button>
                     </div>
                 </div>
             </header>
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {saveStatus && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`p-4 rounded-xl mb-6 border ${saveStatus === 'salvo'
-                            ? 'bg-green-900/30 border-green-500/30 text-green-400'
-                            : saveStatus === 'erro'
-                                ? 'bg-red-900/30 border-red-500/30 text-red-400'
-                                : 'bg-blue-900/30 border-blue-500/30 text-blue-400'
-                            }`}
-                    >
-                        {saveStatus === 'salvando' && 'Salvando no GitHub...'}
-                        {saveStatus === 'salvo' && 'Salvo com sucesso'}
-                        {saveStatus === 'erro' && 'Erro ao salvar'}
-                    </motion.div>
-                )}
-
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                     <motion.div whileHover={{ scale: 1.02 }} className="p-6 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl border border-purple-600/20">
                         <h3 className="text-sm text-gray-400 mb-2">Total de Usuários</h3>
@@ -384,91 +324,66 @@ export default function Dashboard() {
                     </motion.div>
                 </div>
 
+                {/* Tabs Users / Users Farm */}
                 <div className="flex space-x-4 mb-6">
-                    <button
-                        onClick={() => setActiveTab('users')}
-                        className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'users'
-                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                            : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
-                            }`}
-                    >
+                    <button onClick={() => setActiveTab('users')} className={`px-6 py-3 rounded-xl transition-all ${activeTab === 'users' ? 'bg-purple-600 shadow-lg shadow-purple-600/30' : 'bg-[#2e2e2e] border border-gray-700 hover:border-purple-600/40'}`}>
                         Users ({users.length})
                     </button>
-                    <button
-                        onClick={() => setActiveTab('usersfarm')}
-                        className={`px-6 py-3 rounded-xl transition-all duration-300 ${activeTab === 'usersfarm'
-                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                            : 'bg-[#2e2e2e] text-white border border-gray-700 hover:border-purple-600/40'
-                            }`}
-                    >
+                    <button onClick={() => setActiveTab('usersfarm')} className={`px-6 py-3 rounded-xl transition-all ${activeTab === 'usersfarm' ? 'bg-purple-600 shadow-lg shadow-purple-600/30' : 'bg-[#2e2e2e] border border-gray-700 hover:border-purple-600/40'}`}>
                         Users Farm ({usersFarm.length})
                     </button>
                 </div>
 
+                {/* Adicionar usuário */}
                 <div className="mb-6 flex flex-col sm:flex-row gap-4">
                     <input
                         type="text"
                         placeholder={activeTab === 'users' ? 'Novo usuário' : 'Novo usuário farm'}
                         value={activeTab === 'users' ? newUser : newUserFarm}
-                        onChange={(e) =>
-                            activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)
-                        }
-                        className="flex-grow px-4 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 transition-all duration-300"
+                        onChange={(e) => activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)}
+                        className="flex-grow px-4 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl placeholder-gray-500 focus:border-purple-600 transition-all"
                     />
                     <select
                         value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
-                        onChange={(e) =>
-                            activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)
-                        }
-                        className="px-6 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl text-white focus:outline-none focus:border-purple-600 transition-all duration-300"
+                        onChange={(e) => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
+                        className="px-6 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl focus:border-purple-600 transition-all"
                     >
-                        {durationOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value} className="bg-[#1a1a1a]">
-                                {opt.label}
-                            </option>
-                        ))}
+                        {durationOptions.map(opt => <option key={opt.value} value={opt.value} className="bg-[#1a1a1a]">{opt.label}</option>)}
                     </select>
-                    <button
-                        onClick={addUser}
-                        className="flex items-center justify-center space-x-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all duration-300 shadow-lg shadow-purple-600/30"
-                    >
-                        <UserPlus className="w-5 h-5 text-white" />
-                        <span className="text-white">Adicionar</span>
+                    <button onClick={addUser} className="flex items-center justify-center space-x-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl shadow-lg shadow-purple-600/30">
+                        <UserPlus className="w-5 h-5" />
+                        <span>Adicionar</span>
                     </button>
                 </div>
 
+                {/* Busca */}
                 <div className="mb-6 relative">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                         type="text"
                         placeholder="Buscar usuário..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-12 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-600 transition-all duration-300"
+                        className="w-full pl-12 pr-4 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl placeholder-gray-500 focus:border-purple-600 transition-all"
                     />
                 </div>
 
+                {/* Tabela de usuários */}
                 <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a]">
                     <table className="w-full">
                         <thead>
                             <tr className="bg-[#1a1a1a] border-b border-gray-700">
-                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">Nome de Usuário</th>
-                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">Duração</th>
-                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">Tempo Restante</th>
-                                <th className="px-6 py-4 text-left text-gray-400 text-sm font-medium">Status</th>
-                                <th className="px-6 py-4 text-right text-gray-400 text-sm font-medium">Ações</th>
+                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Usuário</th>
+                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Duração</th>
+                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Tempo Restante</th>
+                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Status</th>
+                                <th className="px-6 py-4 text-right text-sm font-medium text-gray-400">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.map((user, index) => (
-                                <motion.tr
-                                    key={user.username}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    className="border-t border-gray-800 hover:bg-[#1a1a1a] transition-colors"
-                                >
-                                    <td className="px-6 py-4 text-white">{user.username}</td>
+                            {filteredUsers.map((user, i) => (
+                                <motion.tr key={user.username} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="border-t border-gray-800 hover:bg-[#1a1a1a]">
+                                    <td className="px-6 py-4">{user.username}</td>
                                     <td className="px-6 py-4">
                                         <div className={`flex items-center space-x-2 ${getDurationColor(user.duration)}`}>
                                             {getDurationIcon(user.duration)}
@@ -480,22 +395,19 @@ export default function Dashboard() {
                                     <td className="px-6 py-4 text-gray-300">{formatTimeRemaining(user.expiration)}</td>
                                     <td className="px-6 py-4">
                                         {user.expiration === null || new Date(user.expiration) > new Date() ? (
-                                            <div className="flex items-center space-x-2 bg-green-900/20 px-3 py-1 rounded-full border border-green-600/30 w-fit">
+                                            <div className="flex items-center space-x-2 bg-green-900/20 px-3 py-1 rounded-full border border-green-600/30">
                                                 <CheckCircle className="w-4 h-4 text-green-400" />
                                                 <span className="text-green-400 text-sm">Ativo</span>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center space-x-2 bg-red-900/20 px-3 py-1 rounded-full border border-red-600/30 w-fit">
+                                            <div className="flex items-center space-x-2 bg-red-900/20 px-3 py-1 rounded-full border border-red-600/30">
                                                 <XCircle className="w-4 h-4 text-red-400" />
                                                 <span className="text-red-400 text-sm">Expirado</span>
                                             </div>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <button
-                                            onClick={() => removeUser(activeTab, user.username)}
-                                            className="p-2 hover:bg-red-500/20 rounded-lg transition-colors border border-transparent hover:border-red-500/30"
-                                        >
+                                        <button onClick={() => removeUser(activeTab, user.username)} className="p-2 hover:bg-red-500/20 rounded-lg transition-colors">
                                             <Trash2 className="w-5 h-5 text-red-400" />
                                         </button>
                                     </td>
@@ -504,16 +416,76 @@ export default function Dashboard() {
                             {filteredUsers.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                                        <div className="flex flex-col items-center space-y-2">
-                                            <Search className="w-12 h-12 opacity-30" />
-                                            <p>Nenhum usuário encontrado</p>
-                                        </div>
+                                        <Search className="w-12 h-12 opacity-30 mx-auto mb-2" />
+                                        <p>Nenhum usuário encontrado</p>
                                     </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
                 </div>
+
+                {/* Seção exclusiva do Master */}
+                {isMaster && (
+                    <section className="mt-16">
+                        <h2 className="text-3xl font-bold mb-8 text-white">Gerenciar Sub-Dashboards</h2>
+                        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                            <input
+                                type="text"
+                                placeholder="Nome da sub-dashboard"
+                                value={newSubAdmin.name}
+                                onChange={(e) => setNewSubAdmin({ ...newSubAdmin, name: e.target.value })}
+                                className="flex-grow px-4 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl placeholder-gray-500 focus:border-purple-600"
+                            />
+                            <input
+                                type="password"
+                                placeholder="Senha"
+                                value={newSubAdmin.password}
+                                onChange={(e) => setNewSubAdmin({ ...newSubAdmin, password: e.target.value })}
+                                className="px-4 py-3 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/30 rounded-xl placeholder-gray-500 focus:border-purple-600"
+                            />
+                            <button onClick={addSubAdmin} className="flex items-center space-x-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl shadow-lg shadow-purple-600/30">
+                                <UserPlus className="w-5 h-5" />
+                                <span>Criar</span>
+                            </button>
+                        </div>
+
+                        <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a]">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="bg-[#1a1a1a] border-b border-gray-700">
+                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Nome</th>
+                                        <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Senha</th>
+                                        <th className="px-6 py-4 text-right text-sm font-medium text-gray-400">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {subAdmins.map((sub) => (
+                                        <tr key={sub.id} className="border-t border-gray-800 hover:bg-[#1a1a1a]">
+                                            <td className="px-6 py-4">{sub.name}</td>
+                                            <td className="px-6 py-4 text-gray-300">{sub.password}</td>
+                                            <td className="px-6 py-4 text-right space-x-2">
+                                                <button onClick={() => editSubAdmin(sub.id, sub.name, sub.password)} className="p-2 hover:bg-blue-500/20 rounded-lg">
+                                                    <Edit className="w-5 h-5 text-blue-400" />
+                                                </button>
+                                                <button onClick={() => deleteSubAdmin(sub.id)} className="p-2 hover:bg-red-500/20 rounded-lg">
+                                                    <Trash2 className="w-5 h-5 text-red-400" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {subAdmins.length === 0 && (
+                                        <tr>
+                                            <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
+                                                Nenhuma sub-dashboard criada
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                )}
             </div>
         </div>
     );

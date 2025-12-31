@@ -4,13 +4,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
     Menu, X, Package, Crosshair, Shield, Eye, MousePointer, Car, Users as UsersIcon,
-    Lock, Bomb, User, Toolbox, Building2, CheckCircle, HandFist
+    Lock, Bomb, User, Toolbox, Building2, CheckCircle, HandFist, ShieldCheck
 } from 'lucide-react';
+import { FaDiscord } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
+import { supabase } from '../supabase';
 
 export default function LandingPage() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [resellers, setResellers] = useState([]);
+
+    useEffect(() => {
+        const fetchResellers = async () => {
+            const { data } = await supabase.from('resellers').select('*');
+            setResellers(data || []);
+        };
+        fetchResellers();
+    }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-black to-zinc-950 text-white overflow-x-hidden">
@@ -22,6 +33,8 @@ export default function LandingPage() {
             <AllFeatures />
             <Pricing />
             <Compatibility />
+            <Revendedores resellers={resellers} />
+            <Termos />
             <Footer />
         </div>
     );
@@ -64,6 +77,12 @@ function Header({ mobileMenuOpen, setMobileMenuOpen }) {
                         <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
                             Discord
                         </a>
+                        <a href="#revendedores" className="text-gray-300 hover:text-white transition-colors">
+                            Revendedores
+                        </a>
+                        <a href="#termos" className="text-gray-300 hover:text-white transition-colors">
+                            Termos
+                        </a>
                         <Link
                             to="/login"
                             className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all duration-300 shadow-lg shadow-purple-600/30"
@@ -94,6 +113,12 @@ function Header({ mobileMenuOpen, setMobileMenuOpen }) {
                         </a>
                         <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white transition-colors py-2">
                             Discord
+                        </a>
+                        <a href="#revendedores" className="block text-gray-300 hover:text-white transition-colors py-2">
+                            Revendedores
+                        </a>
+                        <a href="#termos" className="block text-gray-300 hover:text-white transition-colors py-2">
+                            Termos
                         </a>
                         <Link
                             to="/login"
@@ -713,6 +738,168 @@ function Compatibility() {
     );
 }
 
+function Revendedores({ resellers }) {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+    return (
+        <section id="revendedores" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
+            <div className="max-w-7xl mx-auto">
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.8 }}
+                    className="text-center mb-16"
+                >
+                    <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+                        Revendedores Autorizados
+                    </h2>
+                    <p className="text-xl text-gray-400">
+                        Adquira com nossos parceiros oficiais
+                    </p>
+                </motion.div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {resellers.map((res, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={isInView ? { opacity: 1, y: 0 } : {}}
+                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                            className="bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-6 border border-purple-600/20 hover:border-purple-600/50 transition-all duration-300"
+                        >
+                            <h3 className="text-lg font-bold mb-4 text-white">{res.name}</h3>
+                            <a
+                                href={res.discord_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 rounded-lg font-semibold hover:bg-purple-500 transition-colors"
+                            >
+                                <FaDiscord className="w-5 h-5" />
+                                Discord
+                            </a>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function Termos() {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+    const termsSections = [
+        {
+            title: "1. Aceitação dos Termos",
+            icon: CheckCircle,
+            content: "1.1. Ao efetuar qualquer compra em nossa plataforma, você confirma que leu, compreendeu e concorda integralmente com os presentes Termos de Compra e Serviço.\n1.2. O uso contínuo de nossos produtos e serviços implica aceitação automática de quaisquer atualizações destes termos.\n1.3. Estes termos podem ser alterados a qualquer momento, sendo responsabilidade do usuário verificar periodicamente possíveis atualizações."
+        },
+        {
+            title: "2. Natureza do Produto",
+            icon: Package,
+            content: "2.1. Os produtos comercializados são licenças digitais de software com finalidade educacional e de entretenimento.\n2.2. AVISO IMPORTANTE: Por se tratar de software de modificação (cheats/hacks), existe risco inerente de banimento ou suspensão em plataformas de jogos. O usuário assume total responsabilidade pelo uso.\n2.3. Não nos responsabilizamos por banimentos, suspensões de contas, perda de dados ou quaisquer consequências resultantes do uso de nossos produtos.\n2.4. Trabalhamos continuamente para minimizar a detecção, mas não garantimos invisibilidade absoluta aos sistemas anti-cheat."
+        },
+        {
+            title: "3. Processo de Compra e Entrega",
+            icon: Toolbox,
+            content: "3.1. Os produtos serão entregues exclusivamente após confirmação do pagamento pelo sistema.\n3.2. A entrega é realizada unicamente através de nossos canais oficiais. Não baixe ou aceite arquivos de fontes não verificadas ou terceiros.\n3.3. Após a compra, aguarde as instruções de entrega. É sua responsabilidade armazenar com segurança as credenciais e arquivos recebidos.\n3.4. O tempo de entrega pode variar conforme o método de pagamento utilizado (instantâneo para PIX, até 72h para boleto bancário)."
+        },
+        {
+            title: "4. Confidencialidade",
+            icon: Lock,
+            content: "4.1. Você se compromete a não divulgar, compartilhar, revender ou distribuir os produtos adquiridos, informações técnicas, arquivos ou credenciais de acesso.\n4.2. O compartilhamento não autorizado resultará em banimento permanente de nosso banco de dados e cancelamento imediato da licença, sem direito a reembolso.\n4.3. Cada licença é pessoal e intransferível, vinculada ao comprador original."
+        },
+        {
+            title: "5. Política de Reembolso",
+            icon: Shield,
+            content: "5.1. Devido à natureza digital e não revogável dos produtos (licenças de software), não oferecemos reembolso após a entrega.\n5.2. Todas as vendas são consideradas finais e irreversíveis, exceto em casos previstos por lei ou erro comprovado de cobrança.\n5.3. É responsabilidade do usuário verificar:\n* Compatibilidade do sistema operacional\n* Requisitos técnicos mínimos\n* Especificações do produto antes da compra\n5.4. Não há reembolso por incompatibilidade técnica, mudança de ideia, mau uso ou desconhecimento dos termos.\n5.5. Não oferecemos períodos de teste gratuito, dias grátis ou demonstrações para avaliação prévia."
+        },
+        {
+            title: "6. Estornos e Disputas",
+            icon: HandFist,
+            content: "6.1. Tentativas de abrir estorno (chargeback) no cartão de crédito, PayPal ou outros métodos de pagamento sem contato prévio resultará em:\n* Banimento permanente de nosso banco de dados\n* Bloqueio de futuras compras\n* Cancelamento imediato de todas as licenças ativas\n6.2. Em caso de problemas, contate nosso suporte antes de acionar sua operadora de pagamento."
+        },
+        {
+            title: "7. Tipos de Licença",
+            icon: Building2,
+            content: "7.1. Licença Lifetime (Vitalícia): Válida enquanto o produto existir e estiver sendo mantido. Não garante acesso perpétuo caso o produto seja descontinuado.\n7.2. Licenças Diárias/Temporárias: Não possuem garantia de renovação automática ou continuidade após o período contratado.\n7.3. Todas as licenças estão sujeitas aos termos de uso e podem ser revogadas em caso de violação."
+        },
+        {
+            title: "8. Programa de Revenda",
+            icon: UsersIcon,
+            content: "8.1. Revendedores autorizados devem repassar 20% do valor de cada venda ao desenvolvedor (DN) conforme acordo estabelecido.\n8.2. A violação deste acordo resulta em cancelamento imediato da autorização de revenda.\n8.3. Apenas revendedores oficialmente autorizados podem comercializar nossos produtos."
+        },
+        {
+            title: "9. Limitação de Responsabilidade",
+            icon: ShieldCheck,
+            content: "9.1. O uso do software é por conta e risco do usuário.\n9.2. Não nos responsabilizamos por:\n* Danos diretos ou indiretos causados pelo uso do produto\n* Perda de dados, contas ou progressos em jogos\n* Incompatibilidade com atualizações de jogos ou sistemas\n* Indisponibilidade temporária do serviço\n9.3. Nosso limite máximo de responsabilidade corresponde ao valor pago pelo produto."
+        },
+        {
+            title: "10. Segurança",
+            icon: Lock,
+            content: "10.1. Mantenha suas credenciais de acesso em segurança.\n10.2. Não compartilhe senhas, arquivos ou informações de login.\n10.3. Utilize antivírus atualizado e baixe arquivos exclusivamente de nossos canais oficiais.\n10.4. Não nos responsabilizamos por arquivos baixados de fontes não oficiais."
+        },
+        {
+            title: "11. Atualizações e Manutenção",
+            icon: Toolbox,
+            content: "11.1. Fornecemos atualizações regulares para manter a funcionalidade dos produtos, quando tecnicamente viável.\n11.2. Não garantimos que o produto permanecerá funcional indefinidamente devido a mudanças em jogos ou sistemas operacionais.\n11.3. O suporte técnico é fornecido conforme disponibilidade e tipo de licença adquirida."
+        },
+        {
+            title: "12. Suspensão e Cancelamento",
+            icon: Bomb,
+            content: "12.1. Reservamo-nos o direito de suspender ou cancelar licenças em caso de:\n* Violação destes termos\n* Uso inadequado ou abusivo\n* Tentativa de fraude ou chargeback\n* Compartilhamento não autorizado\n12.2. O cancelamento não gera direito a reembolso."
+        },
+        {
+            title: "13. Disposições Gerais",
+            icon: User,
+            content: "13.1. Estes termos são regidos pelas leis brasileiras.\n13.2. Dúvidas ou problemas devem ser direcionados ao nosso suporte oficial.\n13.3. A invalidade de qualquer cláusula não afeta a validade das demais.\n13.4. O não exercício de qualquer direito previsto nestes termos não constitui renúncia"
+        },
+    ];
+
+    return (
+        <section id="termos" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
+            <div className="max-w-4xl mx-auto">
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.8 }}
+                    className="text-center mb-16"
+                >
+                    <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+                        Termos de Compra e Uso
+                    </h2>
+                    <p className="text-xl text-gray-400 mb-4">
+                        Última atualização: 31 de dezembro de 2025
+                    </p>
+                </motion.div>
+                <div className="space-y-4">
+                    {termsSections.map((section, index) => (
+                        <motion.details
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={isInView ? { opacity: 1, y: 0 } : {}}
+                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                            className="group bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-6 border border-purple-600/20 cursor-pointer hover:border-purple-600/50 transition-all"
+                        >
+                            <summary className="flex items-center gap-3 text-lg font-bold text-white">
+                                <section.icon className="w-6 h-6 text-purple-400 flex-shrink-0" />
+                                {section.title}
+                                <span className="ml-auto text-purple-400 group-open:rotate-180 transition-transform">▼</span>
+                            </summary>
+                            <p className="mt-4 text-gray-300 whitespace-pre-line">{section.content}</p>
+                        </motion.details>
+                    ))}
+                </div>
+                <p className="mt-12 text-center text-gray-400">
+                    Para dúvidas, problemas técnicos ou suporte, utilize nossos canais oficiais disponíveis no site.<br />
+                    Ao prosseguir com a compra, você declara estar ciente e de acordo com todos os termos acima.
+                </p>
+            </div>
+        </section>
+    );
+}
+
 function Footer() {
     return (
         <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-purple-600/20">
@@ -740,6 +927,16 @@ function Footer() {
                             <li>
                                 <a href="#pricing" className="text-gray-400 hover:text-white transition-colors">
                                     Preços
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#revendedores" className="text-gray-400 hover:text-white transition-colors">
+                                    Revendedores
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#termos" className="text-gray-400 hover:text-white transition-colors">
+                                    Termos
                                 </a>
                             </li>
                             <li>

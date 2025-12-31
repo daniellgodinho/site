@@ -1,20 +1,18 @@
 const crypto = require('crypto');
+const { createClient } = require('@supabase/supabase-js');
 
-// Armazenamento em memória
+// Configurações do Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Armazenamento em memória para tokens (stateless-friendly, mas tokens são voláteis por invocation)
 const validTokens = new Map();
-let users = [];
-let usersFarm = [];
-let isInitialized = false;
 
 // Configurações
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
 const PASSWORD_SALT = process.env.PASSWORD_SALT || 'default-salt-change-me';
 const ADMIN_PASSWORD_HASH = hashPassword(process.env.ADMIN_PASSWORD || 'change-me');
-
-// Configurações do GitHub
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
-const REPO_OWNER = 'Aephic';
-const REPO_NAME = 'dnmenu';
 
 function hashPassword(password) {
     return crypto
@@ -48,7 +46,7 @@ function verifyToken(req) {
     }
 
     const tokenData = validTokens.get(token);
-    if (tokenData.expiresAt && tokenData.expiresAt < Date.now()) {  // Adicionado "tokenData.expiresAt &&" para permitir null
+    if (tokenData.expiresAt && tokenData.expiresAt < Date.now()) {
         console.log('Token expirado');
         validTokens.delete(token);
         return false;
@@ -64,9 +62,9 @@ function calculateExpiration(duration) {
         case 'daily':
             return new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
         case 'weekly':
-            return new Date(now.getTime() + 7 * 24 * 60 * 1000).toISOString();
+            return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
         case 'monthly':
-            return new Date(now.getTime() + 30 * 24 * 60 * 1000).toISOString();
+            return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
         case 'lifetime':
             return null;
         default:
@@ -74,94 +72,8 @@ function calculateExpiration(duration) {
     }
 }
 
-// Função para carregar dados do GitHub
-async function loadFromGitHub() {
-    if (!GITHUB_TOKEN) {
-        console.log('GITHUB_TOKEN não configurado, pulando carregamento do GitHub');
-        return;
-    }
-
-    try {
-        console.log('Carregando dados do GitHub...');
-
-        // Carregar users
-        try {
-            const usersResponse = await fetch(
-                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/users`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                    }
-                }
-            );
-
-            if (usersResponse.ok) {
-                const usersData = await usersResponse.json();
-                const usersContent = Buffer.from(usersData.content, 'base64').toString('utf8');
-                const usernames = usersContent.split('\n').filter(u => u.trim());
-
-                users = usernames.map(username => ({
-                    username: username.trim(),
-                    duration: 'lifetime',
-                    expiration: null,
-                    addedAt: new Date().toISOString()
-                }));
-
-                console.log(`Carregados ${users.length} users do GitHub`);
-            } else {
-                console.log('Arquivo security/users não encontrado no GitHub');
-            }
-        } catch (error) {
-            console.error('Erro ao carregar users:', error.message);
-        }
-
-        // Carregar usersfarm
-        try {
-            const usersFarmResponse = await fetch(
-                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/security/usersfarm`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                    }
-                }
-            );
-
-            if (usersFarmResponse.ok) {
-                const usersFarmData = await usersFarmResponse.json();
-                const usersFarmContent = Buffer.from(usersFarmData.content, 'base64').toString('utf8');
-                const usernames = usersFarmContent.split('\n').filter(u => u.trim());
-
-                usersFarm = usernames.map(username => ({
-                    username: username.trim(),
-                    duration: 'lifetime',
-                    expiration: null,
-                    addedAt: new Date().toISOString()
-                }));
-
-                console.log(`Carregados ${usersFarm.length} usersfarm do GitHub`);
-            } else {
-                console.log('Arquivo security/usersfarm não encontrado no GitHub');
-            }
-        } catch (error) {
-            console.error('Erro ao carregar usersfarm:', error.message);
-        }
-
-        console.log(`Inicialização completa: ${users.length} users, ${usersFarm.length} usersfarm`);
-    } catch (error) {
-        console.error('Erro geral ao carregar do GitHub:', error);
-    }
-}
-
 // Handler principal
 module.exports = async (req, res) => {
-    // Inicializar dados do GitHub na primeira requisição
-    if (!isInitialized) {
-        await loadFromGitHub();
-        isInitialized = true;
-    }
-
     // CORS Headers
     const allowedOrigins = [
         'https://dnmenu.vercel.app',
@@ -193,13 +105,15 @@ module.exports = async (req, res) => {
 
     // Health check
     if (method === 'GET' && path === '/api/health') {
+        const { data: usersData } = await supabase.from('users').select('*, count(*)');
+        const { data: usersFarmData } = await supabase.from('users_farm').select('*, count(*)');
         return res.status(200).json({
             status: 'ok',
-            users: users.length,
-            usersFarm: usersFarm.length,
+            users: usersData?.length || 0,
+            usersFarm: usersFarmData?.length || 0,
             timestamp: new Date().toISOString(),
             tokensAtivos: validTokens.size,
-            githubConfigured: !!GITHUB_TOKEN
+            supabaseConnected: !!supabaseUrl && !!supabaseKey
         });
     }
 
@@ -265,22 +179,36 @@ module.exports = async (req, res) => {
 
     // Obter users
     if (method === 'GET' && path === '/api/users') {
-        users = users.filter(u => {
-            if (!u.expiration) return true;
-            return new Date(u.expiration) > new Date();
-        });
-        console.log(`Retornando ${users.length} users`);
-        return res.status(200).json({ users });
+        let { data: allUsers, error } = await supabase
+            .from('users')
+            .select('*')
+            .gte('expiration', new Date().toISOString());
+
+        if (error) {
+            console.error('Erro ao obter users:', error);
+            return res.status(500).json({ error: 'Erro ao obter users' });
+        }
+
+        allUsers = allUsers.filter(u => !u.expiration || new Date(u.expiration) > new Date());
+        console.log(`Retornando ${allUsers.length} users`);
+        return res.status(200).json({ users: allUsers });
     }
 
     // Obter usersfarm
     if (method === 'GET' && path === '/api/usersfarm') {
-        usersFarm = usersFarm.filter(u => {
-            if (!u.expiration) return true;
-            return new Date(u.expiration) > new Date();
-        });
-        console.log(`Retornando ${usersFarm.length} usersfarm`);
-        return res.status(200).json({ usersFarm });
+        let { data: allUsersFarm, error } = await supabase
+            .from('users_farm')
+            .select('*')
+            .gte('expiration', new Date().toISOString());
+
+        if (error) {
+            console.error('Erro ao obter usersfarm:', error);
+            return res.status(500).json({ error: 'Erro ao obter usersfarm' });
+        }
+
+        allUsersFarm = allUsersFarm.filter(u => !u.expiration || new Date(u.expiration) > new Date());
+        console.log(`Retornando ${allUsersFarm.length} usersfarm`);
+        return res.status(200).json({ usersFarm: allUsersFarm });
     }
 
     // Adicionar user
@@ -292,7 +220,13 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ error: 'Username é obrigatório' });
             }
 
-            if (users.find(u => u.username === username)) {
+            const { data: existing } = await supabase
+                .from('users')
+                .select('username')
+                .eq('username', username)
+                .single();
+
+            if (existing) {
                 return res.status(400).json({ error: 'Usuário já existe' });
             }
 
@@ -300,11 +234,17 @@ module.exports = async (req, res) => {
                 username,
                 duration,
                 expiration: calculateExpiration(duration),
-                addedAt: new Date().toISOString()
+                added_at: new Date().toISOString()  // Corrigido para snake_case
             };
 
-            users.push(newUser);
-            console.log(`User adicionado: ${username} (${duration}). Total: ${users.length}`);
+            const { error } = await supabase.from('users').insert(newUser);
+
+            if (error) {
+                console.error('Erro ao inserir user:', error);
+                return res.status(500).json({ error: 'Erro ao adicionar user' });
+            }
+
+            console.log(`User adicionado: ${username} (${duration})`);
             return res.status(201).json({ success: true, user: newUser });
         } catch (error) {
             console.error('Erro ao adicionar user:', error);
@@ -321,7 +261,13 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ error: 'Username é obrigatório' });
             }
 
-            if (usersFarm.find(u => u.username === username)) {
+            const { data: existing } = await supabase
+                .from('users_farm')
+                .select('username')
+                .eq('username', username)
+                .single();
+
+            if (existing) {
                 return res.status(400).json({ error: 'Usuário já existe' });
             }
 
@@ -329,11 +275,17 @@ module.exports = async (req, res) => {
                 username,
                 duration,
                 expiration: calculateExpiration(duration),
-                addedAt: new Date().toISOString()
+                added_at: new Date().toISOString()
             };
 
-            usersFarm.push(newUser);
-            console.log(`UserFarm adicionado: ${username} (${duration}). Total: ${usersFarm.length}`);
+            const { error } = await supabase.from('users_farm').insert(newUser);
+
+            if (error) {
+                console.error('Erro ao inserir userfarm:', error);
+                return res.status(500).json({ error: 'Erro ao adicionar userfarm' });
+            }
+
+            console.log(`UserFarm adicionado: ${username} (${duration})`);
             return res.status(201).json({ success: true, user: newUser });
         } catch (error) {
             console.error('Erro ao adicionar userfarm:', error);
@@ -344,29 +296,35 @@ module.exports = async (req, res) => {
     // Remover user
     if (method === 'DELETE' && path.startsWith('/api/users/')) {
         const username = decodeURIComponent(path.replace('/api/users/', ''));
-        const initialLength = users.length;
-        users = users.filter(u => u.username !== username);
+        const { error } = await supabase
+            .from('users')
+            .delete()
+            .eq('username', username);
 
-        if (users.length < initialLength) {
-            console.log(`User removido: ${username}. Total: ${users.length}`);
-            return res.status(200).json({ success: true });
+        if (error) {
+            console.error('Erro ao deletar user:', error);
+            return res.status(500).json({ error: 'Erro ao deletar user' });
         }
 
-        return res.status(404).json({ error: 'Usuário não encontrado' });
+        console.log(`User removido: ${username}`);
+        return res.status(200).json({ success: true });
     }
 
     // Remover userfarm
     if (method === 'DELETE' && path.startsWith('/api/usersfarm/')) {
         const username = decodeURIComponent(path.replace('/api/usersfarm/', ''));
-        const initialLength = usersFarm.length;
-        usersFarm = usersFarm.filter(u => u.username !== username);
+        const { error } = await supabase
+            .from('users_farm')
+            .delete()
+            .eq('username', username);
 
-        if (usersFarm.length < initialLength) {
-            console.log(`UserFarm removido: ${username}. Total: ${usersFarm.length}`);
-            return res.status(200).json({ success: true });
+        if (error) {
+            console.error('Erro ao deletar userfarm:', error);
+            return res.status(500).json({ error: 'Erro ao deletar userfarm' });
         }
 
-        return res.status(404).json({ error: 'Usuário não encontrado' });
+        console.log(`UserFarm removido: ${username}`);
+        return res.status(200).json({ success: true });
     }
 
     // Rota não encontrada
