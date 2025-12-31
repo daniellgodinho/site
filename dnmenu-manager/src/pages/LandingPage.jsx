@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
     Menu, X, Package, Crosshair, Shield, Eye, MousePointer, Bookmark, Car, Users as UsersIcon,
-    Lock, Bomb, User, Toolbox, Building2, CheckCircle, HandFist, ShieldCheck
+    Lock, Bomb, User, Toolbox, Building2, CheckCircle, HandFist
 } from 'lucide-react';
 import { FaDiscord } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
