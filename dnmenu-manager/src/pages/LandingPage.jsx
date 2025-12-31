@@ -1,4 +1,4 @@
-// src/pages/LandingPage.jsx - Complete with all logic, monkey logo, darker gradients, improved cards, smooth transitions
+// src/pages /LandingPage.jsx - Complete with all logic, monkey logo, darker gradients, improved cards, smooth transitions
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
