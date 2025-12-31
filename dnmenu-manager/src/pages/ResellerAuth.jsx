@@ -19,7 +19,7 @@ export default function ResellerAuth() {
             .from('resellers')
             .select('*')
             .eq('password', password)
-            .single();
+            .maybeSingle(); // <-- MUDANÇA AQUI: evita erro 406
 
         if (error || !data) {
             setError('Senha inválida. Tente novamente.');
@@ -31,6 +31,7 @@ export default function ResellerAuth() {
         sessionStorage.setItem('discord_link', data.discord_link || '');
         sessionStorage.setItem('isMaster', data.name === 'Indefinido' ? 'true' : 'false');
 
+        setLoading(false);
         navigate('/dashboard');
     };
 
@@ -46,9 +47,8 @@ export default function ResellerAuth() {
             >
                 <div className="bg-gradient-to-br from-zinc-950/95 to-black/95 rounded-3xl p-12 border border-purple-600/30 shadow-2xl backdrop-blur-xl">
                     <div className="text-center mb-10">
-                        <Logo className="w-24 h-24 md:w-24 h-24 lg:w-40 h-40 drop-shadow-2xl" />
                         <h2 className="text-3xl font-bold mb-4">Acesso Revendedor</h2>
-                        <p className="text-gray-400 text-lg">Digite a senha do seu reseller</p>
+                        <p className="text-gray-400 text-lg">Digite a senha da sua dashboard</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
