@@ -327,6 +327,32 @@ module.exports = async (req, res) => {
         return res.status(200).json({ success: true });
     }
 
+    // Lista de revendedores (pública para auth e landing)
+    if (method === 'GET' && path === '/api/resellers') {
+        const { data, error } = await supabase.from('resellers').select('name, discord_link');
+        if (error) return res.status(500).json({ error: 'Erro ao buscar revendedores' });
+        return res.status(200).json(data);
+    }
+
+    // Scripts compartilhados (GET e PUT - apenas master pode editar)
+    if (path === '/api/scripts') {
+        if (method === 'GET') {
+            const { data, error } = await supabase.from('scripts').select('*');
+            if (error) return res.status(500).json({ error: 'Erro ao obter scripts' });
+            return res.status(200).json(data);
+        }
+
+        if (method === 'PUT') {
+            const { name, code } = req.body;
+            if (!name || code === undefined) {
+                return res.status(400).json({ error: 'name e code são obrigatórios' });
+            }
+            const { error } = await supabase.from('scripts').update({ code }).eq('name', name);
+            if (error) return res.status(500).json({ error: 'Erro ao atualizar script' });
+            return res.status(200).json({ success: true });
+        }
+    }
+
     // Rota não encontrada
     console.log(`Rota não encontrada: ${method} ${path}`);
     return res.status(404).json({ error: 'Rota não encontrada' });

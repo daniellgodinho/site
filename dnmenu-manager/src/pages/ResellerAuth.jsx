@@ -1,26 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from '../components/Logo';
+import { supabase } from '../supabase';
 
 export default function ResellerAuth() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
 
-        if (password === '@npcodes') {
-            sessionStorage.setItem('reseller', 'Neverpure Codes');
-            navigate('/dashboard');
-        } else if (password === 'indef') {
-            sessionStorage.setItem('reseller', 'Indefinido');
-            navigate('/dashboard');
-        } else {
+        const { data, error } = await supabase
+            .from('resellers')
+            .select('*')
+            .eq('password', password)
+            .single();
+
+        if (error || !data) {
             setError('Senha inválida. Tente novamente.');
+            setLoading(false);
+            return;
         }
+
+        sessionStorage.setItem('reseller', data.name);
+        sessionStorage.setItem('discord_link', data.discord_link || '');
+        sessionStorage.setItem('isMaster', data.name === 'Indefinido' ? 'true' : 'false');
+
+        navigate('/dashboard');
     };
 
     return (
@@ -49,6 +60,7 @@ export default function ResellerAuth() {
                             className="w-full px-6 py-5 bg-zinc-900/70 border border-purple-600/40 rounded-2xl text-white text-lg focus:outline-none focus:border-purple-500 transition-all duration-300 placeholder-gray-500"
                             required
                             autoFocus
+                            disabled={loading}
                         />
 
                         {error && (
@@ -63,9 +75,10 @@ export default function ResellerAuth() {
 
                         <button
                             type="submit"
-                            className="w-full py-5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-2xl font-bold text-xl transition-all duration-300 shadow-xl shadow-purple-600/50"
+                            disabled={loading}
+                            className="w-full py-5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-2xl font-bold text-xl transition-all duration-300 shadow-xl shadow-purple-600/50 disabled:opacity-70"
                         >
-                            Entrar no Dashboard
+                            {loading ? 'Verificando...' : 'Entrar no Dashboard'}
                         </button>
                     </form>
 
