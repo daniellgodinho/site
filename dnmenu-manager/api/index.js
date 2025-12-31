@@ -72,7 +72,7 @@ function calculateExpiration(duration) {
     }
 }
 
-// Handler principal
+// Handler principals
 module.exports = async (req, res) => {
     // CORS Headers
     const allowedOrigins = [
