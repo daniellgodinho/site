@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Logo } from '../components/Logo';
 import { supabase } from '../supabase';
-
 export default function ResellerAuth() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
