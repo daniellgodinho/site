@@ -1,11 +1,12 @@
+// PrivateRoute.jsx - Updated to use supabase.auth.getSession() and redirect to / (home) if no session, as per user mention of redirection to home.
+
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../supabase';  // ← Corrigido aqui
+import { supabase } from '../supabase';
 
 export default function PrivateRoute({ children }) {
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
-
     useEffect(() => {
         const getSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
@@ -14,14 +15,12 @@ export default function PrivateRoute({ children }) {
         };
         getSession();
     }, []);
-
     if (loading) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="text-white text-xl">Carregando...</div>
+                <div className="text-white text-xl">Loading...</div>
             </div>
         );
     }
-
-    return session ? children : <Navigate to="/login" replace />;
+    return session ? children : <Navigate to="/" replace />; // Redirect to home (/) if no session
 }
