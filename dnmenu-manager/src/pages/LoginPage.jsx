@@ -1,8 +1,9 @@
+// src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { Logo } from '../components/Logo';
+import monkeyLogo from '../assets/monkeyLogo.png'; // ← Import direto da logo
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -21,7 +22,7 @@ export default function LoginPage() {
         if (error) {
             setError(error.message);
         } else {
-            navigate('/reseller-auth');  // ← Redireciona para a tela de senha
+            navigate('/reseller-auth'); // ← Redireciona para a tela de senha (ou '/dashboard' se preferir)
         }
         setIsLoading(false);
     };
@@ -36,10 +37,15 @@ export default function LoginPage() {
                 transition={{ duration: 0.6 }}
                 className="relative z-10 w-full max-w-md"
             >
-                {/* Fundo do card mais escuro com gradiente preto */}
+                {/* Card principal */}
                 <div className="bg-gradient-to-br from-zinc-950/95 to-black/95 rounded-3xl p-10 border border-purple-600/20 shadow-2xl backdrop-blur-xl">
                     <div className="text-center mb-10">
-                        <Logo className="w-32 h-32 md:w-40 h-40 lg:w-48 h-48 mx-auto mb-8 drop-shadow-2xl" />
+                        {/* Logo importada diretamente */}
+                        <img
+                            src={monkeyLogo}
+                            alt="DN Menu Logo"
+                            className="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 mx-auto mb-8 drop-shadow-2xl drop-shadow-purple-600/50 object-contain"
+                        />
                         <h2 className="text-2xl font-bold text-white">Dashboard</h2>
                         <p className="text-gray-400 mt-2">Acesse o painel administrativo</p>
                     </div>
@@ -70,7 +76,11 @@ export default function LoginPage() {
                         </div>
 
                         {error && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-3 bg-red-900/30 border border-red-600/50 rounded-xl text-red-400 text-sm">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="p-3 bg-red-900/30 border border-red-600/50 rounded-xl text-red-400 text-sm text-center"
+                            >
                                 {error}
                             </motion.div>
                         )}
@@ -78,7 +88,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-purple-600/50 disabled:opacity-70"
+                            className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-purple-600/50 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {isLoading ? 'Entrando...' : 'Entrar'}
                         </button>

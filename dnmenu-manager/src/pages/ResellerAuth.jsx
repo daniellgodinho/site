@@ -1,8 +1,9 @@
+// src/pages/ResellerAuth.jsx
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Logo } from '../components/Logo';
 import { supabase } from '../supabase';
+import monkeyLogo from '../assets/monkeyLogo.png'; // ← Import direto da logo
 
 export default function ResellerAuth() {
     const [password, setPassword] = useState('');
@@ -15,16 +16,16 @@ export default function ResellerAuth() {
         setError('');
         setLoading(true);
 
-        console.log('Tentando login com senha:', password); // DEBUG: veja no console
+        console.log('Tentando login com senha:', password); // DEBUG
 
         const { data, error: supabaseError } = await supabase
             .from('resellers')
             .select('*')
             .eq('password', password)
-            .limit(1)           // Boa prática + ajuda em casos raros
-            .maybeSingle();     // Evita erro 406
+            .limit(1)
+            .maybeSingle();
 
-        console.log('Resposta do Supabase:', { data, error: supabaseError }); // DEBUG: veja aqui o que voltou
+        console.log('Resposta do Supabase:', { data, error: supabaseError }); // DEBUG
 
         if (supabaseError || !data) {
             console.log('Falha: senha não encontrada ou erro:', supabaseError);
@@ -55,7 +56,12 @@ export default function ResellerAuth() {
             >
                 <div className="bg-gradient-to-br from-zinc-950/95 to-black/95 rounded-3xl p-12 border border-purple-600/30 shadow-2xl backdrop-blur-xl">
                     <div className="text-center mb-10">
-                        <Logo className="w-24 h-24 md:w-24 h-24 lg:w-40 h-40 drop-shadow-2xl" />
+                        {/* Logo importada diretamente */}
+                        <img
+                            src={monkeyLogo}
+                            alt="DN Menu Logo"
+                            className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 mx-auto mb-8 drop-shadow-2xl drop-shadow-purple-600/50 object-contain"
+                        />
                         <h2 className="text-3xl font-bold mb-4">Acesso Revendedor</h2>
                         <p className="text-gray-400 text-lg">Digite a senha do seu reseller</p>
                     </div>
@@ -85,7 +91,7 @@ export default function ResellerAuth() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-2xl font-bold text-xl transition-all duration-300 shadow-xl shadow-purple-600/50 disabled:opacity-70"
+                            className="w-full py-5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 rounded-2xl font-bold text-xl transition-all duration-300 shadow-xl shadow-purple-600/50 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {loading ? 'Verificando...' : 'Entrar no Dashboard'}
                         </button>

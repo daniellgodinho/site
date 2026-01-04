@@ -1,15 +1,25 @@
+// src/pages/Dashboard.jsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
     UserCheck, Trash, LogOut, CalendarDays, Clock4, Infinity as InfinityIcon,
-    Check, X, Search as SearchXIcon, Copy, Edit3, Save, ArrowUp, ArrowDown
+    Check, X, Search as SearchXIcon, Copy, Edit3, Save
 } from 'lucide-react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { supabase } from '../supabase';
-import { Logo } from '../components/Logo';
 import { useNavigate } from 'react-router-dom';
-import { FaDiscord } from 'react-icons/fa';
+import monkeyLogo from '../assets/monkeyLogo.png'; // Import direto da logo
+
+const DiscordIcon = () => (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515a.074.074 0 00-.078.037c-.211.375-.444.864-.608 1.25c-1.845-.276-3.68-.276-5.487 0c-.164-.386-.398-.875-.608-1.25a.074.074 0 00-.078-.037a19.736 19.736 0 00-4.885 1.515a.07.07 0 00-.032.027c-4.35 6.474-5.533 12.84-4.936 19.108a.082.082 0 00.027.06c2.797 2.022 5.479 2.879 8.039 3.05a.074.074 0 00.078-.037c.461-.63.873-1.295 1.226-1.994a.076.076 0 00-.041-.106c-.652-.248-1.274-.55-1.872-.892a.077.077 0 01-.008-.128c.126-.094.249-.195.373-.294a.074.074 0 01.078-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 01.078.01c.124.099.247.2.373.294a.077.077 0 01-.008.128c-.598.342-1.22.644-1.872.892a.076.076 0 00-.041.106c.36.698.775.962 1.226 1.993a.074.074 0 00.078.037c2.56-.171 5.242-1.028 8.039-3.05a.082.082 0 00.027-.06c.598-6.268-.584-12.634-4.936-19.108a.07.07 0 00-.032-.027zM8.827 15.946a2.31 2.31 0 01-2.312-2.314a2.312 2.312 0 112.312 2.314zm6.346 0a2.31 2.31 0 01-2.312-2.314a2.312 2.312 0 112.312 2.314z" />
+    </svg>
+);
+
 export default function Dashboard() {
     const selectedReseller = sessionStorage.getItem('reseller') || 'Neverpure Codes';
     const isMaster = sessionStorage.getItem('isMaster') === 'true';
+
     const [users, setUsers] = useState([]);
     const [usersFarm, setUsersFarm] = useState([]);
     const [newUser, setNewUser] = useState('');
@@ -19,33 +29,33 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('users');
     const [searchQuery, setSearchQuery] = useState('');
     const [userListId, setUserListId] = useState(null);
+
     // Master only
     const [resellers, setResellers] = useState([]);
     const [scripts, setScripts] = useState({ dnmenu: '', dnfarm: '', dnsoftwares: '' });
     const [editingScript, setEditingScript] = useState(null);
     const [newReseller, setNewReseller] = useState({ name: '', password: '', discord_link: '' });
+
+    // Graph data
+    const [graphData, setGraphData] = useState([]);
+
+    // Modal de confirmação
+    const [confirmDelete, setConfirmDelete] = useState(null); // { tab: 'users', username: 'nome' }
+
     const navigate = useNavigate();
-    // Fake monthly data for chart
-    const cashFlowData = [
-        { day: '14 May', inflow: 3821.24, outflow: -1211.73 },
-        { day: '15 May', inflow: 4123.45, outflow: -1324.56 },
-        { day: '16 May', inflow: 3567.89, outflow: -1100.00 },
-        { day: '17 May', inflow: 4234.12, outflow: -1456.78 },
-        { day: '18 May', inflow: 3890.34, outflow: -1234.56 },
-        { day: '19 May', inflow: 4012.67, outflow: -1345.67 },
-        { day: '20 May', inflow: 3678.90, outflow: -1123.45 }
-    ];
-    // Fetch user list
+
     const fetchUserLists = useCallback(async () => {
         const { data, error } = await supabase
             .from('user_lists')
             .select('*')
             .eq('reseller', selectedReseller)
             .single();
+
         if (error && error.code !== 'PGRST116') {
             console.error(error);
             return;
         }
+
         if (data) {
             setUserListId(data.id);
             const parseList = (str) => str ? str.split(',').map(s => {
@@ -56,12 +66,36 @@ export default function Dashboard() {
             setUsersFarm(parseList(data.users_farm));
         }
     }, [selectedReseller]);
-    // Master: fetch resellers and scripts
+
+    const cleanExpired = useCallback(async () => {
+        const now = new Date();
+        const cleanList = (list) => list.filter(u => !u.expiration || new Date(u.expiration) > now);
+
+        const newUsers = cleanList(users);
+        const newFarm = cleanList(usersFarm);
+
+        if (newUsers.length < users.length || newFarm.length < usersFarm.length) {
+            const success = await updateListsInSupabase(newUsers, newFarm);
+            if (success) {
+                setUsers(newUsers);
+                setUsersFarm(newFarm);
+            }
+        }
+    }, [users, usersFarm]);
+
+    useEffect(() => {
+        fetchUserLists();
+        cleanExpired();
+        const interval = setInterval(cleanExpired, 60000); // Verifica a cada minuto
+        return () => clearInterval(interval);
+    }, [fetchUserLists, cleanExpired]);
+
     useEffect(() => {
         if (isMaster) {
             const fetchMasterData = async () => {
                 const { data: res } = await supabase.from('resellers').select('*');
                 setResellers(res || []);
+
                 const { data: scr } = await supabase.from('scripts').select('*');
                 const map = {};
                 scr?.forEach(s => map[s.name] = s.code || '');
@@ -70,13 +104,29 @@ export default function Dashboard() {
             fetchMasterData();
         }
     }, [isMaster]);
+
     useEffect(() => {
-        fetchUserLists();
-    }, [fetchUserLists]);
+        setGraphData([
+            { name: 'Jan', users: 400 },
+            { name: 'Fev', users: 300 },
+            { name: 'Mar', users: 500 },
+            { name: 'Abr', users: 800 },
+            { name: 'Mai', users: 700 },
+            { name: 'Jun', users: 900 },
+            { name: 'Jul', users: 1100 },
+            { name: 'Ago', users: 1000 },
+            { name: 'Set', users: 1200 },
+            { name: 'Out', users: 1400 },
+            { name: 'Nov', users: 1300 },
+            { name: 'Dez', users: 1500 },
+        ]);
+    }, []);
+
     const handleLogout = () => {
         sessionStorage.clear();
         navigate('/');
     };
+
     const calculateExpiration = (duration) => {
         if (duration === 'lifetime') return null;
         const now = new Date();
@@ -85,6 +135,7 @@ export default function Dashboard() {
         if (duration === 'monthly') now.setDate(now.getDate() + 30);
         return now.toISOString();
     };
+
     const updateListsInSupabase = async (newUsers, newFarm) => {
         const toStr = (list) => list.map(u => `${u.username}|${u.duration}|${u.expiration || ''}`).join(',');
         const { error } = await supabase
@@ -93,382 +144,371 @@ export default function Dashboard() {
             .eq('id', userListId);
         return !error;
     };
+
     const addUser = async () => {
         const isUsers = activeTab === 'users';
         const username = (isUsers ? newUser : newUserFarm).trim();
-        if (!username) {
-            // eslint-disable-next-line no-alert
-            alert('Nome de usuário obrigatório');
-            return;
-        }
+        if (!username) return alert('Nome de usuário obrigatório');
+
         const duration = isUsers ? selectedDuration : selectedDurationFarm;
         const expiration = calculateExpiration(duration);
+
         const newEntry = { username, duration, expiration };
         const newList = isUsers ? [...users, newEntry] : [...usersFarm, newEntry];
+
         const success = await updateListsInSupabase(isUsers ? newList : users, isUsers ? usersFarm : newList);
         if (success) {
             isUsers ? setUsers(newList) : setUsersFarm(newList);
             isUsers ? setNewUser('') : setNewUserFarm('');
-            // eslint-disable-next-line no-alert
             alert(`${username} adicionado com sucesso!`);
         } else {
-            // eslint-disable-next-line no-alert
-            alert('Erro ao adicionar usuário. Tente novamente.');
+            alert('Erro ao adicionar usuário.');
         }
     };
-    const removeUser = async (tab, username) => {
-        // eslint-disable-next-line no-restricted-globals
-        if (!confirm(`Remover ${username}?`)) return;
+
+    // Função para abrir modal de confirmação
+    const openDeleteConfirm = (tab, username) => {
+        setConfirmDelete({ tab, username });
+    };
+
+    // Função para confirmar remoção
+    const confirmRemove = async () => {
+        if (!confirmDelete) return;
+
+        const { tab, username } = confirmDelete;
         const isUsers = tab === 'users';
         const newList = (isUsers ? users : usersFarm).filter(u => u.username !== username);
+
         const success = await updateListsInSupabase(
             isUsers ? newList : users,
             isUsers ? usersFarm : newList
         );
+
         if (success) {
             isUsers ? setUsers(newList) : setUsersFarm(newList);
-            // eslint-disable-next-line no-alert
             alert(`${username} removido com sucesso!`);
         } else {
-            // eslint-disable-next-line no-alert
-            alert('Erro ao remover o usuário.');
+            alert('Erro ao remover.');
         }
+
+        setConfirmDelete(null);
     };
-    // Master functions
+
+    const cancelRemove = () => setConfirmDelete(null);
+
     const addReseller = async () => {
-        if (!newReseller.name || !newReseller.password) {
-            // eslint-disable-next-line no-alert
-            alert('Nome e senha obrigatórios');
-            return;
-        }
+        if (!newReseller.name || !newReseller.password) return alert('Nome e senha obrigatórios');
         const { error } = await supabase.from('resellers').insert({ ...newReseller });
         if (!error) {
             setNewReseller({ name: '', password: '', discord_link: '' });
             const { data } = await supabase.from('resellers').select('*');
             setResellers(data || []);
-            // eslint-disable-next-line no-alert
-            alert('Revendedor adicionado com sucesso!');
+            alert('Revendedor adicionado!');
         } else {
-            // eslint-disable-next-line no-alert
             alert('Erro ao adicionar revendedor.');
         }
     };
+
     const saveScript = async (name) => {
-        const { error } = await supabase.from('scripts').upsert({ name, code: scripts[name] }, { onConflict: 'name' });
+        const { error } = await supabase.from('scripts').update({ code: scripts[name] }).eq('name', name);
         if (!error) {
             setEditingScript(null);
-            // eslint-disable-next-line no-alert
-            alert('Script salvo com sucesso!');
+            alert('Script salvo!');
         } else {
-            // eslint-disable-next-line no-alert
-            alert('Erro ao salvar script.');
+            alert('Erro ao salvar.');
         }
     };
-    const copyText = async (text) => {
-        navigator.clipboard.writeText(text);
-        // eslint-disable-next-line no-alert
-        alert('Copiado para a área de transferência!');
-    };
-    const copyRawUsers = (type) => {
+
+    const copyRaw = async (type) => {
         let text = '';
         if (type === 'users' || type === 'usersfarm') {
             const all = type === 'users' ? users : usersFarm;
             text = all.map(u => u.username).join('\n');
+        } else if (type === 'dnsoftwares') {
+            text = `${scripts.dnmenu}\n// Separator\n${scripts.dnfarm}\n// Separator\n${scripts.dnsoftwares}`;
+        } else {
+            text = scripts[type] || '';
         }
-        copyText(text);
+        navigator.clipboard.writeText(text);
+        alert('Copiado para a área de transferência!');
     };
+
     const filtered = (activeTab === 'users' ? users : usersFarm).filter(u => u.username.toLowerCase().includes(searchQuery.toLowerCase()));
     const total = users.length + usersFarm.length;
-    // Fake monthly income
-    const monthlyIncome = 4632.57;
-    const monthlyChange = 6.12;
-    const cashFlowUp = 6.18;
-    const outflowDown = 2.1;
+    const active = [...users, ...usersFarm].filter(u => !u.expiration || new Date(u.expiration) > new Date()).length;
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-black to-purple-950/50 text-white p-8">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-gradient-to-b from-black to-zinc-950 text-white">
             {/* Header */}
-            <header className="bg-gradient-to-br from-gray-950 to-purple-950/30 backdrop-blur-md rounded-2xl shadow-2xl shadow-purple-900/20 mb-8 p-6">
-                <div className="flex justify-between items-center">
+            <header className="bg-[#1a1a1a]/90 backdrop-blur-xl border-b border-purple-600/20">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <Logo className="w-10 h-10" />
+                        <img
+                            src={monkeyLogo}
+                            alt="DN Menu Logo"
+                            className="w-32 h-32 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
+                        />
                         <div>
-                            <h1 className="text-3xl font-bold">Welcome Back {selectedReseller}!</h1>
-                            <p className="text-gray-400">We have summarized your account activity for the past month.</p>
+                            <h1 className="text-2xl font-bold">Dashboard</h1>
+                            <p className="text-purple-400">{selectedReseller}</p>
+                            {isMaster && <p className="text-green-400 font-bold">MESTRE</p>}
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button className="p-2 bg-gray-900/50 rounded-full"><ArrowUp className="w-5 h-5 text-white" /></button>
-                        <button className="p-2 bg-gray-900/50 rounded-full"><ArrowDown className="w-5 h-5 text-white" /></button>
-                        <button className="p-2 bg-gray-900/50 rounded-full"><SearchXIcon className="w-5 h-5 text-white" /></button>
-                        <button onClick={handleLogout} className="p-2 bg-gray-900/50 rounded-full"><LogOut className="w-5 h-5 text-white" /></button>
-                    </div>
+                    <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 bg-red-600/80 rounded-lg hover:bg-red-500 transition-colors">
+                        <LogOut className="w-5 h-5" /> Sair
+                    </button>
                 </div>
             </header>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                {/* Total Balance */}
-                <div className="bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 shadow-xl shadow-purple-900/10">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="p-2 bg-gray-900/50 rounded-lg"><UserCheck className="w-5 h-5 text-purple-300" /></div>
-                        <h2 className="text-gray-300">Total Users</h2>
+
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                {/* Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div className="p-6 bg-[#2e2e2e]/80 rounded-2xl border border-purple-600/20 shadow-lg shadow-purple-600/10">
+                        <p className="text-gray-400">Total</p>
+                        <p className="text-4xl font-bold text-purple-400">{total}</p>
                     </div>
-                    <p className="text-5xl font-bold">{total}</p>
-                    <div className="mt-4 flex gap-4">
-                        <div className="bg-gray-900/50 rounded-xl p-4 flex-1">
-                            <p className="text-gray-400 text-sm">DN Menu</p>
-                            <p className="text-2xl font-bold">{users.length}</p>
-                        </div>
-                        <div className="bg-gray-900/50 rounded-xl p-4 flex-1">
-                            <p className="text-gray-400 text-sm">DN Farm</p>
-                            <p className="text-2xl font-bold">{usersFarm.length}</p>
-                        </div>
+                    <div className="p-6 bg-[#2e2e2e]/80 rounded-2xl border border-purple-600/20 shadow-lg shadow-purple-600/10">
+                        <p className="text-gray-400">Ativos</p>
+                        <p className="text-4xl font-bold text-green-400">{active}</p>
+                    </div>
+                    <div className="p-6 bg-[#2e2e2e]/80 rounded-2xl border border-purple-600/20 shadow-lg shadow-purple-600/10">
+                        <p className="text-gray-400">Expirados</p>
+                        <p className="text-4xl font-bold text-red-400">{total - active}</p>
                     </div>
                 </div>
-                {/* Monthly Income */}
-                <div className="bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 shadow-xl shadow-purple-900/10">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="p-2 bg-gray-900/50 rounded-lg"><ArrowUp className="w-5 h-5 text-purple-300" /></div>
-                        <h2 className="text-gray-300">Monthly New Users</h2>
-                    </div>
-                    <p className="text-5xl font-bold">${monthlyIncome} <span className="text-green-400 text-2xl">~ +{monthlyChange}%</span></p>
-                    <div className="mt-4 h-20 flex items-end gap-1">
-                        {Array.from({ length: 30 }).map((_, i) => (
-                            <div key={i} className="w-2 bg-gradient-to-t from-purple-500 to-purple-300 opacity-80" style={{ height: `${Math.random() * 100}%` }}></div>
-                        ))}
-                    </div>
-                    <div className="mt-4 flex gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                            <p>Mutual Funds 27%</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
-                            <p>Crypto Market 44%</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-purple-300 rounded-full"></div>
-                            <p>Bank Stocks 21%</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-purple-200 rounded-full"></div>
-                            <p>Other 8%</p>
-                        </div>
-                    </div>
+
+                {/* Gráfico */}
+                <div className="mb-12 bg-[#2e2e2e]/80 rounded-2xl p-6 border border-purple-600/20">
+                    <h2 className="text-2xl font-bold mb-4 text-purple-400">Crescimento de Usuários</h2>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <AreaChart data={graphData}>
+                            <defs>
+                                <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#8A2BE2" stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor="#8A2BE2" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
+                            <XAxis dataKey="name" stroke="#ffffff60" />
+                            <YAxis stroke="#ffffff60" />
+                            <Tooltip contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid #8A2BE2' }} />
+                            <Area type="monotone" dataKey="users" stroke="#8A2BE2" fillOpacity={1} fill="url(#colorUsers)" />
+                        </AreaChart>
+                    </ResponsiveContainer>
                 </div>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Cash Flow */}
-                <div className="col-span-2 bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 shadow-xl shadow-purple-900/10">
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="p-2 bg-gray-900/50 rounded-lg"><ArrowUp className="w-5 h-5 text-purple-300" /></div>
-                        <h2 className="text-gray-300">Cash Flow</h2>
-                    </div>
-                    <p className="text-gray-400 mb-4">Cashflow up +{cashFlowUp}%, Outflow down -{outflowDown}%.</p>
-                    <div className="flex justify-between mb-2 text-gray-400 text-sm">
-                        <button className="px-2 py-1 bg-gray-900/50 rounded">D</button>
-                        <button className="px-2 py-1 bg-gray-900/50 rounded">W</button>
-                        <button className="px-2 py-1 bg-gray-900/50 rounded">M</button>
-                        <button className="px-2 py-1 bg-gray-900/50 rounded">Custom</button>
-                    </div>
-                    <div className="h-32 flex items-end gap-4">
-                        {cashFlowData.map((data, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center">
-                                <div className="w-8 bg-gradient-to-t from-purple-800 to-purple-500" style={{ height: `${Math.abs(data.inflow / 5000 * 100)}%` }}></div>
-                                <p className="text-gray-400 text-xs mt-2">{data.day}</p>
+
+                {/* Master: Revendedores */}
+                {isMaster && (
+                    <div className="mb-12">
+                        <h2 className="text-3xl font-bold mb-6 text-purple-400">Revendedores</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            {resellers.map(r => (
+                                <div key={r.id} className="bg-[#2e2e2e]/80 rounded-2xl p-6 border border-purple-600/30 shadow-md shadow-purple-600/20">
+                                    <h3 className="text-xl font-bold mb-4">{r.name}</h3>
+                                    <button
+                                        onClick={() => window.open(r.discord_link, '_blank')}
+                                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors"
+                                    >
+                                        <DiscordIcon />
+                                        Discord
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="bg-[#2e2e2e]/80 rounded-2xl p-6 border border-purple-600/30">
+                            <h3 className="text-xl font-bold mb-4">Adicionar Revendedor</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <input placeholder="Nome" value={newReseller.name} onChange={e => setNewReseller({ ...newReseller, name: e.target.value })} className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white" />
+                                <input placeholder="Senha" type="password" value={newReseller.password} onChange={e => setNewReseller({ ...newReseller, password: e.target.value })} className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white" />
+                                <input placeholder="Link Discord" value={newReseller.discord_link} onChange={e => setNewReseller({ ...newReseller, discord_link: e.target.value })} className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white" />
                             </div>
-                        ))}
-                    </div>
-                </div>
-                {/* AI Analysis */}
-                <div className="bg-gradient-to-br from-purple-950/50 to-black rounded-2xl p-6 shadow-xl shadow-purple-900/10">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-400 rounded-full flex items-center justify-center mb-4">
-                        <div className="grid grid-cols-3 gap-1">
-                            {Array.from({ length: 9 }).map((_, i) => <div key={i} className="w-2 h-2 bg-white/20 rounded-sm"></div>)}
+                            <button onClick={addReseller} className="mt-4 px-6 py-3 bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors">
+                                Adicionar
+                            </button>
                         </div>
                     </div>
-                    <h2 className="text-xl font-bold mb-2 text-white">Smart AI-Powered Financial Analytics</h2>
-                    <p className="text-gray-400 mb-4">Retrieve May report, analyze key data for informed strategic decisions.</p>
-                    <button className="w-full py-3 bg-white text-black rounded-full font-semibold">Analyze</button>
+                )}
+
+                {/* Tabs */}
+                <div className="flex gap-4 mb-6">
+                    <button onClick={() => setActiveTab('users')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'users' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Users ({users.length})</button>
+                    <button onClick={() => setActiveTab('usersfarm')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'usersfarm' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Users Farm ({usersFarm.length})</button>
+                    <button onClick={() => setActiveTab('raw')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'raw' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Raw</button>
                 </div>
-            </div>
-            {/* Rest of the dashboard below */}
-            {isMaster && (
-                <div className="mt-8 mb-12">
-                    <h2 className="text-3xl font-semibold mb-6 text-purple-300">Resellers</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        {resellers.map(r => (
-                            <div key={r.id} className="bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 border border-purple-800/30 shadow-lg">
-                                <h3 className="text-xl font-semibold mb-4 text-white">{r.name}</h3>
-                                <button
-                                    onClick={() => window.open(r.discord_link, '_blank')}
-                                    className="flex items-center gap-2 px-4 py-2 bg-purple-900/50 rounded-lg hover:bg-purple-800/50 transition-all"
-                                >
-                                    <FaDiscord className="w-5 h-5" />
-                                    Discord
+
+                {activeTab === 'raw' ? (
+                    <div className="space-y-6">
+                        <h2 className="text-2xl font-bold text-purple-400">Raw</h2>
+                        {!isMaster ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button onClick={() => copyRaw('users')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
+                                    <Copy className="w-5 h-5" /> Copiar raw de users
+                                </button>
+                                <button onClick={() => copyRaw('usersfarm')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
+                                    <Copy className="w-5 h-5" /> Copiar raw de users farm
+                                </button>
+                                <button onClick={() => copyRaw('dnmenu')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
+                                    <Copy className="w-5 h-5" /> Copiar raw do dn menu
+                                </button>
+                                <button onClick={() => copyRaw('dnfarm')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
+                                    <Copy className="w-5 h-5" /> Copiar raw do dn farm
+                                </button>
+                                <button onClick={() => copyRaw('dnsoftwares')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors col-span-1 md:col-span-2">
+                                    <Copy className="w-5 h-5" /> Copiar raw do dn softwares (todos)
                                 </button>
                             </div>
-                        ))}
-                    </div>
-                    <div className="bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 border border-purple-800/30 shadow-lg">
-                        <h3 className="text-xl font-semibold mb-4 text-white">Add Reseller</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input placeholder="Name" value={newReseller.name} onChange={e => setNewReseller({ ...newReseller, name: e.target.value })} className="px-4 py-3 bg-gray-900/50 rounded-xl border border-purple-800/40 text-white" />
-                            <input placeholder="Password" type="password" value={newReseller.password} onChange={e => setNewReseller({ ...newReseller, password: e.target.value })} className="px-4 py-3 bg-gray-900/50 rounded-xl border border-purple-800/40 text-white" />
-                            <input placeholder="Discord Link" value={newReseller.discord_link} onChange={e => setNewReseller({ ...newReseller, discord_link: e.target.value })} className="px-4 py-3 bg-gray-900/50 rounded-xl border border-purple-800/40 text-white" />
-                        </div>
-                        <button onClick={addReseller} className="mt-4 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-500 transition-all">
-                            Add
-                        </button>
-                    </div>
-                </div>
-            )}
-            {/* Tabs */}
-            <div className="flex gap-4 mb-6">
-                <button onClick={() => setActiveTab('users')} className={`px-6 py-3 rounded-2xl ${activeTab === 'users' ? 'bg-purple-900/50' : 'bg-gray-900/50'} hover:bg-purple-800/50 transition-all text-white`}>Users ({users.length})</button>
-                <button onClick={() => setActiveTab('usersfarm')} className={`px-6 py-3 rounded-2xl ${activeTab === 'usersfarm' ? 'bg-purple-900/50' : 'bg-gray-900/50'} hover:bg-purple-800/50 transition-all text-white`}>Users Farm ({usersFarm.length})</button>
-                <button onClick={() => setActiveTab('raw')} className={`px-6 py-3 rounded-2xl ${activeTab === 'raw' ? 'bg-purple-900/50' : 'bg-gray-900/50'} hover:bg-purple-800/50 transition-all text-white`}>Raw</button>
-            </div>
-            {activeTab === 'raw' ? (
-                <div className="space-y-6">
-                    <h2 className="text-2xl font-semibold text-white">Raw Management</h2>
-                    {!isMaster ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/dnmenu')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white">
-                                <Copy className="w-5 h-5" /> Copy DN Menu Raw URL
-                            </button>
-                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/dnfarm')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white">
-                                <Copy className="w-5 h-5" /> Copy DN Farm Raw URL
-                            </button>
-                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/usermenu')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white">
-                                <Copy className="w-5 h-5" /> Copy User Menu Raw URL
-                            </button>
-                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/userfarm')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white">
-                                <Copy className="w-5 h-5" /> Copy User Farm Raw URL
-                            </button>
-                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/dnsoftwares')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white col-span-2">
-                                <Copy className="w-5 h-5" /> Copy DN Softwares Raw URL
-                            </button>
-                            <button onClick={() => copyRawUsers('users')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white col-span-2">
-                                <Copy className="w-5 h-5" /> Copy Local Users Raw
-                            </button>
-                            <button onClick={() => copyRawUsers('usersfarm')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white col-span-2">
-                                <Copy className="w-5 h-5" /> Copy Local Users Farm Raw
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="space-y-8">
-                            <div>
-                                <h3 className="text-xl font-semibold mb-4 text-white">Edit Scripts (affects all resellers)</h3>
-                                {['dnmenu', 'dnfarm', 'dnsoftwares'].map(name => (
-                                    <div key={name} className="mb-6">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <label className="text-lg font-medium capitalize text-gray-300">{name.replace('dn', 'DN ')}</label>
-                                            {editingScript === name ? (
-                                                <button onClick={() => saveScript(name)} className="flex items-center gap-2 text-green-400">
-                                                    <Save className="w-5 h-5" /> Save
-                                                </button>
-                                            ) : (
-                                                <button onClick={() => setEditingScript(name)} className="flex items-center gap-2 text-purple-400">
-                                                    <Edit3 className="w-5 h-5" /> Edit
-                                                </button>
-                                            )}
+                        ) : (
+                            <div className="space-y-8">
+                                <div>
+                                    <h3 className="text-xl font-bold mb-4 text-purple-400">Editar Scripts (afeta todos os revendedores)</h3>
+                                    {['dnmenu', 'dnfarm', 'dnsoftwares'].map(name => (
+                                        <div key={name} className="mb-6">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <label className="text-lg font-medium capitalize">{name.replace('dn', 'DN ')}</label>
+                                                {editingScript === name ? (
+                                                    <button onClick={() => saveScript(name)} className="flex items-center gap-2 text-green-400 hover:text-green-300">
+                                                        <Save className="w-5 h-5" /> Salvar
+                                                    </button>
+                                                ) : (
+                                                    <button onClick={() => setEditingScript(name)} className="flex items-center gap-2 text-blue-400 hover:text-blue-300">
+                                                        <Edit3 className="w-5 h-5" /> Editar
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <textarea
+                                                value={scripts[name] || ''}
+                                                onChange={e => setScripts({ ...scripts, [name]: e.target.value })}
+                                                readOnly={editingScript !== name}
+                                                rows={10}
+                                                className="w-full px-4 py-3 bg-black/50 rounded-xl border border-purple-600/40 font-mono text-sm text-white"
+                                            />
                                         </div>
-                                        <textarea
-                                            value={scripts[name] || ''}
-                                            onChange={e => setScripts({ ...scripts, [name]: e.target.value })}
-                                            readOnly={editingScript !== name}
-                                            rows={10}
-                                            className="w-full px-4 py-3 bg-gray-900/50 rounded-2xl border border-purple-800/40 font-mono text-sm text-white"
-                                        />
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
+                        )}
+                    </div>
+                ) : (
+                    <>
+                        {/* Add user */}
+                        <div className="flex flex-col md:flex-row gap-4 mb-6">
+                            <input
+                                placeholder={activeTab === 'users' ? 'Novo usuário' : 'Novo usuário farm'}
+                                value={activeTab === 'users' ? newUser : newUserFarm}
+                                onChange={e => activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)}
+                                className="flex-1 px-4 py-3 bg-[#2e2e2e]/80 rounded-xl border border-purple-600/30 text-white"
+                            />
+                            <select
+                                value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
+                                onChange={e => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
+                                className="px-6 py-3 bg-[#2e2e2e]/80 rounded-xl border border-purple-600/30 text-white"
+                            >
+                                <option value="daily">Diário</option>
+                                <option value="weekly">Semanal</option>
+                                <option value="monthly">Mensal</option>
+                                <option value="lifetime">Vitalício</option>
+                            </select>
+                            <button onClick={addUser} className="flex items-center gap-2 px-6 py-3 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
+                                <UserCheck className="w-5 h-5" /> Adicionar
+                            </button>
                         </div>
-                    )}
-                </div>
-            ) : (
-                <>
-                    {/* Add user */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-6">
-                        <input
-                            placeholder={activeTab === 'users' ? 'Novo usuário' : 'Novo usuário farm'}
-                            value={activeTab === 'users' ? newUser : newUserFarm}
-                            onChange={e => activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)}
-                            className="flex-1 px-4 py-3 bg-gray-900/50 rounded-2xl border border-purple-800/30 text-white"
-                        />
-                        <select
-                            value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
-                            onChange={e => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
-                            className="px-6 py-3 bg-gray-900/50 rounded-2xl border border-purple-800/30 text-white"
+
+                        {/* Search */}
+                        <div className="relative mb-6">
+                            <SearchXIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                            <input
+                                placeholder="Buscar usuário..."
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 bg-[#2e2e2e]/80 rounded-xl border border-purple-600/30 text-white"
+                            />
+                        </div>
+
+                        {/* Table */}
+                        <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-[#2e2e2e]/50">
+                            <table className="w-full">
+                                <thead className="bg-[#1a1a1a]">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left">Usuário</th>
+                                        <th className="px-6 py-4 text-left">Duração</th>
+                                        <th className="px-6 py-4 text-left">Tempo Restante</th>
+                                        <th className="px-6 py-4 text-left">Status</th>
+                                        <th className="px-6 py-4 text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtered.map((u) => {
+                                        const remaining = u.expiration ? Math.max(0, new Date(u.expiration) - new Date()) : null;
+                                        const days = remaining ? Math.floor(remaining / (1000 * 60 * 60 * 24)) : null;
+                                        const hours = remaining ? Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) : null;
+                                        const isActive = !u.expiration || new Date(u.expiration) > new Date();
+
+                                        return (
+                                            <tr key={u.username} className="border-t border-gray-800 hover:bg-purple-900/10 transition-colors">
+                                                <td className="px-6 py-4">{u.username}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        {u.duration === 'daily' && <Clock4 className="w-4 h-4 text-yellow-400" />}
+                                                        {u.duration === 'weekly' && <CalendarDays className="w-4 h-4 text-blue-400" />}
+                                                        {u.duration === 'monthly' && <CalendarDays className="w-4 h-4 text-purple-400" />}
+                                                        {u.duration === 'lifetime' && <InfinityIcon className="w-4 h-4 text-green-400" />}
+                                                        <span className="capitalize">
+                                                            {u.duration === 'lifetime' ? 'Vitalício' : u.duration === 'daily' ? 'Diário' : u.duration === 'weekly' ? 'Semanal' : 'Mensal'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {u.expiration ? (days > 0 ? `${days}d ${hours}h` : `${hours}h`) : 'Vitalício'}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {isActive ? <div className="flex items-center gap-2 text-green-400"><Check className="w-4 h-4" /> Ativo</div>
+                                                        : <div className="flex items-center gap-2 text-red-400"><X className="w-4 h-4" /> Expirado</div>}
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button onClick={() => openDeleteConfirm(activeTab, u.username)}>
+                                                        <Trash className="w-5 h-5 text-red-400 hover:text-red-300 transition-colors" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
+
+                {/* Modal de Confirmação de Remoção */}
+                {confirmDelete && (
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="bg-zinc-900 border border-purple-600/50 rounded-2xl p-8 max-w-sm w-full shadow-2xl"
                         >
-                            <option value="daily">Diário</option>
-                            <option value="weekly">Semanal</option>
-                            <option value="monthly">Mensal</option>
-                            <option value="lifetime">Vitalício</option>
-                        </select>
-                        <button onClick={addUser} className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-2xl hover:bg-purple-500 transition-all">
-                            <UserCheck className="w-5 h-5" /> Adicionar
-                        </button>
+                            <h3 className="text-xl font-bold text-white mb-4">Confirmar Remoção</h3>
+                            <p className="text-gray-300 mb-6">
+                                Tem certeza que deseja remover o usuário <span className="text-purple-400 font-medium">{confirmDelete.username}</span>?
+                            </p>
+                            <div className="flex gap-4 justify-end">
+                                <button
+                                    onClick={cancelRemove}
+                                    className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-gray-300 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmRemove}
+                                    className="px-6 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-white font-medium transition-colors"
+                                >
+                                    Remover
+                                </button>
+                            </div>
+                        </motion.div>
                     </div>
-                    {/* Search */}
-                    <div className="relative mb-6">
-                        <SearchXIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                            placeholder="Buscar usuário..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-900/50 rounded-2xl border border-purple-800/30 text-white"
-                        />
-                    </div>
-                    {/* Table */}
-                    <div className="overflow-x-auto rounded-2xl border border-purple-800/20 bg-gradient-to-br from-gray-950 to-purple-950/30 shadow-xl">
-                        <table className="w-full">
-                            <thead className="bg-gray-950/50">
-                                <tr>
-                                    <th className="px-6 py-4 text-left text-gray-300">Usuário</th>
-                                    <th className="px-6 py-4 text-left text-gray-300">Duração</th>
-                                    <th className="px-6 py-4 text-left text-gray-300">Tempo Restante</th>
-                                    <th className="px-6 py-4 text-left text-gray-300">Status</th>
-                                    <th className="px-6 py-4 text-right text-gray-300">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filtered.map(u => {
-                                    const remaining = u.expiration ? Math.max(0, new Date(u.expiration) - new Date()) : null;
-                                    const days = remaining ? Math.floor(remaining / (1000 * 60 * 60 * 24)) : null;
-                                    const hours = remaining ? Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) : null;
-                                    const isActive = !u.expiration || new Date(u.expiration) > new Date();
-                                    return (
-                                        <tr key={u.username} className="border-t border-purple-800/20">
-                                            <td className="px-6 py-4 text-white">{u.username}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2 text-gray-300">
-                                                    {u.duration === 'daily' && <Clock4 className="w-4 h-4 text-yellow-300" />}
-                                                    {u.duration === 'weekly' && <CalendarDays className="w-4 h-4 text-blue-300" />}
-                                                    {u.duration === 'monthly' && <CalendarDays className="w-4 h-4 text-purple-300" />}
-                                                    {u.duration === 'lifetime' && <InfinityIcon className="w-4 h-4 text-green-300" />}
-                                                    <span className="capitalize">{u.duration === 'lifetime' ? 'Vitalício' : u.duration === 'daily' ? 'Diário' : u.duration === 'weekly' ? 'Semanal' : 'Mensal'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-300">
-                                                {u.expiration ? (days > 0 ? `${days}d ${hours}h` : `${hours}h`) : 'Vitalício'}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {isActive ? <div className="flex items-center gap-2 text-green-300"><Check className="w-4 h-4" /> Ativo</div>
-                                                    : <div className="flex items-center gap-2 text-red-300"><X className="w-4 h-4" /> Expirado</div>}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button onClick={() => removeUser(activeTab, u.username)}>
-                                                    <Trash className="w-5 h-5 text-red-300 hover:text-red-400 transition-colors" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </>
-            )}
-        </div>
+                )}
+            </div>
+        </motion.div>
     );
 }
