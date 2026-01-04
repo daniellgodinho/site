@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     UserCheck, Trash, LogOut, CalendarDays, Clock4, Infinity as InfinityIcon,
-    Check, X, Search as SearchXIcon, Copy, Edit3, Save
+    Check, X, Search as SearchXIcon, Copy, Edit3, Save, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { supabase } from '../supabase';
 import { Logo } from '../components/Logo';
 import { useNavigate } from 'react-router-dom';
-const DiscordIcon = () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515a.074.074 0 00-.078.037c-.211.375-.444.864-.608 1.25c-1.845-.276-3.68-.276-5.487 0c-.164-.386-.398-.875-.608-1.25a.074.074 0 00-.078-.037a19.736 19.736 0 00-4.885 1.515a.07.07 0 00-.032.027c-4.35 6.474-5.533 12.84-4.936 19.108a.082.082 0 00.027.06c2.797 2.022 5.479 2.879 8.039 3.05a.074.074 0 00.078-.037c.461-.63.873-1.295 1.226-1.994a.076.076 0 00-.041-.106c-.652-.248-1.274-.55-1.872-.892a.077.077 0 01-.008-.128c.126-.094.249-.195.373-.294a.074.074 0 01.078-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 01.078.01c.124.099.247.2.373.294a.077.077 0 01-.008.128c-.598.342-1.22.644-1.872.892a.076.076 0 00-.041.106c.36.698.775.962 1.226 1.993a.074.074 0 00.078.037c2.56-.171 5.242-1.028 8.039-3.05a.082.082 0 00.027-.06c.598-6.268-.584-12.634-4.936-19.108a.07.07 0 00-.032-.027zM8.827 15.946a2.31 2.31 0 01-2.312-2.314a2.312 2.312 0 112.312 2.314zm6.346 0a2.31 2.31 0 01-2.312-2.314a2.312 2.312 0 112.312 2.314z" />
-    </svg>
-);
+import { FaDiscord } from 'react-icons/fa';
 export default function Dashboard() {
     const selectedReseller = sessionStorage.getItem('reseller') || 'Neverpure Codes';
     const isMaster = sessionStorage.getItem('isMaster') === 'true';
@@ -29,6 +25,16 @@ export default function Dashboard() {
     const [editingScript, setEditingScript] = useState(null);
     const [newReseller, setNewReseller] = useState({ name: '', password: '', discord_link: '' });
     const navigate = useNavigate();
+    // Fake monthly data for chart
+    const cashFlowData = [
+        { day: '14 May', inflow: 3821.24, outflow: -1211.73 },
+        { day: '15 May', inflow: 4123.45, outflow: -1324.56 },
+        { day: '16 May', inflow: 3567.89, outflow: -1100.00 },
+        { day: '17 May', inflow: 4234.12, outflow: -1456.78 },
+        { day: '18 May', inflow: 3890.34, outflow: -1234.56 },
+        { day: '19 May', inflow: 4012.67, outflow: -1345.67 },
+        { day: '20 May', inflow: 3678.90, outflow: -1123.45 }
+    ];
     // Fetch user list
     const fetchUserLists = useCallback(async () => {
         const { data, error } = await supabase
@@ -148,7 +154,7 @@ export default function Dashboard() {
         }
     };
     const saveScript = async (name) => {
-        const { error } = await supabase.from('scripts').update({ code: scripts[name] }).eq('name', name);
+        const { error } = await supabase.from('scripts').upsert({ name, code: scripts[name] }, { onConflict: 'name' });
         if (!error) {
             setEditingScript(null);
             // eslint-disable-next-line no-alert
@@ -173,221 +179,296 @@ export default function Dashboard() {
     };
     const filtered = (activeTab === 'users' ? users : usersFarm).filter(u => u.username.toLowerCase().includes(searchQuery.toLowerCase()));
     const total = users.length + usersFarm.length;
-    const active = [...users, ...usersFarm].filter(u => !u.expiration || new Date(u.expiration) > new Date()).length;
+    // Fake monthly income
+    const monthlyIncome = 4632.57;
+    const monthlyChange = 6.12;
+    const cashFlowUp = 6.18;
+    const outflowDown = 2.1;
     return (
-        <div className="min-h-screen bg-gradient-to-br from-black to-purple-950/20 text-white p-4"> {/* Enhanced gradient for minimalistic feel */}
+        <div className="min-h-screen bg-gradient-to-br from-black to-purple-950/50 text-white p-8">
             {/* Header */}
-            <header className="bg-black/80 backdrop-blur-md border-b border-purple-800/30 rounded-xl shadow-lg shadow-purple-900/10 mb-8"> {/* Softer blur and shadow */}
-                <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <header className="bg-gradient-to-br from-gray-950 to-purple-950/30 backdrop-blur-md rounded-2xl shadow-2xl shadow-purple-900/20 mb-8 p-6">
+                <div className="flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <Logo className="w-32 h-32" />
+                        <Logo className="w-10 h-10" />
                         <div>
-                            <h1 className="text-2xl font-semibold text-purple-300">Welcome Back {selectedReseller}!</h1> {/* Purple accent */}
-                            {isMaster && <p className="text-purple-400 font-medium">Master Mode</p>}
+                            <h1 className="text-3xl font-bold">Welcome Back {selectedReseller}!</h1>
+                            <p className="text-gray-400">We have summarized your account activity for the past month.</p>
                         </div>
                     </div>
-                    <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 bg-purple-900/50 rounded-lg hover:bg-purple-800/50 transition-all shadow-md"> {/* Gradient button */}
-                        <LogOut className="w-5 h-5" /> Logout
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button className="p-2 bg-gray-900/50 rounded-full"><ArrowUp className="w-5 h-5 text-white" /></button>
+                        <button className="p-2 bg-gray-900/50 rounded-full"><ArrowDown className="w-5 h-5 text-white" /></button>
+                        <button className="p-2 bg-gray-900/50 rounded-full"><SearchXIcon className="w-5 h-5 text-white" /></button>
+                        <button onClick={handleLogout} className="p-2 bg-gray-900/50 rounded-full"><LogOut className="w-5 h-5 text-white" /></button>
+                    </div>
                 </div>
             </header>
-            <div className="max-w-7xl mx-auto">
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="p-6 bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-purple-800/20 shadow-xl shadow-purple-900/10"> {/* Gradient card */}
-                        <p className="text-gray-400 mb-2">Total Balance</p>
-                        <p className="text-4xl font-bold text-purple-300">{total}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Total Balance */}
+                <div className="bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 shadow-xl shadow-purple-900/10">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="p-2 bg-gray-900/50 rounded-lg"><UserCheck className="w-5 h-5 text-purple-300" /></div>
+                        <h2 className="text-gray-300">Total Users</h2>
                     </div>
-                    <div className="p-6 bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-purple-800/20 shadow-xl shadow-purple-900/10">
-                        <p className="text-gray-400 mb-2">Active</p>
-                        <p className="text-4xl font-bold text-green-300">{active}</p>
-                    </div>
-                    <div className="p-6 bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-purple-800/20 shadow-xl shadow-purple-900/10">
-                        <p className="text-gray-400 mb-2">Expired</p>
-                        <p className="text-4xl font-bold text-red-300">{total - active}</p>
+                    <p className="text-5xl font-bold">{total}</p>
+                    <div className="mt-4 flex gap-4">
+                        <div className="bg-gray-900/50 rounded-xl p-4 flex-1">
+                            <p className="text-gray-400 text-sm">DN Menu</p>
+                            <p className="text-2xl font-bold">{users.length}</p>
+                        </div>
+                        <div className="bg-gray-900/50 rounded-xl p-4 flex-1">
+                            <p className="text-gray-400 text-sm">DN Farm</p>
+                            <p className="text-2xl font-bold">{usersFarm.length}</p>
+                        </div>
                     </div>
                 </div>
-                {/* Master: Resellers cards */}
-                {isMaster && (
-                    <div className="mb-12">
-                        <h2 className="text-3xl font-semibold mb-6 text-purple-300">Resellers</h2> {/* Purple title */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            {resellers.map(r => (
-                                <div key={r.id} className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border border-purple-800/30 shadow-lg"> {/* Enhanced card */}
-                                    <h3 className="text-xl font-semibold mb-4 text-white">{r.name}</h3>
-                                    <button
-                                        onClick={() => window.open(r.discord_link, '_blank')}
-                                        className="flex items-center gap-2 px-4 py-2 bg-purple-900/50 rounded-lg hover:bg-purple-800/50 transition-all"
-                                    >
-                                        <DiscordIcon />
-                                        Discord
-                                    </button>
-                                </div>
-                            ))}
+                {/* Monthly Income */}
+                <div className="bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 shadow-xl shadow-purple-900/10">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="p-2 bg-gray-900/50 rounded-lg"><ArrowUp className="w-5 h-5 text-purple-300" /></div>
+                        <h2 className="text-gray-300">Monthly New Users</h2>
+                    </div>
+                    <p className="text-5xl font-bold">${monthlyIncome} <span className="text-green-400 text-2xl">~ +{monthlyChange}%</span></p>
+                    <div className="mt-4 h-20 flex items-end gap-1">
+                        {Array.from({ length: 30 }).map((_, i) => (
+                            <div key={i} className="w-2 bg-gradient-to-t from-purple-500 to-purple-300 opacity-80" style={{ height: `${Math.random() * 100}%` }}></div>
+                        ))}
+                    </div>
+                    <div className="mt-4 flex gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                            <p>Mutual Funds 27%</p>
                         </div>
-                        <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border border-purple-800/30 shadow-lg">
-                            <h3 className="text-xl font-semibold mb-4 text-white">Add Reseller</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <input placeholder="Name" value={newReseller.name} onChange={e => setNewReseller({ ...newReseller, name: e.target.value })} className="px-4 py-3 bg-black/60 rounded-xl border border-purple-800/40 text-white" /> {/* Minimal input */}
-                                <input placeholder="Password" type="password" value={newReseller.password} onChange={e => setNewReseller({ ...newReseller, password: e.target.value })} className="px-4 py-3 bg-black/60 rounded-xl border border-purple-800/40 text-white" />
-                                <input placeholder="Discord Link" value={newReseller.discord_link} onChange={e => setNewReseller({ ...newReseller, discord_link: e.target.value })} className="px-4 py-3 bg-black/60 rounded-xl border border-purple-800/40 text-white" />
-                            </div>
-                            <button onClick={addReseller} className="mt-4 px-6 py-3 bg-purple-900/50 rounded-xl hover:bg-purple-800/50 transition-all">
-                                Add
-                            </button>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
+                            <p>Crypto Market 44%</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-purple-300 rounded-full"></div>
+                            <p>Bank Stocks 21%</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-purple-200 rounded-full"></div>
+                            <p>Other 8%</p>
                         </div>
                     </div>
-                )}
-                {/* Tabs */}
-                <div className="flex gap-4 mb-6">
-                    <button onClick={() => setActiveTab('users')} className={`px-6 py-3 rounded-2xl ${activeTab === 'users' ? 'bg-purple-900/50' : 'bg-gray-900/50'} hover:bg-purple-800/50 transition-all`}>Users ({users.length})</button>
-                    <button onClick={() => setActiveTab('usersfarm')} className={`px-6 py-3 rounded-2xl ${activeTab === 'usersfarm' ? 'bg-purple-900/50' : 'bg-gray-900/50'} hover:bg-purple-800/50 transition-all`}>Users Farm ({usersFarm.length})</button>
-                    <button onClick={() => setActiveTab('raw')} className={`px-6 py-3 rounded-2xl ${activeTab === 'raw' ? 'bg-purple-900/50' : 'bg-gray-900/50'} hover:bg-purple-800/50 transition-all`}>Raw</button>
                 </div>
-                {activeTab === 'raw' ? (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-semibold text-purple-300">Raw Management</h2> {/* Purple title */}
-                        {!isMaster ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/dnmenu')} className="flex items-center justify-center gap-2 py-4 bg-purple-900/50 rounded-2xl hover:bg-purple-800/50 transition-all shadow-md">
-                                    <Copy className="w-5 h-5" /> Copy DN Menu Raw URL
-                                </button>
-                                <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/dnfarm')} className="flex items-center justify-center gap-2 py-4 bg-purple-900/50 rounded-2xl hover:bg-purple-800/50 transition-all shadow-md">
-                                    <Copy className="w-5 h-5" /> Copy DN Farm Raw URL
-                                </button>
-                                <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/usermenu')} className="flex items-center justify-center gap-2 py-4 bg-purple-900/50 rounded-2xl hover:bg-purple-800/50 transition-all shadow-md">
-                                    <Copy className="w-5 h-5" /> Copy User Menu Raw URL
-                                </button>
-                                <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/userfarm')} className="flex items-center justify-center gap-2 py-4 bg-purple-900/50 rounded-2xl hover:bg-purple-800/50 transition-all shadow-md">
-                                    <Copy className="w-5 h-5" /> Copy User Farm Raw URL
-                                </button>
-                                <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/dnsoftwares')} className="flex items-center justify-center gap-2 py-4 bg-purple-900/50 rounded-2xl hover:bg-purple-800/50 transition-all shadow-md col-span-2">
-                                    <Copy className="w-5 h-5" /> Copy DN Softwares Raw URL
-                                </button>
-                                {/* Kept users raw copy as direct for local, but automation is in API */}
-                                <button onClick={() => copyRawUsers('users')} className="flex items-center justify-center gap-2 py-4 bg-purple-900/50 rounded-2xl hover:bg-purple-800/50 transition-all shadow-md col-span-2">
-                                    <Copy className="w-5 h-5" /> Copy Local Users Raw
-                                </button>
-                                <button onClick={() => copyRawUsers('usersfarm')} className="flex items-center justify-center gap-2 py-4 bg-purple-900/50 rounded-2xl hover:bg-purple-800/50 transition-all shadow-md col-span-2">
-                                    <Copy className="w-5 h-5" /> Copy Local Users Farm Raw
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="space-y-8">
-                                <div>
-                                    <h3 className="text-xl font-semibold mb-4 text-white">Edit Scripts (affects all resellers)</h3>
-                                    {['dnmenu', 'dnfarm', 'dnsoftwares'].map(name => (
-                                        <div key={name} className="mb-6">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <label className="text-lg font-medium capitalize text-purple-300">{name.replace('dn', 'DN ')}</label> {/* Purple label */}
-                                                {editingScript === name ? (
-                                                    <button onClick={() => saveScript(name)} className="flex items-center gap-2 text-green-300">
-                                                        <Save className="w-5 h-5" /> Save
-                                                    </button>
-                                                ) : (
-                                                    <button onClick={() => setEditingScript(name)} className="flex items-center gap-2 text-purple-300">
-                                                        <Edit3 className="w-5 h-5" /> Edit
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <textarea
-                                                value={scripts[name] || ''}
-                                                onChange={e => setScripts({ ...scripts, [name]: e.target.value })}
-                                                readOnly={editingScript !== name}
-                                                rows={10}
-                                                className="w-full px-4 py-3 bg-black/60 rounded-2xl border border-purple-800/40 font-mono text-sm text-white"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <>
-                        {/* Add user */}
-                        <div className="flex flex-col md:flex-row gap-4 mb-6">
-                            <input
-                                placeholder={activeTab === 'users' ? 'New User' : 'New Farm User'}
-                                value={activeTab === 'users' ? newUser : newUserFarm}
-                                onChange={e => activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)}
-                                className="flex-1 px-4 py-3 bg-black/60 rounded-2xl border border-purple-800/30 text-white"
-                            />
-                            <select
-                                value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
-                                onChange={e => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
-                                className="px-6 py-3 bg-black/60 rounded-2xl border border-purple-800/30 text-white"
-                            >
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="lifetime">Lifetime</option>
-                            </select>
-                            <button onClick={addUser} className="flex items-center gap-2 px-6 py-3 bg-purple-900/50 rounded-2xl hover:bg-purple-800/50 transition-all">
-                                <UserCheck className="w-5 h-5" /> Add
-                            </button>
-                        </div>
-                        {/* Search */}
-                        <div className="relative mb-6">
-                            <SearchXIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                placeholder="Search user..."
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-black/60 rounded-2xl border border-purple-800/30 text-white"
-                            />
-                        </div>
-                        {/* Table */}
-                        <div className="overflow-x-auto rounded-2xl border border-purple-800/20 bg-gray-900/50 shadow-lg">
-                            <table className="w-full">
-                                <thead className="bg-black/80">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-purple-300">User</th> {/* Purple header */}
-                                        <th className="px-6 py-4 text-left text-purple-300">Duration</th>
-                                        <th className="px-6 py-4 text-left text-purple-300">Remaining Time</th>
-                                        <th className="px-6 py-4 text-left text-purple-300">Status</th>
-                                        <th className="px-6 py-4 text-right text-purple-300">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filtered.map(u => {
-                                        const remaining = u.expiration ? Math.max(0, new Date(u.expiration) - new Date()) : null;
-                                        const days = remaining ? Math.floor(remaining / (1000 * 60 * 60 * 24)) : null;
-                                        const hours = remaining ? Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) : null;
-                                        const isActive = !u.expiration || new Date(u.expiration) > new Date();
-                                        return (
-                                            <tr key={u.username} className="border-t border-purple-800/20">
-                                                <td className="px-6 py-4 text-white">{u.username}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2 text-gray-300">
-                                                        {u.duration === 'daily' && <Clock4 className="w-4 h-4 text-yellow-300" />}
-                                                        {u.duration === 'weekly' && <CalendarDays className="w-4 h-4 text-blue-300" />}
-                                                        {u.duration === 'monthly' && <CalendarDays className="w-4 h-4 text-purple-300" />}
-                                                        {u.duration === 'lifetime' && <InfinityIcon className="w-4 h-4 text-green-300" />}
-                                                        <span className="capitalize">{u.duration === 'lifetime' ? 'Lifetime' : u.duration}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-gray-300">
-                                                    {u.expiration ? (days > 0 ? `${days}d ${hours}h` : `${hours}h`) : 'Lifetime'}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    {isActive ? <div className="flex items-center gap-2 text-green-300"><Check className="w-4 h-4" /> Active</div>
-                                                        : <div className="flex items-center gap-2 text-red-300"><X className="w-4 h-4" /> Expired</div>}
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <button onClick={() => removeUser(activeTab, u.username)}>
-                                                        <Trash className="w-5 h-5 text-red-300 hover:text-red-400 transition-colors" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </>
-                )}
             </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Cash Flow */}
+                <div className="col-span-2 bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 shadow-xl shadow-purple-900/10">
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="p-2 bg-gray-900/50 rounded-lg"><ArrowUp className="w-5 h-5 text-purple-300" /></div>
+                        <h2 className="text-gray-300">Cash Flow</h2>
+                    </div>
+                    <p className="text-gray-400 mb-4">Cashflow up +{cashFlowUp}%, Outflow down -{outflowDown}%.</p>
+                    <div className="flex justify-between mb-2 text-gray-400 text-sm">
+                        <button className="px-2 py-1 bg-gray-900/50 rounded">D</button>
+                        <button className="px-2 py-1 bg-gray-900/50 rounded">W</button>
+                        <button className="px-2 py-1 bg-gray-900/50 rounded">M</button>
+                        <button className="px-2 py-1 bg-gray-900/50 rounded">Custom</button>
+                    </div>
+                    <div className="h-32 flex items-end gap-4">
+                        {cashFlowData.map((data, i) => (
+                            <div key={i} className="flex-1 flex flex-col items-center">
+                                <div className="w-8 bg-gradient-to-t from-purple-800 to-purple-500" style={{ height: `${Math.abs(data.inflow / 5000 * 100)}%` }}></div>
+                                <p className="text-gray-400 text-xs mt-2">{data.day}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                {/* AI Analysis */}
+                <div className="bg-gradient-to-br from-purple-950/50 to-black rounded-2xl p-6 shadow-xl shadow-purple-900/10">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-400 rounded-full flex items-center justify-center mb-4">
+                        <div className="grid grid-cols-3 gap-1">
+                            {Array.from({ length: 9 }).map((_, i) => <div key={i} className="w-2 h-2 bg-white/20 rounded-sm"></div>)}
+                        </div>
+                    </div>
+                    <h2 className="text-xl font-bold mb-2 text-white">Smart AI-Powered Financial Analytics</h2>
+                    <p className="text-gray-400 mb-4">Retrieve May report, analyze key data for informed strategic decisions.</p>
+                    <button className="w-full py-3 bg-white text-black rounded-full font-semibold">Analyze</button>
+                </div>
+            </div>
+            {/* Rest of the dashboard below */}
+            {isMaster && (
+                <div className="mt-8 mb-12">
+                    <h2 className="text-3xl font-semibold mb-6 text-purple-300">Resellers</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        {resellers.map(r => (
+                            <div key={r.id} className="bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 border border-purple-800/30 shadow-lg">
+                                <h3 className="text-xl font-semibold mb-4 text-white">{r.name}</h3>
+                                <button
+                                    onClick={() => window.open(r.discord_link, '_blank')}
+                                    className="flex items-center gap-2 px-4 py-2 bg-purple-900/50 rounded-lg hover:bg-purple-800/50 transition-all"
+                                >
+                                    <FaDiscord className="w-5 h-5" />
+                                    Discord
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="bg-gradient-to-br from-gray-950 to-purple-950/30 rounded-2xl p-6 border border-purple-800/30 shadow-lg">
+                        <h3 className="text-xl font-semibold mb-4 text-white">Add Reseller</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input placeholder="Name" value={newReseller.name} onChange={e => setNewReseller({ ...newReseller, name: e.target.value })} className="px-4 py-3 bg-gray-900/50 rounded-xl border border-purple-800/40 text-white" />
+                            <input placeholder="Password" type="password" value={newReseller.password} onChange={e => setNewReseller({ ...newReseller, password: e.target.value })} className="px-4 py-3 bg-gray-900/50 rounded-xl border border-purple-800/40 text-white" />
+                            <input placeholder="Discord Link" value={newReseller.discord_link} onChange={e => setNewReseller({ ...newReseller, discord_link: e.target.value })} className="px-4 py-3 bg-gray-900/50 rounded-xl border border-purple-800/40 text-white" />
+                        </div>
+                        <button onClick={addReseller} className="mt-4 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-500 transition-all">
+                            Add
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* Tabs */}
+            <div className="flex gap-4 mb-6">
+                <button onClick={() => setActiveTab('users')} className={`px-6 py-3 rounded-2xl ${activeTab === 'users' ? 'bg-purple-900/50' : 'bg-gray-900/50'} hover:bg-purple-800/50 transition-all text-white`}>Users ({users.length})</button>
+                <button onClick={() => setActiveTab('usersfarm')} className={`px-6 py-3 rounded-2xl ${activeTab === 'usersfarm' ? 'bg-purple-900/50' : 'bg-gray-900/50'} hover:bg-purple-800/50 transition-all text-white`}>Users Farm ({usersFarm.length})</button>
+                <button onClick={() => setActiveTab('raw')} className={`px-6 py-3 rounded-2xl ${activeTab === 'raw' ? 'bg-purple-900/50' : 'bg-gray-900/50'} hover:bg-purple-800/50 transition-all text-white`}>Raw</button>
+            </div>
+            {activeTab === 'raw' ? (
+                <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-white">Raw Management</h2>
+                    {!isMaster ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/dnmenu')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white">
+                                <Copy className="w-5 h-5" /> Copy DN Menu Raw URL
+                            </button>
+                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/dnfarm')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white">
+                                <Copy className="w-5 h-5" /> Copy DN Farm Raw URL
+                            </button>
+                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/usermenu')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white">
+                                <Copy className="w-5 h-5" /> Copy User Menu Raw URL
+                            </button>
+                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/userfarm')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white">
+                                <Copy className="w-5 h-5" /> Copy User Farm Raw URL
+                            </button>
+                            <button onClick={() => copyText('https://dnsoftwares.vercel.app/raw/dnsoftwares')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white col-span-2">
+                                <Copy className="w-5 h-5" /> Copy DN Softwares Raw URL
+                            </button>
+                            <button onClick={() => copyRawUsers('users')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white col-span-2">
+                                <Copy className="w-5 h-5" /> Copy Local Users Raw
+                            </button>
+                            <button onClick={() => copyRawUsers('usersfarm')} className="flex items-center justify-center gap-2 py-4 bg-gray-900/50 rounded-2xl hover:bg-purple-900/30 transition-all shadow-md text-white col-span-2">
+                                <Copy className="w-5 h-5" /> Copy Local Users Farm Raw
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="space-y-8">
+                            <div>
+                                <h3 className="text-xl font-semibold mb-4 text-white">Edit Scripts (affects all resellers)</h3>
+                                {['dnmenu', 'dnfarm', 'dnsoftwares'].map(name => (
+                                    <div key={name} className="mb-6">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="text-lg font-medium capitalize text-gray-300">{name.replace('dn', 'DN ')}</label>
+                                            {editingScript === name ? (
+                                                <button onClick={() => saveScript(name)} className="flex items-center gap-2 text-green-400">
+                                                    <Save className="w-5 h-5" /> Save
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => setEditingScript(name)} className="flex items-center gap-2 text-purple-400">
+                                                    <Edit3 className="w-5 h-5" /> Edit
+                                                </button>
+                                            )}
+                                        </div>
+                                        <textarea
+                                            value={scripts[name] || ''}
+                                            onChange={e => setScripts({ ...scripts, [name]: e.target.value })}
+                                            readOnly={editingScript !== name}
+                                            rows={10}
+                                            className="w-full px-4 py-3 bg-gray-900/50 rounded-2xl border border-purple-800/40 font-mono text-sm text-white"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <>
+                    {/* Add user */}
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                        <input
+                            placeholder={activeTab === 'users' ? 'Novo usuário' : 'Novo usuário farm'}
+                            value={activeTab === 'users' ? newUser : newUserFarm}
+                            onChange={e => activeTab === 'users' ? setNewUser(e.target.value) : setNewUserFarm(e.target.value)}
+                            className="flex-1 px-4 py-3 bg-gray-900/50 rounded-2xl border border-purple-800/30 text-white"
+                        />
+                        <select
+                            value={activeTab === 'users' ? selectedDuration : selectedDurationFarm}
+                            onChange={e => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
+                            className="px-6 py-3 bg-gray-900/50 rounded-2xl border border-purple-800/30 text-white"
+                        >
+                            <option value="daily">Diário</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="monthly">Mensal</option>
+                            <option value="lifetime">Vitalício</option>
+                        </select>
+                        <button onClick={addUser} className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-2xl hover:bg-purple-500 transition-all">
+                            <UserCheck className="w-5 h-5" /> Adicionar
+                        </button>
+                    </div>
+                    {/* Search */}
+                    <div className="relative mb-6">
+                        <SearchXIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                            placeholder="Buscar usuário..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 bg-gray-900/50 rounded-2xl border border-purple-800/30 text-white"
+                        />
+                    </div>
+                    {/* Table */}
+                    <div className="overflow-x-auto rounded-2xl border border-purple-800/20 bg-gradient-to-br from-gray-950 to-purple-950/30 shadow-xl">
+                        <table className="w-full">
+                            <thead className="bg-gray-950/50">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-gray-300">Usuário</th>
+                                    <th className="px-6 py-4 text-left text-gray-300">Duração</th>
+                                    <th className="px-6 py-4 text-left text-gray-300">Tempo Restante</th>
+                                    <th className="px-6 py-4 text-left text-gray-300">Status</th>
+                                    <th className="px-6 py-4 text-right text-gray-300">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filtered.map(u => {
+                                    const remaining = u.expiration ? Math.max(0, new Date(u.expiration) - new Date()) : null;
+                                    const days = remaining ? Math.floor(remaining / (1000 * 60 * 60 * 24)) : null;
+                                    const hours = remaining ? Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) : null;
+                                    const isActive = !u.expiration || new Date(u.expiration) > new Date();
+                                    return (
+                                        <tr key={u.username} className="border-t border-purple-800/20">
+                                            <td className="px-6 py-4 text-white">{u.username}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2 text-gray-300">
+                                                    {u.duration === 'daily' && <Clock4 className="w-4 h-4 text-yellow-300" />}
+                                                    {u.duration === 'weekly' && <CalendarDays className="w-4 h-4 text-blue-300" />}
+                                                    {u.duration === 'monthly' && <CalendarDays className="w-4 h-4 text-purple-300" />}
+                                                    {u.duration === 'lifetime' && <InfinityIcon className="w-4 h-4 text-green-300" />}
+                                                    <span className="capitalize">{u.duration === 'lifetime' ? 'Vitalício' : u.duration === 'daily' ? 'Diário' : u.duration === 'weekly' ? 'Semanal' : 'Mensal'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-300">
+                                                {u.expiration ? (days > 0 ? `${days}d ${hours}h` : `${hours}h`) : 'Vitalício'}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {isActive ? <div className="flex items-center gap-2 text-green-300"><Check className="w-4 h-4" /> Ativo</div>
+                                                    : <div className="flex items-center gap-2 text-red-300"><X className="w-4 h-4" /> Expirado</div>}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button onClick={() => removeUser(activeTab, u.username)}>
+                                                    <Trash className="w-5 h-5 text-red-300 hover:text-red-400 transition-colors" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
         </div>
     );
 }
