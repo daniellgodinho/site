@@ -218,7 +218,7 @@ function Problem() {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#2596be]">
+        <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111011]">
             <div className="max-w-5xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -243,7 +243,7 @@ function Solution() {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#2596be]">
+        <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111011]">
             <div className="max-w-5xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -289,7 +289,7 @@ function VideoShowcase() {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section id="features" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#2596be] relative">
+        <section id="features" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111011] relative">
             <div className="max-w-7xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -398,7 +398,7 @@ function Pricing() {
     ];
 
     return (
-        <section id="pricing" ref={ref} className="py-32 px-4 sm:px-6 lg:px-8 relative bg-[#2596be]">
+        <section id="pricing" ref={ref} className="py-32 px-4 sm:px-6 lg:px-8 relative bg-[#111011]">
             <div className="max-w-7xl mx-auto">
                 {/* Título */}
                 <motion.div
@@ -519,7 +519,7 @@ function Compatibility() {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#2596be] bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
+        <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111011] bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
             <div className="max-w-4xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -567,7 +567,7 @@ function Revendedores({ resellers }) {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section id="revendedores" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#2596be] bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
+        <section id="revendedores" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111011] bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
             <div className="max-w-7xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -682,7 +682,7 @@ function Termos() {
     ];
 
     return (
-        <section id="termos" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#2596be] bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
+        <section id="termos" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111011] bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
             <div className="max-w-4xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -726,7 +726,7 @@ function Termos() {
 
 function Footer() {
     return (
-        <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-purple-600/20 bg-[#2596be]">
+        <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-purple-600/20 bg-[#111011]">
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div>
