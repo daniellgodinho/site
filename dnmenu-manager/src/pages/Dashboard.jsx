@@ -9,12 +9,8 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tool
 import { supabase } from '../supabase';
 import { useNavigate } from 'react-router-dom';
 import monkeyLogo from '../assets/monkeyLogo.png';
+import { FaDiscord } from 'react-icons/fa';
 
-const DiscordIcon = () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515a.074.074 0 00-.078.037c-.211.375-.444.864-.608 1.25c-1.845-.276-3.68-.276-5.487 0c-.164-.386-.398-.875-.608-1.25a.074.074 0 00-.078-.037a19.736 19.736 0 00-4.885 1.515a.07.07 0 00-.032.027c-4.35 6.474-5.533 12.84-4.936 19.108a.082.082 0 00.027.06c2.797 2.022 5.479 2.879 8.039 3.05a.074.074 0 00.078-.037c.461-.63.873-1.295 1.226-1.994a.076.076 0 00-.041-.106c-.652-.248-1.274-.55-1.872-.892a.077.077 0 01-.008-.128c.126-.094.249-.195.373-.294a.074.074 0 01.078-.01c3.928 1.793 8.18 1.793 12.061 0a.074.074 0 01.078.01c.124.099.247.2.373.294a.077.077 0 01-.008.128c-.598.342-1.22.644-1.872.892a.076.076 0 00-.041.106c.36.698.775.962 1.226 1.993a.074.074 0 00.078.037c2.56-.171 5.242-1.028 8.039-3.05a.082.082 0 00.027-.06c.598-6.268-.584-12.634-4.936-19.108a.07.07 0 00-.032-.027zM8.827 15.946a2.31 2.31 0 01-2.312-2.314a2.312 2.312 0 112.312 2.314zm6.346 0a2.31 2.31 0 01-2.312-2.314a2.312 2.312 0 112.312 2.314z" />
-    </svg>
-);
 
 export default function Dashboard() {
     const selectedReseller = sessionStorage.getItem('reseller') || 'Neverpure Codes';
@@ -41,11 +37,12 @@ export default function Dashboard() {
 
     // Modal de confirmação
     const [confirmDelete, setConfirmDelete] = useState(null);
+    const [confirmDeleteReseller, setConfirmDeleteReseller] = useState(null);
 
     const navigate = useNavigate();
 
     const updateListsInSupabase = useCallback(async (newUsers, newFarm) => {
-        const toStr = (list) => list.map(u => `${u.username}|${u.duration}|${u.expiration || ''}`).join(',');
+        const toStr = (list) => list.map(u => `${u.username}|${u.duration}|${u.expiration || ''}|${u.created_at}`).join(',');
         const { error } = await supabase
             .from('user_lists')
             .update({ users: toStr(newUsers), users_farm: toStr(newFarm) })
@@ -68,8 +65,8 @@ export default function Dashboard() {
         if (data) {
             setUserListId(data.id);
             const parseList = (str) => str ? str.split(',').map(s => {
-                const [username, duration = 'lifetime', expiration = ''] = s.split('|');
-                return { username, duration, expiration };
+                const [username, duration = 'lifetime', expiration = '', created_at = new Date().toISOString()] = s.split('|');
+                return { username, duration, expiration, created_at };
             }) : [];
             setUsers(parseList(data.users));
             setUsersFarm(parseList(data.users_farm));
@@ -103,7 +100,7 @@ export default function Dashboard() {
         if (isMaster) {
             const fetchMasterData = async () => {
                 const { data: res } = await supabase.from('resellers').select('*');
-                setResellers(res || []);
+                setResellers(res?.filter(r => r.name !== 'indefinido') || []);
 
                 const { data: scr } = await supabase.from('scripts').select('*');
                 const map = {};
@@ -115,21 +112,18 @@ export default function Dashboard() {
     }, [isMaster]);
 
     useEffect(() => {
-        setGraphData([
-            { name: 'Jan', users: 400 },
-            { name: 'Feb', users: 300 },
-            { name: 'Mar', users: 500 },
-            { name: 'Abr', users: 800 },
-            { name: 'Mai', users: 700 },
-            { name: 'Jun', users: 900 },
-            { name: 'Jul', users: 1100 },
-            { name: 'Ago', users: 1000 },
-            { name: 'Set', users: 1200 },
-            { name: 'Out', users: 1400 },
-            { name: 'Nov', users: 1300 },
-            { name: 'Dez', users: 1500 },
-        ]);
-    }, []);
+        const allUsers = [...users, ...usersFarm];
+        const months = ['Jan', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        const userCounts = months.map((_, index) => ({
+            name: months[index],
+            users: allUsers.filter(u => {
+                if (!u.created_at) return false;
+                const date = new Date(u.created_at);
+                return date.getMonth() === index;
+            }).length
+        }));
+        setGraphData(userCounts);
+    }, [users, usersFarm]);
 
     const handleLogout = () => {
         sessionStorage.clear();
@@ -152,8 +146,9 @@ export default function Dashboard() {
 
         const duration = isUsers ? selectedDuration : selectedDurationFarm;
         const expiration = calculateExpiration(duration);
+        const created_at = new Date().toISOString();
 
-        const newEntry = { username, duration, expiration };
+        const newEntry = { username, duration, expiration, created_at };
         const newList = isUsers ? [...users, newEntry] : [...usersFarm, newEntry];
 
         const success = await updateListsInSupabase(isUsers ? newList : users, isUsers ? usersFarm : newList);
@@ -200,12 +195,34 @@ export default function Dashboard() {
         if (!error) {
             setNewReseller({ name: '', password: '', discord_link: '' });
             const { data } = await supabase.from('resellers').select('*');
-            setResellers(data || []);
+            setResellers(data?.filter(r => r.name !== 'indefinido') || []);
             alert('Revendedor adicionado!');
         } else {
             alert('Erro ao adicionar revendedor.');
         }
     };
+
+    const removeReseller = async (id, name) => {
+        const { error } = await supabase.from('resellers').delete().eq('id', id);
+        if (!error) {
+            setResellers(resellers.filter(r => r.id !== id));
+            alert(`${name} removido com sucesso!`);
+        } else {
+            alert('Erro ao remover revendedor.');
+        }
+    };
+
+    const openDeleteResellerConfirm = (id, name) => {
+        setConfirmDeleteReseller({ id, name });
+    };
+
+    const confirmRemoveReseller = async () => {
+        if (!confirmDeleteReseller) return;
+        await removeReseller(confirmDeleteReseller.id, confirmDeleteReseller.name);
+        setConfirmDeleteReseller(null);
+    };
+
+    const cancelRemoveReseller = () => setConfirmDeleteReseller(null);
 
     const saveScript = async (name) => {
         const { error } = await supabase.from('scripts').update({ code: scripts[name] }).eq('name', name);
@@ -303,13 +320,22 @@ export default function Dashboard() {
                             {resellers.map(r => (
                                 <div key={r.id} className="bg-[#2e2e2e]/80 rounded-2xl p-6 border border-purple-600/30 shadow-md shadow-purple-600/20">
                                     <h3 className="text-xl font-bold mb-4">{r.name}</h3>
-                                    <button
-                                        onClick={() => window.open(r.discord_link, '_blank')}
-                                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors"
-                                    >
-                                        <DiscordIcon />
-                                        Discord
-                                    </button>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <button
+                                            onClick={() => window.open(r.discord_link, '_blank')}
+                                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors"
+                                        >
+                                            <FaDiscord className="w-5 h-5" />
+                                            Discord
+                                        </button>
+                                        <button
+                                            onClick={() => openDeleteResellerConfirm(r.id, r.name)}
+                                            className="flex items-center gap-2 px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500 transition-colors"
+                                        >
+                                            <Trash className="w-5 h-5" />
+                                            Remover
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -477,7 +503,7 @@ export default function Dashboard() {
                     </>
                 )}
 
-                {/* Modal de Confirmação de Remoção */}
+                {/* Modal de Confirmação de Remoção Usuário */}
                 {confirmDelete && (
                     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                         <motion.div
@@ -498,6 +524,36 @@ export default function Dashboard() {
                                 </button>
                                 <button
                                     onClick={confirmRemove}
+                                    className="px-6 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-white font-medium transition-colors"
+                                >
+                                    Remover
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+
+                {/* Modal de Confirmação de Remoção Revendedor */}
+                {confirmDeleteReseller && (
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="bg-zinc-900 border border-purple-600/50 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center"
+                        >
+                            <h3 className="text-xl font-bold text-white mb-4">Confirmar Remoção</h3>
+                            <p className="text-gray-300 mb-6">
+                                Tem certeza que deseja remover o revendedor <span className="text-purple-400 font-medium">{confirmDeleteReseller.name}</span>?
+                            </p>
+                            <div className="flex gap-4 justify-center">
+                                <button
+                                    onClick={cancelRemoveReseller}
+                                    className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-gray-300 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmRemoveReseller}
                                     className="px-6 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-white font-medium transition-colors"
                                 >
                                     Remover
