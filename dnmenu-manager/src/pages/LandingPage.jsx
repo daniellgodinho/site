@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { Shield, Crosshair, Car, Zap, Menu, X } from 'lucide-react';
-import monkeyLogo from '../assets/monkeyLogo.png'; // Import direto
+import monkeyLogo from '../assets/monkeyLogo.png';
 
 const LandingPage = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -81,6 +81,10 @@ const LandingPage = () => {
             'Silent Aim',
             'Hitbox Expander - Expande hitbox',
             'Mirar através de paredes',
+            'Carregar Aimbot',
+            'Mostrar FOV',
+            'Distância Máxima',
+            'Suavidade',
         ],
         Veículos: [
             'Destrancar Todos (Auto)',
@@ -91,6 +95,7 @@ const LandingPage = () => {
             'Voar com Carro',
             'Noclip com Veículo (locked)',
             'Sistema de Porta-Malas - Clonar itens',
+            'Monitoramento automático',
         ],
         Weapon: [
             'Edição completa de armas ACS',
@@ -109,7 +114,7 @@ const LandingPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-black text-white overflow-x-hidden">
             {/* Navbar */}
             <div className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 ${scrolled ? 'mt-4' : 'mt-12'}`}>
                 <nav className="w-11/12 max-w-6xl bg-black/40 backdrop-blur-3xl border border-purple-600/30 rounded-2xl shadow-2xl px-8 py-4">
@@ -122,7 +127,7 @@ const LandingPage = () => {
                         <div className="hidden md:flex items-center gap-8">
                             <a href="#features" className="text-gray-300 hover:text-purple-400">Funções</a>
                             <a href="#pricing" className="text-gray-300 hover:text-purple-400">Preços</a>
-                            <a href="https://discord.gg/vBPFAg8kHW" target="_blank" className="text-gray-300 hover:text-purple-400">Discord</a>
+                            <a href="https://discord.gg/vBPFAg8kHW" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-purple-400">Discord</a>
                             <a href="#resellers" className="text-gray-300 hover:text-purple-400">Revendedores</a>
                             <a href="#terms" className="text-gray-300 hover:text-purple-400">Termos</a>
 
@@ -151,7 +156,6 @@ const LandingPage = () => {
                 </nav>
             </div>
 
-            {/* Mobile Sidebar */}
             {isOpen && (
                 <>
                     <div className="fixed inset-0 bg-black/70 z-40" onClick={() => setIsOpen(false)} />
@@ -165,7 +169,7 @@ const LandingPage = () => {
                         <div className="flex flex-col gap-6 text-lg">
                             <a href="#features" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-purple-400">Funções</a>
                             <a href="#pricing" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-purple-400">Preços</a>
-                            <a href="https://discord.gg/vBPFAg8kHW" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-purple-400">Discord</a>
+                            <a href="https://discord.gg/vBPFAg8kHW" onClick={() => setIsOpen(false)} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-purple-400">Discord</a>
                             <a href="#resellers" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-purple-400">Revendedores</a>
                             <a href="#terms" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-purple-400">Termos</a>
 
@@ -286,7 +290,7 @@ const LandingPage = () => {
                     <div className="bg-gradient-to-br from-purple-600/40 to-purple-900/40 border border-purple-500 rounded-2xl p-8 text-center shadow-2xl shadow-purple-600/30 scale-105">
                         <h3 className="text-3xl font-bold">Trimestral</h3>
                         <p className="text-5xl font-bold text-purple-300 mt-4">R$ 79,99</p>
-                        <p className="text-green-400 font-semibold">Mais vendido</p>
+                        <p className="text-green-400 font-semibold">Economize 10%</p>
                         <button className="mt-8 w-full bg-purple-500 hover:bg-purple-400 py-4 rounded-xl font-medium">Comprar</button>
                     </div>
                     <div className="bg-gradient-to-br from-purple-900/30 to-black border border-purple-600/30 rounded-2xl p-8 text-center">
@@ -297,22 +301,28 @@ const LandingPage = () => {
                 </div>
             </section>
 
+            {/* Compatibilidade */}
+            <section className="py-20 px-6 bg-gradient-to-b from-black to-purple-900/20">
+                <h2 className="text-4xl md:text-5xl font-bold text-center mb-8">Compatibilidade</h2>
+                <p className="text-xl text-center text-gray-300 max-w-3xl mx-auto">
+                    Compatível com todos os executores que suportam Luau completo. Testado e otimizado para máxima estabilidade.
+                </p>
+            </section>
+
             {/* Revendedores */}
             <section id="resellers" className="py-20 px-6">
-                <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Revendedores</h2>
+                <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Revendedores Oficiais</h2>
                 <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {resellers.length === 0 ? (
-                        <p className="text-center text-gray-400 col-span-3">Carregando revendedores...</p>
-                    ) : (
-                        resellers.map((r) => (
-                            <div key={r.id} className="bg-gradient-to-br from-purple-900/30 to-black border border-purple-600/30 rounded-2xl p-8 text-center">
-                                <h3 className="text-2xl font-bold mb-4">{r.name || 'Revendedor'}</h3>
-                                <a href={r.discord_link} target="_blank" rel="noopener noreferrer">
-                                    <button className="bg-purple-600 hover:bg-purple-700 px-6 py-4 rounded-xl font-medium">Contato no Discord</button>
-                                </a>
-                            </div>
-                        ))
-                    )}
+                    {resellers.map(r => (
+                        <div key={r.id} className="bg-gradient-to-br from-purple-900/30 to-black border border-purple-600/30 rounded-2xl p-6 text-center">
+                            <h3 className="text-xl font-bold mb-4">{r.name}</h3>
+                            <a href={r.discord_link} target="_blank" rel="noopener noreferrer">
+                                <button className="bg-purple-600 hover:bg-purple-500 px-6 py-3 rounded-full font-medium transition-colors">
+                                    Discord
+                                </button>
+                            </a>
+                        </div>
+                    ))}
                 </div>
             </section>
 

@@ -8,7 +8,7 @@ import {
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { supabase } from '../supabase';
 import { useNavigate } from 'react-router-dom';
-import monkeyLogo from '../assets/monkeyLogo.png'; // Import direto da logo
+import monkeyLogo from '../assets/monkeyLogo.png';
 
 const DiscordIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -40,9 +40,18 @@ export default function Dashboard() {
     const [graphData, setGraphData] = useState([]);
 
     // Modal de confirmação
-    const [confirmDelete, setConfirmDelete] = useState(null); // { tab: 'users', username: 'nome' }
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     const navigate = useNavigate();
+
+    const updateListsInSupabase = useCallback(async (newUsers, newFarm) => {
+        const toStr = (list) => list.map(u => `${u.username}|${u.duration}|${u.expiration || ''}`).join(',');
+        const { error } = await supabase
+            .from('user_lists')
+            .update({ users: toStr(newUsers), users_farm: toStr(newFarm) })
+            .eq('id', userListId);
+        return !error;
+    }, [userListId]);
 
     const fetchUserLists = useCallback(async () => {
         const { data, error } = await supabase
@@ -81,12 +90,12 @@ export default function Dashboard() {
                 setUsersFarm(newFarm);
             }
         }
-    }, [users, usersFarm]);
+    }, [users, usersFarm, updateListsInSupabase]);
 
     useEffect(() => {
         fetchUserLists();
         cleanExpired();
-        const interval = setInterval(cleanExpired, 60000); // Verifica a cada minuto
+        const interval = setInterval(cleanExpired, 60000);
         return () => clearInterval(interval);
     }, [fetchUserLists, cleanExpired]);
 
@@ -108,7 +117,7 @@ export default function Dashboard() {
     useEffect(() => {
         setGraphData([
             { name: 'Jan', users: 400 },
-            { name: 'Fev', users: 300 },
+            { name: 'Feb', users: 300 },
             { name: 'Mar', users: 500 },
             { name: 'Abr', users: 800 },
             { name: 'Mai', users: 700 },
@@ -136,15 +145,6 @@ export default function Dashboard() {
         return now.toISOString();
     };
 
-    const updateListsInSupabase = async (newUsers, newFarm) => {
-        const toStr = (list) => list.map(u => `${u.username}|${u.duration}|${u.expiration || ''}`).join(',');
-        const { error } = await supabase
-            .from('user_lists')
-            .update({ users: toStr(newUsers), users_farm: toStr(newFarm) })
-            .eq('id', userListId);
-        return !error;
-    };
-
     const addUser = async () => {
         const isUsers = activeTab === 'users';
         const username = (isUsers ? newUser : newUserFarm).trim();
@@ -166,12 +166,10 @@ export default function Dashboard() {
         }
     };
 
-    // Função para abrir modal de confirmação
     const openDeleteConfirm = (tab, username) => {
         setConfirmDelete({ tab, username });
     };
 
-    // Função para confirmar remoção
     const confirmRemove = async () => {
         if (!confirmDelete) return;
 
@@ -485,13 +483,13 @@ export default function Dashboard() {
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            className="bg-zinc-900 border border-purple-600/50 rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+                            className="bg-zinc-900 border border-purple-600/50 rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center"
                         >
                             <h3 className="text-xl font-bold text-white mb-4">Confirmar Remoção</h3>
                             <p className="text-gray-300 mb-6">
                                 Tem certeza que deseja remover o usuário <span className="text-purple-400 font-medium">{confirmDelete.username}</span>?
                             </p>
-                            <div className="flex gap-4 justify-end">
+                            <div className="flex gap-4 justify-center">
                                 <button
                                     onClick={cancelRemove}
                                     className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-gray-300 transition-colors"
