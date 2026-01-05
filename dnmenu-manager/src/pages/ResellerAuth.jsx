@@ -29,7 +29,7 @@ export default function ResellerAuth() {
 
         if (supabaseError || !data) {
             console.log('Falha: senha não encontrada ou erro:', supabaseError);
-            setError('Senha inválida. Tente novamente.');
+            setError('Senha inválida. Tente novamente. ');
             setLoading(false);
             return;
         }
