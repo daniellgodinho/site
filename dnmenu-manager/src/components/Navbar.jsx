@@ -27,15 +27,15 @@ const Navbar = () => {
     return (
         <>
             {/* Navbar Principal */}
-            <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl rounded-2xl bg-black/30 backdrop-blur-md border border-purple-600/30 transition-all duration-300 ${scrolled ? 'py-2' : 'py-3'}`}>
+            <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl rounded-2xl bg-black/30 backdrop-blur-md border border-purple-600/30 transition-all duration-300 ${scrolled ? 'py-1.5' : 'py-2'}`}>
                 <nav className="px-4 flex justify-between items-center">
                     <Link to="/" className="flex items-center gap-3">
                         <img
                             src={monkeyLogo}
                             alt="DN Menu Logo"
-                            className="w-16 h-16 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
+                            className="w-20 h-20 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
                         />
-                        <span className="text-xl font-bold text-purple-400 hidden md:block">DN Menu</span>
+                        <span className="text-xl font-bold bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent hidden md:block">DN Menu</span>
                     </Link>
 
                     {/* Menu Desktop */}
