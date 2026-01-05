@@ -33,7 +33,7 @@ const Navbar = () => {
                         <img
                             src={monkeyLogo}
                             alt="DN Menu Logo"
-                            className="w-20 h-20 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
+                            className="w-26 h-26 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
                         />
                         <span className="text-xl font-bold bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent hidden md:block">DN Menu</span>
                     </Link>

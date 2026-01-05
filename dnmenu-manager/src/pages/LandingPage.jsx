@@ -57,7 +57,7 @@ function Hero() {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={isInView ? { opacity: 1, scale: 1 } : {}}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent"
+                        className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent"
                     >
                         DN Menu
                     </motion.h1>
@@ -296,7 +296,7 @@ function Pricing() {
                     transition={{ duration: 1 }}
                     className="text-center mb-24"
                 >
-                    <h2 className="text-5xl sm:text-6xl font-extrabold mb-6 bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
+                    <h2 className="text-5xl sm:text-6xl font-extrabold mb-6 bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent">
                         Escolha seu Plano
                     </h2>
                     <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -330,8 +330,8 @@ function Pricing() {
                                     animate={{ scale: 1 }}
                                     transition={{ duration: 0.6, delay: 0.4 }}
                                     className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold text-sm shadow-lg ${plan.name === "Revenda"
-                                        ? 'bg-gradient-to-r from-purple-400 to-purple-300 text-white'
-                                        : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white'
+                                        ? 'bg-gradient-to-r from-[#BF7AFF] to-[#8A2BE2] text-white'
+                                        : 'bg-gradient-to-r from-[#BF7AFF] to-[#8A2BE2] text-white'
                                         }`}
                                 >
                                     {plan.badge}
