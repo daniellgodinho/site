@@ -7,9 +7,29 @@
       "config": {
         "distDir": "build"
       }
+    },
+    {
+      "src": "api/**",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/loader",
+      "dest": "/api/loader.js"
+    },
+    {
+      "src": "/(dnmenu|dnfarm|dnsoftwares|usermenu|userfarm)",
+      "dest": "/api/raw/[slug].js"
+    },
+    {
+      "src": "/raw/(.*)",
+      "dest": "/api/raw/[slug].js"
+    },
+    {
+      "src": "/api/raw/(.*)",
+      "dest": "/api/raw/[slug].js"
+    },
     {
       "src": "/static/(.*)",
       "dest": "/static/$1"
@@ -21,6 +41,21 @@
     {
       "src": "/(.*)",
       "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(dnmenu|dnfarm|dnsoftwares|usermenu|userfarm|loader)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
+      ]
     }
   ]
 }
