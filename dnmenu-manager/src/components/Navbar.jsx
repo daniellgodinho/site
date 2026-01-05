@@ -47,7 +47,7 @@ const Navbar = () => {
                         <a href="#termos" className="text-gray-300 hover:text-purple-400 transition-colors">Termos</a>
                         {isLoggedIn ? (
                             <button onClick={handleLogout} className="text-red-400 hover:text-red-300 transition-colors">
-                                Logout
+                                Sair
                             </button>
                         ) : (
                             <Link to="/login" className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-full text-white font-medium transition-colors">
@@ -92,7 +92,7 @@ const Navbar = () => {
                                     Dashboard
                                 </Link>
                                 <button onClick={handleLogout} className="text-red-400 hover:text-red-300 text-left">
-                                    Logout
+                                    Sair
                                 </button>
                             </>
                         ) : (

@@ -41,11 +41,10 @@ export default function LandingPage() {
 function Hero() {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
-
     return (
         <section ref={ref} className="relative min-h-screen flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundImage: `url(${Background})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
             <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black/50 to-purple-900/10"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-black/50 to-[#110d15]"></div>
             </div>
             <div className="max-w-7xl mx-auto relative z-10 py-32">
                 <motion.div
@@ -331,7 +330,7 @@ function Pricing() {
                                     animate={{ scale: 1 }}
                                     transition={{ duration: 0.6, delay: 0.4 }}
                                     className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold text-sm shadow-lg ${plan.name === "Revenda"
-                                        ? 'bg-gradient-to-r from-purple-400 to-purple-300 text-black'
+                                        ? 'bg-gradient-to-r from-purple-400 to-purple-300 text-white'
                                         : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white'
                                         }`}
                                 >
@@ -382,7 +381,7 @@ function Pricing() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 className={`block w-full py-4 rounded-xl text-center font-bold text-lg transition-all duration-300 shadow-md ${plan.highlighted
-                                    ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white'
+                                    ? 'bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] hover:opacity-90 text-white'
                                     : 'bg-white/5 hover:bg-white/10 text-white border border-purple-600/40 hover:border-purple-600'
                                     }`}
                             >
