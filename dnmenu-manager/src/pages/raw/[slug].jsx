@@ -1,4 +1,4 @@
-// api/raw/[slug].js (atualizado para verificação de ban + logs)
+// api/raw/[slug].js (atualizado para verificação igual aos loaders: IP OU Roblox sem token; corrigido bug de logs)
 
 import { createClient } from '@supabase/supabase-js';
 
@@ -10,7 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // CONFIGURAÇÕES DE SEGURANÇA
 const ALLOWED_IP = '128.201.211.100';
 const ROBLOX_USER_AGENT = 'RobloxGameCloud/1.0 (+http://www.roblox.com)';
-const SECRET_TOKEN = process.env.RAW_SECRET_TOKEN; // "LoadV5"
+// Removido SECRET_TOKEN da verificação obrigatória para Roblox, igual aos loaders
 
 export default async function handler(req, res) {
     // Pega o slug de duas formas possíveis
@@ -20,11 +20,11 @@ export default async function handler(req, res) {
         return res.status(400).send('Slug inválido');
     }
 
-    const token = req.query.token || '';
+    const token = req.query.token || ''; // Mantido opcional, mas não exigido para Roblox
     const robloxNick = req.query.nick || '';
     const hwid = req.query.hwid || '';
 
-    // === VERIFICAÇÃO DE SEGURANÇA ===
+    // === VERIFICAÇÃO DE SEGURANÇA (igual aos loaders: IP OU Roblox, sem token para Roblox) ===
     let clientIP = 'unknown';
     const forwarded = req.headers['x-forwarded-for'];
     if (forwarded) {
@@ -37,9 +37,8 @@ export default async function handler(req, res) {
 
     const isAllowedIP = clientIP === ALLOWED_IP;
     const isRoblox = userAgent === ROBLOX_USER_AGENT;
-    const isValidToken = token === SECRET_TOKEN;
 
-    if (!isAllowedIP && !(isRoblox && isValidToken)) {
+    if (!isAllowedIP && !isRoblox) {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         return res.status(403).send('Acesso negado');
     }
@@ -57,7 +56,14 @@ export default async function handler(req, res) {
             status: 'access_attempt'
         };
 
-        await supabase.from('access_logs').insert(logData);
+        // Inserir e capturar o ID corretamente
+        const { data: insertedData, error: insertError } = await supabase
+            .from('access_logs')
+            .insert(logData)
+            .select('id'); // Seleciona o ID do registro inserido
+
+        if (insertError) throw insertError;
+        const logId = insertedData[0].id; // Agora temos o ID
 
         // Verificar ban
         if (robloxNick || hwid) {
@@ -69,8 +75,8 @@ export default async function handler(req, res) {
             if (banError) throw banError;
 
             if (banData.length > 0) {
-                // Atualizar log para banido
-                await supabase.from('access_logs').update({ status: 'banned' }).eq('id', logData.id); // Assumindo que insert retorna id, ajusta se necessário
+                // Atualizar log para banido (agora com logId correto)
+                await supabase.from('access_logs').update({ status: 'banned' }).eq('id', logId);
 
                 return res.status(403).send('-- Acesso banido');
             }
@@ -88,15 +94,15 @@ export default async function handler(req, res) {
                 return res.status(404).send('-- Script não encontrado');
             }
 
-            // Log sucesso
-            await supabase.from('access_logs').update({ status: 'success' }).eq('id', logData.id);
+            // Log sucesso (com logId correto)
+            await supabase.from('access_logs').update({ status: 'success' }).eq('id', logId);
 
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader('Cache-Control', 'no-cache');
             return res.status(200).send(data.code || '');
         }
 
-        // Listas de usuários
+        // Listas de usuários (para usermenu e userfarm)
         if (slug === 'usermenu' || slug === 'userfarm') {
             const field = slug === 'usermenu' ? 'users' : 'users_farm';
             const { data: lists, error } = await supabase
@@ -119,8 +125,8 @@ export default async function handler(req, res) {
 
             const text = Array.from(usernames).join('\n');
 
-            // Log sucesso
-            await supabase.from('access_logs').update({ status: 'success' }).eq('id', logData.id);
+            // Log sucesso (com logId correto)
+            await supabase.from('access_logs').update({ status: 'success' }).eq('id', logId);
 
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader('Cache-Control', 'no-cache');

@@ -600,7 +600,6 @@ export default function Dashboard() {
                 {/* Master: Seção de Bans */}
                 {isMaster && (
                     <div className="mb-12">
-                        <h2 className="text-3xl font-bold mb-6 text-purple-400">Bans (HWID/Usuário/Roblox Nick)</h2>
                         <div className="bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl p-6 border border-purple-600/30 mb-6">
                             <h3 className="text-xl font-bold mb-4">Adicionar Ban</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
