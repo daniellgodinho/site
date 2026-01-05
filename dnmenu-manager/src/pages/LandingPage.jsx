@@ -47,18 +47,6 @@ function Hero() {
             {/* Animated Background */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-purple-900/10"></div>
-                <motion.div
-                    initial={{ scale: 1 }}
-                    animate={{ scale: 1.1 }}
-                    transition={{ duration: 10, repeat: Infinity, repeatType: 'reverse' }}
-                    className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full"
-                ></motion.div>
-                <motion.div
-                    initial={{ scale: 1 }}
-                    animate={{ scale: 1.1 }}
-                    transition={{ duration: 10, repeat: Infinity, repeatType: 'reverse', delay: 1 }}
-                    className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full"
-                ></motion.div>
             </div>
             <div className="max-w-7xl mx-auto relative z-10">
                 <motion.div
