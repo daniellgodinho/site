@@ -13,7 +13,7 @@ const ROBLOX_USER_AGENT = 'RobloxGameCloud/1.0 (+http://www.roblox.com)';
 const SECRET_TOKEN = process.env.RAW_SECRET_TOKEN; // "LoadV5"
 
 export default async function handler(req, res) {
-    // Pega o slug de duas formas possíveis (por causa das rotas fixas no vercel.json)
+    // Pega o slug
     const slug = req.query.slug || Object.keys(req.query)[0] || null;
 
     if (!slug) {
@@ -37,7 +37,6 @@ export default async function handler(req, res) {
     const isRoblox = userAgent === ROBLOX_USER_AGENT;
     const isValidToken = token === SECRET_TOKEN;
 
-    // Permite: seu IP OU (Roblox com token correto)
     if (!isAllowedIP && !(isRoblox && isValidToken)) {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         return res.status(403).send('Acesso negado');
@@ -45,7 +44,7 @@ export default async function handler(req, res) {
     // ==================================
 
     try {
-        // Scripts individuais
+        // Scripts individuais (dnmenu, dnfarm, dnsoftwares)
         if (['dnmenu', 'dnfarm', 'dnsoftwares'].includes(slug)) {
             const { data, error } = await supabase
                 .from('scripts')
@@ -62,26 +61,34 @@ export default async function handler(req, res) {
             return res.status(200).send(data.code || '');
         }
 
-        // Listas de usuários
+        // Raws globais de usuários (usermenu e userfarm)
         if (slug === 'usermenu' || slug === 'userfarm') {
             const field = slug === 'usermenu' ? 'users' : 'users_farm';
+
             const { data: lists, error } = await supabase
                 .from('user_lists')
-                .select(field);
+                .select(`id, ${field}`);
 
             if (error) throw error;
 
-            const usernames = new Set();
+            const activeUsernames = new Set();
+
             lists.forEach(list => {
                 if (list[field]) {
                     list[field].split(',').forEach(entry => {
-                        const username = entry.split('|')[0]?.trim();
-                        if (username) usernames.add(username);
+                        const parts = entry.trim().split('|');
+                        const username = parts[0]?.trim();
+                        const expiration = parts[2]?.trim();
+
+                        if (username && (!expiration || new Date(expiration) > new Date())) {
+                            activeUsernames.add(username);
+                        }
                     });
                 }
             });
 
-            const text = Array.from(usernames).join('\n');
+            const text = Array.from(activeUsernames).sort().join('\n'); // sort opcional pra ficar organizado
+
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader('Cache-Control', 'no-cache');
             return res.status(200).send(text);

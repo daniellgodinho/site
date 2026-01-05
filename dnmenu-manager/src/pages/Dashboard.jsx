@@ -10,7 +10,6 @@ import { supabase } from '../supabase';
 import { useNavigate } from 'react-router-dom';
 import monkeyLogo from '../assets/monkeyLogo.png';
 import { FaDiscord } from 'react-icons/fa';
-
 export default function Dashboard() {
     const selectedReseller = sessionStorage.getItem('reseller') || 'Neverpure Codes';
     const isMaster = sessionStorage.getItem('isMaster') === 'true';
