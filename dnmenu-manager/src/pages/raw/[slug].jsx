@@ -3,23 +3,32 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Adicione essa no Vercel (service_role key, NUNCA a anon!)
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // CONFIGURAÇÕES DE SEGURANÇA
 const ALLOWED_IP = '128.201.211.100';
-const ROBLOX_USER_AGENT = 'RobloxGameCloud/1.0 (+http://www.roblox.com)'; // Confirmado como atual em 2026
-const SECRET_TOKEN = process.env.RAW_SECRET_TOKEN; // "LoadV5" no seu caso
+const ROBLOX_USER_AGENT = 'RobloxGameCloud/1.0 (+http://www.roblox.com)';
+const SECRET_TOKEN = process.env.RAW_SECRET_TOKEN; // "LoadV5"
 
 export default async function handler(req, res) {
-    const { slug } = req.query;
+    // Pega o slug de duas formas possíveis (por causa das rotas fixas no vercel.json)
+    const slug = req.query.slug || Object.keys(req.query)[0] || null;
+
+    if (!slug) {
+        return res.status(400).send('Slug inválido');
+    }
+
     const token = req.query.token || '';
 
-    // === VERIFICAÇÕES DE SEGURANÇA ===
-    let clientIP = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.headers['x-vercel-forwarded-for'] || 'unknown';
-    if (typeof clientIP === 'string') {
-        clientIP = clientIP.split(',')[0].trim();
+    // === VERIFICAÇÃO DE SEGURANÇA ===
+    let clientIP = 'unknown';
+    const forwarded = req.headers['x-forwarded-for'];
+    if (forwarded) {
+        clientIP = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0].trim();
+    } else {
+        clientIP = req.headers['x-real-ip'] || req.headers['x-vercel-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
     }
 
     const userAgent = req.headers['user-agent'] || '';
@@ -28,14 +37,15 @@ export default async function handler(req, res) {
     const isRoblox = userAgent === ROBLOX_USER_AGENT;
     const isValidToken = token === SECRET_TOKEN;
 
-    // Permite: Seu IP OU (Roblox + token correto)
+    // Permite: seu IP OU (Roblox com token correto)
     if (!isAllowedIP && !(isRoblox && isValidToken)) {
-        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         return res.status(403).send('Acesso negado');
     }
     // ==================================
 
     try {
+        // Scripts individuais
         if (['dnmenu', 'dnfarm', 'dnsoftwares'].includes(slug)) {
             const { data, error } = await supabase
                 .from('scripts')
@@ -43,13 +53,16 @@ export default async function handler(req, res) {
                 .eq('name', slug)
                 .single();
 
-            if (error) throw error;
+            if (error || !data) {
+                return res.status(404).send('-- Script não encontrado');
+            }
 
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader('Cache-Control', 'no-cache');
-            return res.status(200).send(data?.code || '');
+            return res.status(200).send(data.code || '');
         }
 
+        // Listas de usuários
         if (slug === 'usermenu' || slug === 'userfarm') {
             const field = slug === 'usermenu' ? 'users' : 'users_farm';
             const { data: lists, error } = await supabase
@@ -62,8 +75,8 @@ export default async function handler(req, res) {
             lists.forEach(list => {
                 if (list[field]) {
                     list[field].split(',').forEach(entry => {
-                        const [username] = entry.split('|');
-                        if (username) usernames.add(username.trim());
+                        const username = entry.split('|')[0]?.trim();
+                        if (username) usernames.add(username);
                     });
                 }
             });
@@ -74,10 +87,11 @@ export default async function handler(req, res) {
             return res.status(200).send(text);
         }
 
+        // Slug não reconhecido
         return res.status(404).send('Not found');
 
     } catch (error) {
-        console.error('Erro no raw:', error);
-        return res.status(500).send('Erro interno');
+        console.error('Erro no raw/[slug]:', error);
+        return res.status(500).send('-- Erro interno');
     }
 }
