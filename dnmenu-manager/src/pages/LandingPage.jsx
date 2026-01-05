@@ -43,7 +43,7 @@ function Hero() {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section ref={ref} className="relative pt-32 pb-40 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundImage: `url(${Background})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+        <section ref={ref} className="relative pt-32 pb-40 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundImage: `url(${Background})`, backgroundSize: '100% 100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
             {/* Animated Background */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-purple-900/10"></div>
