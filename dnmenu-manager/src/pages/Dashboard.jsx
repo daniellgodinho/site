@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import monkeyLogo from '../assets/monkeyLogo.png';
 import { FaDiscord } from 'react-icons/fa';
 
+
 export default function Dashboard() {
     const selectedReseller = sessionStorage.getItem('reseller') || 'Neverpure Codes';
     const isMaster = sessionStorage.getItem('isMaster') === 'true';
@@ -46,6 +47,7 @@ export default function Dashboard() {
             .from('user_lists')
             .update({ users: toStr(newUsers), users_farm: toStr(newFarm) })
             .eq('id', userListId);
+        if (error) console.error('Update error:', error);
         return !error;
     }, [userListId]);
 
@@ -69,6 +71,20 @@ export default function Dashboard() {
             }) : [];
             setUsers(parseList(data.users));
             setUsersFarm(parseList(data.users_farm));
+        } else {
+            // Create new user_list if not exists
+            const { data: newData, error: insertError } = await supabase
+                .from('user_lists')
+                .insert({ reseller: selectedReseller, users: '', users_farm: '' })
+                .select()
+                .single();
+            if (insertError) {
+                console.error('Insert error:', insertError);
+                return;
+            }
+            setUserListId(newData.id);
+            setUsers([]);
+            setUsersFarm([]);
         }
     }, [selectedReseller]);
 
@@ -101,10 +117,24 @@ export default function Dashboard() {
                 const { data: res } = await supabase.from('resellers').select('*');
                 setResellers(res?.filter(r => r.name !== 'indefinido') || []);
 
-                const { data: scr } = await supabase.from('scripts').select('*');
+                const { data: scr, error } = await supabase.from('scripts').select('*');
+                if (error) console.error('Scripts fetch error:', error);
                 const map = {};
                 scr?.forEach(s => map[s.name] = s.code || '');
                 setScripts(map);
+
+                // Initialize missing scripts
+                const requiredScripts = ['dnmenu', 'dnfarm', 'dnsoftwares'];
+                for (const name of requiredScripts) {
+                    if (!map[name]) {
+                        const { error: insertError } = await supabase.from('scripts').insert({ name, code: '' });
+                        if (insertError) console.error(`Insert ${name} error:`, insertError);
+                        else {
+                            map[name] = '';
+                        }
+                    }
+                }
+                setScripts({ ...map });
             };
             fetchMasterData();
         }
@@ -271,7 +301,7 @@ export default function Dashboard() {
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-gradient-to-b from-black to-zinc-950 text-white">
             {/* Header */}
-            <header className="bg-[#1a1a1a]/90 backdrop-blur-xl border-b border-purple-600/20">
+            <header className="bg-gradient-to-r from-[#1a1a1a]/90 to-purple-900/20 backdrop-blur-xl border-b border-purple-600/20">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-4">
                         <img
@@ -291,25 +321,25 @@ export default function Dashboard() {
                 </div>
             </header>
 
-            <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="max-w-7xl mx-auto px-4 py-8 bg-gradient-to-b from-transparent to-purple-900/5">
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className="p-6 bg-[#2e2e2e]/80 rounded-2xl border border-purple-600/20 shadow-lg shadow-purple-600/10">
+                    <div className="p-6 bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl border border-purple-600/20 shadow-lg shadow-purple-600/10">
                         <p className="text-gray-400">Total</p>
                         <p className="text-4xl font-bold text-purple-400">{total}</p>
                     </div>
-                    <div className="p-6 bg-[#2e2e2e]/80 rounded-2xl border border-purple-600/20 shadow-lg shadow-purple-600/10">
+                    <div className="p-6 bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl border border-purple-600/20 shadow-lg shadow-purple-600/10">
                         <p className="text-gray-400">Ativos</p>
                         <p className="text-4xl font-bold text-green-400">{active}</p>
                     </div>
-                    <div className="p-6 bg-[#2e2e2e]/80 rounded-2xl border border-purple-600/20 shadow-lg shadow-purple-600/10">
+                    <div className="p-6 bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl border border-purple-600/20 shadow-lg shadow-purple-600/10">
                         <p className="text-gray-400">Expirados</p>
                         <p className="text-4xl font-bold text-red-400">{total - active}</p>
                     </div>
                 </div>
 
                 {/* Gráfico */}
-                <div className="mb-12 bg-[#2e2e2e]/80 rounded-2xl p-6 border border-purple-600/20">
+                <div className="mb-12 bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl p-6 border border-purple-600/20">
                     <h2 className="text-2xl font-bold mb-4 text-purple-400">Crescimento de Usuários</h2>
                     <ResponsiveContainer width="100%" height={300}>
                         <AreaChart data={graphData}>
@@ -334,7 +364,7 @@ export default function Dashboard() {
                         <h2 className="text-3xl font-bold mb-6 text-purple-400">Revendedores</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             {resellers.map(r => (
-                                <div key={r.id} className="bg-[#2e2e2e]/80 rounded-2xl p-6 border border-purple-600/30 shadow-md shadow-purple-600/20">
+                                <div key={r.id} className="bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl p-6 border border-purple-600/30 shadow-md shadow-purple-600/20">
                                     <h3 className="text-xl font-bold mb-4">{r.name}</h3>
                                     <div className="flex items-center justify-between gap-4">
                                         <button
@@ -356,7 +386,7 @@ export default function Dashboard() {
                             ))}
                         </div>
 
-                        <div className="bg-[#2e2e2e]/80 rounded-2xl p-6 border border-purple-600/30">
+                        <div className="bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl p-6 border border-purple-600/30">
                             <h3 className="text-xl font-bold mb-4">Adicionar Revendedor</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <input placeholder="Nome" value={newReseller.name} onChange={e => setNewReseller({ ...newReseller, name: e.target.value })} className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white" />
@@ -466,9 +496,9 @@ export default function Dashboard() {
                         </div>
 
                         {/* Table */}
-                        <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-[#2e2e2e]/50">
+                        <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e]/50 to-purple-900/5">
                             <table className="w-full">
-                                <thead className="bg-[#1a1a1a]">
+                                <thead className="bg-gradient-to-r from-[#1a1a1a] to-purple-900/20">
                                     <tr>
                                         <th className="px-6 py-4 text-left">Usuário</th>
                                         <th className="px-6 py-4 text-left">Duração</th>

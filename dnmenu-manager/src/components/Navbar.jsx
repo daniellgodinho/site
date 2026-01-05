@@ -27,8 +27,8 @@ const Navbar = () => {
     return (
         <>
             {/* Navbar Principal */}
-            <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-black/70 backdrop-blur-xl border-b border-purple-600/20' : 'bg-transparent'}`}>
-                <nav className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl rounded-2xl bg-black/30 backdrop-blur-md border border-purple-600/30 transition-all duration-300 ${scrolled ? 'py-2' : 'py-3'}`}>
+                <nav className="px-4 flex justify-between items-center">
                     <Link to="/" className="flex items-center gap-3">
                         <img
                             src={monkeyLogo}
