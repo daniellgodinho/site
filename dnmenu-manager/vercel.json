@@ -13,34 +13,34 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/loader",
-      "dest": "/api/loader.js"
+      "source": "/loader",
+      "destination": "/api/loader.js"
     },
     {
-      "src": "/(dnmenu|dnfarm|dnsoftwares|usermenu|userfarm)",
-      "dest": "/api/raw/[slug].js"
+      "source": "/(dnmenu|dnfarm|dnsoftwares|usermenu|userfarm)",
+      "destination": "/api/raw/[slug].js"
     },
     {
-      "src": "/raw/(.*)",
-      "dest": "/api/raw/[slug].js"
+      "source": "/raw/:slug*",
+      "destination": "/api/raw/[slug].js"
     },
     {
-      "src": "/api/raw/(.*)",
-      "dest": "/api/raw/[slug].js"
+      "source": "/api/raw/:slug*",
+      "destination": "/api/raw/[slug].js"
     },
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
+      "source": "/static/(.*)",
+      "destination": "/static/$1"
     },
     {
-      "src": "/(.*\\.(js|css|json|ico|png|jpg|jpeg|svg|gif|webp|woff|woff2|ttf|eot))",
-      "dest": "/$1"
+      "source": "/(.*\\.(js|css|json|ico|png|jpg|jpeg|svg|gif|webp|woff|woff2|ttf|eot))",
+      "destination": "/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
