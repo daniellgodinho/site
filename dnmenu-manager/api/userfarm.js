@@ -1,5 +1,3 @@
-// api/userfarm.js
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -7,15 +5,13 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// CONFIGURAÇÕES DE SEGURANÇA
+const SECRET_TOKEN = process.env.RAW_SECRET_TOKEN; // "LoadV5"
 const ALLOWED_IP = '128.201.211.100';
 const ROBLOX_USER_AGENT = 'RobloxGameCloud/1.0 (+http://www.roblox.com)';
-const SECRET_TOKEN = process.env.RAW_SECRET_TOKEN; // "LoadV5"
 
 export default async function handler(req, res) {
     const token = req.query.token || '';
 
-    // === VERIFICAÇÃO DE SEGURANÇA ===
     let clientIP = 'unknown';
     const forwarded = req.headers['x-forwarded-for'];
     if (forwarded) {
@@ -31,15 +27,11 @@ export default async function handler(req, res) {
     const isValidToken = token === SECRET_TOKEN;
 
     if (!isAllowedIP && !(isRoblox && isValidToken)) {
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         return res.status(403).send('Acesso negado');
     }
-    // ==================================
 
     try {
-        const { data: lists, error } = await supabase
-            .from('user_lists')
-            .select('users_farm');
+        const { data: lists, error } = await supabase.from('user_lists').select('users_farm');
 
         if (error) throw error;
 
@@ -64,9 +56,8 @@ export default async function handler(req, res) {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         res.setHeader('Cache-Control', 'no-cache');
         return res.status(200).send(text);
-
     } catch (error) {
-        console.error('Erro no userfarm:', error);
+        console.error('Erro usermenu:', error);
         return res.status(500).send('-- Erro interno');
     }
 }

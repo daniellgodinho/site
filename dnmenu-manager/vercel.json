@@ -32,11 +32,11 @@
     },
     {
       "source": "/usermenu",
-      "destination": "/api/raw/[slug].js?slug=usermenu"
+      "destination": "/api/usermenu.js"
     },
     {
       "source": "/userfarm",
-      "destination": "/api/raw/[slug].js?slug=userfarm"
+      "destination": "/api/userfarm.js"
     },
     {
       "source": "/(.*)",
