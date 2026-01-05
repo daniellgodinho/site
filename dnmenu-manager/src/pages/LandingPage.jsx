@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
-    Bookmark, CheckCircle, Toolbox, Crosshair, Shield, Building2, Eye, CarFront, ChevronLeft, ChevronRight
+    Bookmark, CheckCircle, Toolbox, Crosshair, Trophy, ShieldX, Shield, Building2, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { FaDiscord } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -130,10 +130,10 @@ function Solution() {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     const features = [
-        { icon: CarFront, title: "Manipulação Avançada", description: "Controle total sobre qualquer resource do jogo." },
+        { icon: ShieldX, title: "Manipulação Avançada", description: "Controle total sobre qualquer resource do jogo." },
         { icon: Crosshair, title: "Exclusividade", description: "Funções únicas, nunca vistam antes no cenário." },
         { icon: Shield, title: "Proteção Máxima", description: "Menu seguro e bypass anti-cheat na maioria das cidades." },
-        { icon: Eye, title: "Seja um vencedor", description: "Adquira DN Menu e vença conosco." },
+        { icon: Trophy, title: "Seja um vencedor", description: "Adquira DN Menu e vença conosco." },
     ];
 
     return (
