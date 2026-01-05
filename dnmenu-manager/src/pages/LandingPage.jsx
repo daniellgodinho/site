@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
-    Bookmark, CheckCircle, Toolbox, Crosshair, Shield, Building2, Eye
+    Bookmark, CheckCircle, Toolbox, Crosshair, Shield, Building2, Eye, CarFront
 } from 'lucide-react';
 import { FaDiscord } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -104,7 +104,7 @@ function Problem() {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#0c0a0e] to-[#111011]">
+        <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#110d15] to-[#111011]">
             <div className="max-w-5xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -131,10 +131,10 @@ function Solution() {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     const features = [
-        { icon: Toolbox, title: "Manipulação Avançada", description: "Controle total sobre veículos e itens." },
-        { icon: Crosshair, title: "Combate Precisão", description: "Aimbot e silent aim configuráveis." },
+        { icon: CarFront, title: "Manipulação Avançada", description: "Controle total sobre veículos e itens." },
+        { icon: Crosshair, title: "Combate e Precisão", description: "Aimbot e silent aim configuráveis." },
         { icon: Shield, title: "Proteção Máxima", description: "God mode e bypass anti-cheat." },
-        { icon: Eye, title: "Visão Estratégica", description: "ESP e chams personalizáveis." },
+        { icon: Eye, title: "Visão de águia", description: "ESP e chams personalizáveis." },
     ];
 
     return (
@@ -222,7 +222,7 @@ function Pricing() {
     const plans = [
         {
             name: "Diário",
-            price: "R$ 20",
+            price: "R$ 10",
             duration: "24 horas",
             features: [
                 "Acesso completo por 24h",
@@ -233,7 +233,7 @@ function Pricing() {
         },
         {
             name: "Semanal",
-            price: "R$ 35",
+            price: "R$ 25",
             duration: "7 dias",
             features: [
                 "Acesso completo por 7 dias",
@@ -245,7 +245,7 @@ function Pricing() {
         },
         {
             name: "Mensal",
-            price: "R$ 50",
+            price: "R$ 35",
             duration: "30 dias",
             features: [
                 "Acesso completo por 30 dias",
@@ -257,7 +257,7 @@ function Pricing() {
         },
         {
             name: "Lifetime",
-            price: "R$ 97,99",
+            price: "R$ 70",
             duration: "Vitalício",
             features: [
                 "Acesso permanente",
@@ -354,7 +354,7 @@ function Pricing() {
                                 transition={{ duration: 0.8, delay: 0.4 }}
                                 className="text-center mb-10"
                             >
-                                <div className="text-6xl font-extrabold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                <div className="text-6xl font-extrabold bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent">
                                     {plan.price}
                                 </div>
                                 <p className="text-gray-400 mt-2">{plan.duration}</p>
