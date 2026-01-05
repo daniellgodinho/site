@@ -479,7 +479,7 @@ function Revendedores({ resellers }) {
                             initial={{ opacity: 0, y: 30 }}
                             animate={isInView ? { opacity: 1, y: 0 } : {}}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
-                            className="bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-6 border border-purple-600/20 hover:border-purple-600/50 transition-all duration-300"
+                            className="bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-4 sm:p-6 border border-purple-600/20 hover:border-purple-600/50 transition-all duration-300"
                         >
                             <h3 className="text-lg font-bold mb-4 text-white">{res.name}</h3>
                             <a
@@ -585,6 +585,8 @@ function Termos() {
         }
     };
 
+    const Icon = termsSections[currentPage].icon;
+
     return (
         <section id="termos" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111011] bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
             <div className="max-w-4xl mx-auto">
@@ -614,7 +616,7 @@ function Termos() {
                         <ChevronLeft className="w-6 h-6 text-purple-400" />
                     </motion.button>
 
-                    <div className="relative w-full max-w-2xl" style={{ perspective: '1000px' }}>
+                    <div className="relative w-full max-w-2xl mx-auto" style={{ perspective: '1000px' }}>
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={currentPage}
@@ -622,7 +624,7 @@ function Termos() {
                                 animate={{ rotateY: 0, opacity: 1 }}
                                 exit={{ rotateY: -90, opacity: 0 }}
                                 transition={{ duration: 0.5 }}
-                                className="bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-8 border border-purple-600/20 shadow-2xl min-h-[500px] flex flex-col"
+                                className="bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-6 sm:p-8 border border-purple-600/20 shadow-2xl min-h-[400px] sm:min-h-[500px] flex flex-col"
                                 style={{ transformStyle: 'preserve-3d' }}
                             >
                                 {/* Marcador de página */}
@@ -634,7 +636,7 @@ function Termos() {
                                 {/* Cabeçalho da página */}
                                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-purple-600/20">
                                     <div className="p-2 bg-purple-600/20 rounded-lg">
-                                        <Bookmark className="w-6 h-6 text-purple-400" />
+                                        <Icon className="w-6 h-6 text-purple-400" />
                                     </div>
                                     <h3 className="text-xl font-bold text-white flex-1">
                                         {termsSections[currentPage].title}

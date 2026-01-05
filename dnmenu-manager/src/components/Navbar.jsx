@@ -1,18 +1,33 @@
 // src/components/Navbar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import monkeyLogo from '../assets/monkeyLogo.png';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [isHidden, setIsHidden] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(!!sessionStorage.getItem('reseller'));
     const navigate = useNavigate();
+    const lastScrollY = useRef(0);
 
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 50);
+        const handleScroll = () => {
+            const current = window.pageYOffset;
+            const scrollingDown = current > lastScrollY.current;
+
+            if (scrollingDown && current > 50) {
+                setIsHidden(true);
+            } else if (!scrollingDown) {
+                setIsHidden(false);
+            }
+
+            setScrolled(current > 50);
+            lastScrollY.current = current;
+        };
+
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -32,6 +47,7 @@ const Navbar = () => {
                 bg-black/30 backdrop-blur-md border border-purple-600/30 
                 transition-all duration-300 
                 ${scrolled ? 'py-3 md:py-4' : 'py-4 md:py-5'}  // ← mais "gordinha" e diferença suave no scroll
+                ${isHidden ? '-translate-y-full' : 'translate-y-0'} transition-transform duration-300
             `}>
                 <nav className="px-6 md:px-8 flex justify-between items-center h-full">
                     {/* Logo + Nome */}
@@ -39,9 +55,9 @@ const Navbar = () => {
                         <img
                             src={monkeyLogo}
                             alt="DN Menu Logo"
-                            className="w-12 h-12 md:w-16 md:h-16 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
+                            className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
                         />
-                        <span className="text-lg md:text-xl font-bold bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent hidden md:block">
+                        <span className="text-lg md:text-xl font-bold bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent">
                             DN Menu
                         </span>
                     </Link>
@@ -76,6 +92,17 @@ const Navbar = () => {
                     </button>
                 </nav>
             </div>
+
+            {isHidden && (
+                <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={() => setIsHidden(false)}
+                    className="fixed top-4 right-4 z-50 p-2 bg-purple-600 rounded-full text-white"
+                >
+                    <ChevronDown size={24} />
+                </motion.button>
+            )}
 
             {/* Mobile Menu */}
             {isOpen && (

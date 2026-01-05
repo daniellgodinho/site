@@ -1,4 +1,4 @@
-// api/raw/[slug].js
+// api/raw/[slug].js (atualizado para verificação de ban + logs)
 
 import { createClient } from '@supabase/supabase-js';
 
@@ -13,7 +13,7 @@ const ROBLOX_USER_AGENT = 'RobloxGameCloud/1.0 (+http://www.roblox.com)';
 const SECRET_TOKEN = process.env.RAW_SECRET_TOKEN; // "LoadV5"
 
 export default async function handler(req, res) {
-    // Pega o slug
+    // Pega o slug de duas formas possíveis
     const slug = req.query.slug || Object.keys(req.query)[0] || null;
 
     if (!slug) {
@@ -21,6 +21,8 @@ export default async function handler(req, res) {
     }
 
     const token = req.query.token || '';
+    const robloxNick = req.query.nick || '';
+    const hwid = req.query.hwid || '';
 
     // === VERIFICAÇÃO DE SEGURANÇA ===
     let clientIP = 'unknown';
@@ -44,7 +46,37 @@ export default async function handler(req, res) {
     // ==================================
 
     try {
-        // Scripts individuais (dnmenu, dnfarm, dnsoftwares)
+        // Logar o acesso
+        const logData = {
+            ip: clientIP,
+            user_agent: userAgent,
+            script_type: slug,
+            roblox_nick: robloxNick || null,
+            hwid: hwid || null,
+            created_at: new Date().toISOString(),
+            status: 'access_attempt'
+        };
+
+        await supabase.from('access_logs').insert(logData);
+
+        // Verificar ban
+        if (robloxNick || hwid) {
+            const { data: banData, error: banError } = await supabase
+                .from('bans')
+                .select('*')
+                .or(`roblox_nick.eq.${robloxNick},hwid.eq.${hwid}`);
+
+            if (banError) throw banError;
+
+            if (banData.length > 0) {
+                // Atualizar log para banido
+                await supabase.from('access_logs').update({ status: 'banned' }).eq('id', logData.id); // Assumindo que insert retorna id, ajusta se necessário
+
+                return res.status(403).send('-- Acesso banido');
+            }
+        }
+
+        // Scripts individuais
         if (['dnmenu', 'dnfarm', 'dnsoftwares'].includes(slug)) {
             const { data, error } = await supabase
                 .from('scripts')
@@ -56,38 +88,39 @@ export default async function handler(req, res) {
                 return res.status(404).send('-- Script não encontrado');
             }
 
+            // Log sucesso
+            await supabase.from('access_logs').update({ status: 'success' }).eq('id', logData.id);
+
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader('Cache-Control', 'no-cache');
             return res.status(200).send(data.code || '');
         }
 
-        // Raws globais de usuários (usermenu e userfarm)
+        // Listas de usuários
         if (slug === 'usermenu' || slug === 'userfarm') {
             const field = slug === 'usermenu' ? 'users' : 'users_farm';
-
             const { data: lists, error } = await supabase
                 .from('user_lists')
-                .select(`id, ${field}`);
+                .select(field);
 
             if (error) throw error;
 
-            const activeUsernames = new Set();
-
+            const usernames = new Set();
             lists.forEach(list => {
                 if (list[field]) {
-                    list[field].split(',').forEach(entry => {
-                        const parts = entry.trim().split('|');
-                        const username = parts[0]?.trim();
-                        const expiration = parts[2]?.trim();
-
-                        if (username && (!expiration || new Date(expiration) > new Date())) {
-                            activeUsernames.add(username);
+                    list[field].split(',').forEach(s => {
+                        const [username, duration = 'lifetime', expiration = ''] = s.split('|');
+                        if (!expiration || new Date(expiration) > new Date()) {
+                            usernames.add(username.trim());
                         }
                     });
                 }
             });
 
-            const text = Array.from(activeUsernames).sort().join('\n'); // sort opcional pra ficar organizado
+            const text = Array.from(usernames).join('\n');
+
+            // Log sucesso
+            await supabase.from('access_logs').update({ status: 'success' }).eq('id', logData.id);
 
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader('Cache-Control', 'no-cache');
