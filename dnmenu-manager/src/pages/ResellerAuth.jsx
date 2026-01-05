@@ -38,7 +38,7 @@ export default function ResellerAuth() {
 
         sessionStorage.setItem('reseller', data.name);
         sessionStorage.setItem('discord_link', data.discord_link || '');
-        sessionStorage.setItem('isMaster', data.name === 'Indefinido' ? 'true' : 'false');
+        sessionStorage.setItem('isMaster', data.name === 'DN Softwares (Oficial)' ? 'true' : 'false');
 
         setLoading(false);
         navigate('/dashboard');

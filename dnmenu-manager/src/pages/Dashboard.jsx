@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router-dom';
 import monkeyLogo from '../assets/monkeyLogo.png';
 import { FaDiscord } from 'react-icons/fa';
 
-
 export default function Dashboard() {
     const selectedReseller = sessionStorage.getItem('reseller') || 'Neverpure Codes';
     const isMaster = sessionStorage.getItem('isMaster') === 'true';
@@ -225,7 +224,24 @@ export default function Dashboard() {
     const cancelRemoveReseller = () => setConfirmDeleteReseller(null);
 
     const saveScript = async (name) => {
-        const { error } = await supabase.from('scripts').update({ code: scripts[name] }).eq('name', name);
+        const { data: existing } = await supabase
+            .from('scripts')
+            .select('id')
+            .eq('name', name)
+            .single();
+
+        let error;
+        if (existing) {
+            ({ error } = await supabase
+                .from('scripts')
+                .update({ code: scripts[name] })
+                .eq('name', name));
+        } else {
+            ({ error } = await supabase
+                .from('scripts')
+                .insert({ name, code: scripts[name] }));
+        }
+
         if (!error) {
             setEditingScript(null);
             alert('Script salvo!');

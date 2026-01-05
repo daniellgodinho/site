@@ -1,19 +1,19 @@
-// src/pages/LandingPage.jsx - Complete with all logic, monkey logo, darker gradients, improved cards, smooth transitions
+// src/pages/LandingPage.jsx - Versão corrigida (sem warnings no-unused-vars)
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import {
-    Menu, X, Bookmark, CheckCircle, Toolbox, Crosshair, Shield, Building2
+    Bookmark, CheckCircle, Toolbox, Crosshair, Shield, Building2, Eye
 } from 'lucide-react';
 import { FaDiscord } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import monkeyLogo from '../assets/monkeyLogo.png';
+import Navbar from '../components/Navbar';
 import { supabase } from '../supabase';
+import monkeyLogo from '../assets/monkeyLogo.png';
 import Background from '../assets/Background.png';
 
 export default function LandingPage() {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [resellers, setResellers] = useState([]);
+    const [resellers, setResellers] = React.useState([]);
 
     useEffect(() => {
         const fetchResellers = async () => {
@@ -25,7 +25,7 @@ export default function LandingPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-black to-zinc-950 text-white overflow-x-hidden">
-            <Header mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+            <Navbar />
             <Hero />
             <Problem />
             <Solution />
@@ -39,112 +39,12 @@ export default function LandingPage() {
     );
 }
 
-function Header({ mobileMenuOpen, setMobileMenuOpen }) {
-    const [scrolled, setScrolled] = useState(false);
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    return (
-        <motion.header
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-black/90 backdrop-blur-xl border-b border-purple-600/20' : 'bg-transparent'
-                }`}
-        >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    <Link to="/" className="flex items-center space-x-3">
-                        <img
-                            src={monkeyLogo}
-                            alt="DN Menu Logo"
-                            className="w-20 h-20 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
-                        />
-                        <span className="hidden md:block font-bold text-2xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
-                            Home
-                        </span>
-                    </Link>
-                    {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center space-x-8">
-                        <a href="#features" className="text-gray-300 hover:text-white transition-colors">
-                            Funções
-                        </a>
-                        <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">
-                            Preços
-                        </a>
-                        <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
-                            Discord
-                        </a>
-                        <a href="#revendedores" className="text-gray-300 hover:text-white transition-colors">
-                            Revendedores
-                        </a>
-                        <a href="#termos" className="text-gray-300 hover:text-white transition-colors">
-                            Termos
-                        </a>
-                        <Link
-                            to="/login"
-                            className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all duration-300 shadow-lg shadow-purple-600/30"
-                        >
-                            Dashboard
-                        </Link>
-                    </nav>
-                    {/* Mobile Menu Button */}
-                    <button
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="md:hidden text-white p-2"
-                    >
-                        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </button>
-                </div>
-                {/* Mobile Navigation */}
-                <AnimatePresence>
-                    {mobileMenuOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="md:hidden py-4 space-y-4"
-                        >
-                            <a href="#features" className="block text-gray-300 hover:text-white transition-colors py-2">
-                                Funções
-                            </a>
-                            <a href="#pricing" className="block text-gray-300 hover:text-white transition-colors py-2">
-                                Preços
-                            </a>
-                            <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="block text-gray-300 hover:text-white transition-colors py-2">
-                                Discord
-                            </a>
-                            <a href="#revendedores" className="block text-gray-300 hover:text-white transition-colors py-2">
-                                Revendedores
-                            </a>
-                            <a href="#termos" className="block text-gray-300 hover:text-white transition-colors py-2">
-                                Termos
-                            </a>
-                            <Link
-                                to="/login"
-                                className="block px-6 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-lg transition-all duration-300 text-center"
-                            >
-                                Dashboard
-                            </Link>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        </motion.header>
-    );
-}
-
 function Hero() {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section ref={ref} className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundImage: `url(${Background})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section ref={ref} className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundImage: `url(${Background})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
             {/* Animated Background */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-purple-900/10"></div>
@@ -242,6 +142,13 @@ function Solution() {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+    const features = [
+        { icon: Toolbox, title: "Manipulação Avançada", description: "Controle total sobre veículos e itens." },
+        { icon: Crosshair, title: "Combate Precisão", description: "Aimbot e silent aim configuráveis." },
+        { icon: Shield, title: "Proteção Máxima", description: "God mode e bypass anti-cheat." },
+        { icon: Eye, title: "Visão Estratégica", description: "ESP e chams personalizáveis." },
+    ];
+
     return (
         <section ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111011]">
             <div className="max-w-5xl mx-auto">
@@ -258,26 +165,21 @@ function Solution() {
                         DN Menu oferece controle total sobre o ambiente de jogo. Com 70 funções cuidadosamente desenvolvidas, você obtém vantagens táticas que transformam cada sessão. Não é sobre força bruta, mas sim sobre ter as ferramentas certas no momento certo.
                     </p>
                 </motion.div>
-                <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-purple-600/20 blur-3xl"></div>
-                    <div className="relative bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-3xl p-8 border border-purple-600/30 shadow-2xl">
-                        <div className="flex items-center gap-2 mb-6">
-                            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                            <span className="ml-4 text-gray-400 text-sm">DN Menu v4.5.3</span>
-                        </div>
-                        <div className="bg-black/50 rounded-xl p-6 font-mono text-sm">
-                            <div className="text-purple-400 mb-2">[Sistema] Inicializando DN Menu...</div>
-                            <div className="text-gray-400 mb-2">Carregando módulos de combate...</div>
-                            <div className="text-green-400 mb-2">[OK] Aimbot ativo</div>
-                            <div className="text-green-400 mb-2">[OK] ESP completo carregado</div>
-                            <div className="text-green-400 mb-2">[OK] Invisible solo session inicializado</div>
-                            <div className="text-green-400 mb-2">[OK] Deletar veículos pronto</div>
-                            <div className="text-green-400 mb-2">[OK] Puxar armas habilitado</div>
-                            <div className="text-purple-400 mt-4">70 funções disponíveis. Sistema operacional.</div>
-                        </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {features.map((feat, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={isInView ? { opacity: 1, y: 0 } : {}}
+                            transition={{ delay: index * 0.1 }}
+                            whileHover={{ scale: 1.05, rotate: 2 }}
+                            className="p-6 bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl border border-purple-600/20 hover:border-purple-600 shadow-lg hover:shadow-purple-600/30 transition-all"
+                        >
+                            <feat.icon className="w-12 h-12 text-purple-400 mb-4" />
+                            <h3 className="text-xl font-bold mb-2 text-white">{feat.title}</h3>
+                            <p className="text-gray-400">{feat.description}</p>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
         </section>
@@ -313,7 +215,7 @@ function VideoShowcase() {
                     <iframe
                         width="100%"
                         height="100%"
-                        src="https://www.youtube.com/embed/YOUR_VIDEO_ID_HERE" // Hardcoded YouTube link here
+                        src="https://www.youtube.com/embed/YOUR_VIDEO_ID_HERE" // Substitua pelo ID real do vídeo
                         title="DN Menu Showcase"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -415,31 +317,32 @@ function Pricing() {
                     </p>
                 </motion.div>
 
-                {/* Cards gordinhos e responsivos */}
+                {/* Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl mx-auto">
                     {plans.map((plan, index) => (
                         <motion.div
                             key={index}
-                            initial={{ opacity: 0, y: 60, scale: 0.95 }}
-                            animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                            initial={{ opacity: 0, y: 60, rotateX: -10, rotateY: -10 }}
+                            animate={isInView ? { opacity: 1, y: 0, rotateX: 0, rotateY: 0 } : {}}
                             transition={{ duration: 0.8, delay: index * 0.15 }}
                             whileHover={{
-                                y: -20,
+                                rotateX: 5,
+                                rotateY: 5,
                                 scale: 1.05,
-                                boxShadow: "0 40px 80px rgba(147, 51, 234, 0.3)"
+                                boxShadow: "0 20px 40px rgba(147, 51, 234, 0.4)",
+                                borderColor: "#8A2BE2"
                             }}
-                            className={`relative p-12 rounded-3xl border-2 transition-all duration-700 shadow-2xl ${plan.highlighted
-                                ? 'bg-gradient-to-br from-purple-900/40 to-purple-900/20 border-purple-500 shadow-purple-600/50'
-                                : 'bg-gradient-to-br from-zinc-950/95 to-black/95 border-purple-600/40 hover:border-purple-500'
-                                }`}
+                            className={`relative p-8 rounded-3xl border-2 transition-all duration-500 shadow-xl backdrop-blur-sm ${plan.highlighted
+                                ? 'bg-gradient-to-br from-purple-900/30 to-purple-900/10 border-purple-500/50'
+                                : 'bg-gradient-to-br from-zinc-950/80 to-black/80 border-purple-600/30'
+                                } hover:border-purple-600`}
                         >
-                            {/* Badge animado */}
                             {plan.badge && (
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ duration: 0.6, delay: 0.4 }}
-                                    className={`absolute -top-6 left-1/2 -translate-x-1/2 px-8 py-3 rounded-full font-extrabold text-sm shadow-2xl whitespace-nowrap ${plan.name === "Revenda"
+                                    className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold text-sm shadow-lg ${plan.name === "Revenda"
                                         ? 'bg-gradient-to-r from-purple-400 to-purple-300 text-black'
                                         : 'bg-gradient-to-r from-purple-600 to-purple-500 text-white'
                                         }`}
@@ -452,7 +355,7 @@ function Pricing() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.3 }}
-                                className="text-3xl font-bold text-center mb-10 text-white"
+                                className="text-2xl font-bold text-center mb-8 text-white"
                             >
                                 {plan.name}
                             </motion.h3>
@@ -461,25 +364,25 @@ function Pricing() {
                                 initial={{ scale: 0.8 }}
                                 animate={{ scale: 1 }}
                                 transition={{ duration: 0.8, delay: 0.4 }}
-                                className="text-center mb-12"
+                                className="text-center mb-10"
                             >
-                                <div className="text-7xl font-extrabold bg-gradient-to-r from-purple-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+                                <div className="text-6xl font-extrabold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                                     {plan.price}
                                 </div>
-                                <p className="text-gray-300 mt-4 text-xl">{plan.duration}</p>
+                                <p className="text-gray-400 mt-2">{plan.duration}</p>
                             </motion.div>
 
-                            <ul className="space-y-6 mb-14">
+                            <ul className="space-y-4 mb-12">
                                 {plan.features.map((feature, i) => (
                                     <motion.li
                                         key={i}
-                                        initial={{ opacity: 0, x: -40 }}
+                                        initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.5 + i * 0.1 }}
-                                        className="flex items-start text-gray-200"
+                                        className="flex items-center text-gray-300 gap-3"
                                     >
-                                        <CheckCircle className="w-7 h-7 text-purple-400 mr-4 flex-shrink-0 mt-0.5" />
-                                        <span className="text-lg leading-relaxed">{feature}</span>
+                                        <CheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                                        <span className="text-base">{feature}</span>
                                     </motion.li>
                                 ))}
                             </ul>
@@ -488,11 +391,11 @@ function Pricing() {
                                 href="https://discord.gg/k3CUqNs3UW"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                whileHover={{ scale: 1.08 }}
+                                whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className={`block w-full py-6 rounded-2xl text-center font-extrabold text-xl transition-all duration-300 shadow-xl ${plan.highlighted
+                                className={`block w-full py-4 rounded-xl text-center font-bold text-lg transition-all duration-300 shadow-md ${plan.highlighted
                                     ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white'
-                                    : 'bg-white/10 hover:bg-white/20 text-white border-2 border-purple-600/40'
+                                    : 'bg-white/5 hover:bg-white/10 text-white border border-purple-600/40 hover:border-purple-600'
                                     }`}
                             >
                                 Adquirir Agora
@@ -505,7 +408,7 @@ function Pricing() {
                     initial={{ opacity: 0 }}
                     animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 1, delay: 1 }}
-                    className="text-center mt-24 text-gray-300 text-lg"
+                    className="text-center mt-24 text-gray-400 text-base"
                 >
                     Todos os planos incluem as 70 funções • Pagamento seguro • Ativação instantânea
                 </motion.p>
