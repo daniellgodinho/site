@@ -27,43 +27,43 @@ const Navbar = () => {
     return (
         <>
             {/* Navbar Principal */}
-            <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl rounded-2xl bg-black/30 backdrop-blur-md border border-purple-600/30 transition-all duration-300 ${scrolled ? 'py-1.5' : 'py-2'}`}>
-                <nav className="px-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center gap-3">
+            <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] md:w-[90%] max-w-7xl rounded-full md:rounded-2xl bg-black/30 backdrop-blur-md border border-purple-600/30 transition-all duration-300 ${scrolled ? 'py-1' : 'py-1.5'}`}>
+                <nav className="px-3 md:px-4 flex justify-between items-center">
+                    <Link to="/" className="flex items-center gap-2 md:gap-3">
                         <img
                             src={monkeyLogo}
                             alt="DN Menu Logo"
-                            className="w-24 h-24 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
+                            className="w-12 h-12 md:w-16 md:h-16 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
                         />
-                        <span className="text-xl font-bold bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent hidden md:block">DN Menu</span>
+                        <span className="text-lg md:text-xl font-bold bg-gradient-to-br from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent hidden md:block">DN Menu</span>
                     </Link>
 
                     {/* Menu Desktop */}
-                    <div className="hidden md:flex items-center gap-6">
-                        <a href="#features" className="text-gray-300 hover:text-purple-400 transition-colors">Funções</a>
-                        <a href="#pricing" className="text-gray-300 hover:text-purple-400 transition-colors">Preços</a>
-                        <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-purple-400 transition-colors">Discord</a>
-                        <a href="#revendedores" className="text-gray-300 hover:text-purple-400 transition-colors">Revendedores</a>
-                        <a href="#termos" className="text-gray-300 hover:text-purple-400 transition-colors">Termos</a>
+                    <div className="hidden md:flex items-center gap-4 lg:gap-6">
+                        <a href="#features" className="text-sm lg:text-base text-gray-300 hover:text-purple-400 transition-colors">Funções</a>
+                        <a href="#pricing" className="text-sm lg:text-base text-gray-300 hover:text-purple-400 transition-colors">Preços</a>
+                        <a href="https://discord.gg/k3CUqNs3UW" target="_blank" rel="noopener noreferrer" className="text-sm lg:text-base text-gray-300 hover:text-purple-400 transition-colors">Discord</a>
+                        <a href="#revendedores" className="text-sm lg:text-base text-gray-300 hover:text-purple-400 transition-colors">Revendedores</a>
+                        <a href="#termos" className="text-sm lg:text-base text-gray-300 hover:text-purple-400 transition-colors">Termos</a>
                         {isLoggedIn ? (
-                            <button onClick={handleLogout} className="text-red-400 hover:text-red-300 transition-colors">
+                            <button onClick={handleLogout} className="text-sm lg:text-base text-red-400 hover:text-red-300 transition-colors">
                                 Sair
                             </button>
                         ) : (
-                            <Link to="/login" className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-full text-white font-medium transition-colors">
+                            <Link to="/login" className="bg-purple-600 hover:bg-purple-500 px-3 lg:px-4 py-1.5 lg:py-2 rounded-full text-white text-sm lg:text-base font-medium transition-colors">
                                 Login
                             </Link>
                         )}
                         {isLoggedIn && (
-                            <Link to="/dashboard" className="text-gray-300 hover:text-purple-400 transition-colors">
+                            <Link to="/dashboard" className="text-sm lg:text-base text-gray-300 hover:text-purple-400 transition-colors">
                                 Dashboard
                             </Link>
                         )}
                     </div>
 
                     {/* Mobile Toggle */}
-                    <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-purple-400">
-                        {isOpen ? <X size={24} /> : <Menu size={24} />}
+                    <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-purple-400 p-1.5">
+                        {isOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
                 </nav>
             </div>

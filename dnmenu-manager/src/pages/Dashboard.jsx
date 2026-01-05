@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router-dom';
 import monkeyLogo from '../assets/monkeyLogo.png';
 import { FaDiscord } from 'react-icons/fa';
 
-
 export default function Dashboard() {
     const selectedReseller = sessionStorage.getItem('reseller') || 'Neverpure Codes';
     const isMaster = sessionStorage.getItem('isMaster') === 'true';
@@ -40,6 +39,13 @@ export default function Dashboard() {
     const [confirmDeleteReseller, setConfirmDeleteReseller] = useState(null);
 
     const navigate = useNavigate();
+
+    // URLs públicas (mude se o domínio for diferente)
+    const BASE_URL = 'https://dnsoftwares.vercel.app';
+    const LOADER_MENU = `${BASE_URL}/loadermenu`;
+    const LOADER_FARM = `${BASE_URL}/loaderfarm`;
+    const RAW_USERS = `${BASE_URL}/usermenu`;
+    const RAW_USERS_FARM = `${BASE_URL}/userfarm`;
 
     const updateListsInSupabase = useCallback(async (newUsers, newFarm) => {
         const toStr = (list) => list.map(u => `${u.username}|${u.duration}|${u.expiration || ''}|${u.created_at}`).join(',');
@@ -72,7 +78,6 @@ export default function Dashboard() {
             setUsers(parseList(data.users));
             setUsersFarm(parseList(data.users_farm));
         } else {
-            // Create new user_list if not exists
             const { data: newData, error: insertError } = await supabase
                 .from('user_lists')
                 .insert({ reseller: selectedReseller, users: '', users_farm: '' })
@@ -123,15 +128,12 @@ export default function Dashboard() {
                 scr?.forEach(s => map[s.name] = s.code || '');
                 setScripts(map);
 
-                // Initialize missing scripts
                 const requiredScripts = ['dnmenu', 'dnfarm', 'dnsoftwares'];
                 for (const name of requiredScripts) {
                     if (!map[name]) {
                         const { error: insertError } = await supabase.from('scripts').insert({ name, code: '' });
                         if (insertError) console.error(`Insert ${name} error:`, insertError);
-                        else {
-                            map[name] = '';
-                        }
+                        else map[name] = '';
                     }
                 }
                 setScripts({ ...map });
@@ -274,24 +276,15 @@ export default function Dashboard() {
 
         if (!error) {
             setEditingScript(null);
-            alert('Script salvo!');
+            alert('Script salvo com sucesso!');
         } else {
-            alert('Erro ao salvar.');
+            alert('Erro ao salvar script.');
         }
     };
 
-    const copyRaw = async (type) => {
-        let text = '';
-        if (type === 'users' || type === 'usersfarm') {
-            const all = type === 'users' ? users : usersFarm;
-            text = all.map(u => u.username).join('\n');
-        } else if (type === 'dnsoftwares') {
-            text = `${scripts.dnmenu}\n// Separator\n${scripts.dnfarm}\n// Separator\n${scripts.dnsoftwares}`;
-        } else {
-            text = scripts[type] || '';
-        }
+    const copyToClipboard = (text, message = 'Copiado para a área de transferência!') => {
         navigator.clipboard.writeText(text);
-        alert('Copiado para a área de transferência!');
+        alert(message);
     };
 
     const filtered = (activeTab === 'users' ? users : usersFarm).filter(u => u.username.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -304,11 +297,7 @@ export default function Dashboard() {
             <header className="bg-gradient-to-r from-[#1a1a1a]/90 to-purple-900/20 backdrop-blur-xl border-b border-purple-600/20">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-4">
-                        <img
-                            src={monkeyLogo}
-                            alt="DN Menu Logo"
-                            className="w-32 h-32 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
-                        />
+                        <img src={monkeyLogo} alt="DN Menu Logo" className="w-32 h-32 object-contain drop-shadow-2xl drop-shadow-purple-600/50" />
                         <div>
                             <h1 className="text-2xl font-bold">Dashboard</h1>
                             <p className="text-purple-400">{selectedReseller}</p>
@@ -367,19 +356,11 @@ export default function Dashboard() {
                                 <div key={r.id} className="bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl p-6 border border-purple-600/30 shadow-md shadow-purple-600/20">
                                     <h3 className="text-xl font-bold mb-4">{r.name}</h3>
                                     <div className="flex items-center justify-between gap-4">
-                                        <button
-                                            onClick={() => window.open(r.discord_link, '_blank')}
-                                            className="flex items-center gap-2 px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors"
-                                        >
-                                            <FaDiscord className="w-5 h-5" />
-                                            Discord
+                                        <button onClick={() => window.open(r.discord_link, '_blank')} className="flex items-center gap-2 px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors">
+                                            <FaDiscord className="w-5 h-5" /> Discord
                                         </button>
-                                        <button
-                                            onClick={() => openDeleteResellerConfirm(r.id, r.name)}
-                                            className="flex items-center gap-2 px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500 transition-colors"
-                                        >
-                                            <Trash className="w-5 h-5" />
-                                            Remover
+                                        <button onClick={() => openDeleteResellerConfirm(r.id, r.name)} className="flex items-center gap-2 px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500 transition-colors">
+                                            <Trash className="w-5 h-5" /> Remover
                                         </button>
                                     </div>
                                 </div>
@@ -402,62 +383,91 @@ export default function Dashboard() {
 
                 {/* Tabs */}
                 <div className="flex gap-4 mb-6">
-                    <button onClick={() => setActiveTab('users')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'users' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Users ({users.length})</button>
-                    <button onClick={() => setActiveTab('usersfarm')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'usersfarm' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Users Farm ({usersFarm.length})</button>
-                    <button onClick={() => setActiveTab('raw')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'raw' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Raw</button>
+                    <button onClick={() => setActiveTab('users')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'users' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>
+                        Users ({users.length})
+                    </button>
+                    <button onClick={() => setActiveTab('usersfarm')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'usersfarm' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>
+                        Users Farm ({usersFarm.length})
+                    </button>
+                    <button onClick={() => setActiveTab('raw')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'raw' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>
+                        Raw & Loadstrings
+                    </button>
                 </div>
 
                 {activeTab === 'raw' ? (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold text-purple-400">Raw</h2>
-                        {!isMaster ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <button onClick={() => copyRaw('users')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
-                                    <Copy className="w-5 h-5" /> Copiar raw de users
-                                </button>
-                                <button onClick={() => copyRaw('usersfarm')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
-                                    <Copy className="w-5 h-5" /> Copiar raw de users farm
-                                </button>
-                                <button onClick={() => copyRaw('dnmenu')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
-                                    <Copy className="w-5 h-5" /> Copiar raw do dn menu
-                                </button>
-                                <button onClick={() => copyRaw('dnfarm')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
-                                    <Copy className="w-5 h-5" /> Copiar raw do dn farm
-                                </button>
-                                <button onClick={() => copyRaw('dnsoftwares')} className="flex items-center justify-center gap-2 py-4 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors col-span-1 md:col-span-2">
-                                    <Copy className="w-5 h-5" /> Copiar raw do dn softwares (todos)
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="space-y-8">
-                                <div>
-                                    <h3 className="text-xl font-bold mb-4 text-purple-400">Editar Scripts (afeta todos os revendedores)</h3>
-                                    {['dnmenu', 'dnfarm', 'dnsoftwares'].map(name => (
-                                        <div key={name} className="mb-6">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <label className="text-lg font-medium capitalize">{name.replace('dn', 'DN ')}</label>
-                                                {editingScript === name ? (
-                                                    <button onClick={() => saveScript(name)} className="flex items-center gap-2 text-green-400 hover:text-green-300">
-                                                        <Save className="w-5 h-5" /> Salvar
-                                                    </button>
-                                                ) : (
-                                                    <button onClick={() => setEditingScript(name)} className="flex items-center gap-2 text-blue-400 hover:text-blue-300">
-                                                        <Edit3 className="w-5 h-5" /> Editar
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <textarea
-                                                value={scripts[name] || ''}
-                                                onChange={e => setScripts({ ...scripts, [name]: e.target.value })}
-                                                readOnly={editingScript !== name}
-                                                rows={10}
-                                                className="w-full px-4 py-3 bg-black/50 rounded-xl border border-purple-600/40 font-mono text-sm text-white"
-                                            />
+                    <div className="space-y-8">
+                        <h2 className="text-2xl font-bold text-purple-400">Raw & Loadstrings Públicas</h2>
+
+                        {/* Edição de Scripts (apenas Master) */}
+                        {isMaster && (
+                            <div className="bg-zinc-900/50 rounded-2xl p-8 border border-purple-600/30">
+                                <h3 className="text-xl font-bold mb-6 text-purple-300">Editar Scripts</h3>
+                                {['dnmenu', 'dnfarm'].map(name => (
+                                    <div key={name} className="mb-10">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <label className="text-lg font-medium capitalize">
+                                                {name === 'dnmenu' ? 'DN Menu' : 'DN Farm'}
+                                            </label>
+                                            {editingScript === name ? (
+                                                <button onClick={() => saveScript(name)} className="flex items-center gap-2 text-green-400 hover:text-green-300">
+                                                    <Save className="w-5 h-5" /> Salvar
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => setEditingScript(name)} className="flex items-center gap-2 text-blue-400 hover:text-blue-300">
+                                                    <Edit3 className="w-5 h-5" /> Editar
+                                                </button>
+                                            )}
                                         </div>
-                                    ))}
-                                </div>
+                                        <textarea
+                                            value={scripts[name] || ''}
+                                            onChange={e => setScripts({ ...scripts, [name]: e.target.value })}
+                                            readOnly={editingScript !== name}
+                                            rows={14}
+                                            className="w-full px-5 py-4 bg-black/70 rounded-xl border border-purple-600/50 font-mono text-sm text-white resize-none focus:outline-none focus:border-purple-500"
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         )}
+
+                        {/* Loadstrings e Raws */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-gradient-to-br from-purple-900/20 to-zinc-900/50 rounded-2xl p-6 border border-purple-600/30">
+                                <h4 className="text-lg font-bold mb-4 text-purple-300">Loadstring - DN Menu</h4>
+                                <pre className="bg-black/60 p-4 rounded-lg text-sm overflow-x-auto mb-4">
+                                    loadstring(game:HttpGet("{LOADER_MENU}"))()
+                                </pre>
+                                <button onClick={() => copyToClipboard(`loadstring(game:HttpGet("${LOADER_MENU}"))()`)} className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors">
+                                    <Copy className="w-5 h-5" /> Copiar Loadstring Menu
+                                </button>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-purple-900/20 to-zinc-900/50 rounded-2xl p-6 border border-purple-600/30">
+                                <h4 className="text-lg font-bold mb-4 text-purple-300">Loadstring - DN Farm</h4>
+                                <pre className="bg-black/60 p-4 rounded-lg text-sm overflow-x-auto mb-4">
+                                    loadstring(game:HttpGet("{LOADER_FARM}"))()
+                                </pre>
+                                <button onClick={() => copyToClipboard(`loadstring(game:HttpGet("${LOADER_FARM}"))()`)} className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors">
+                                    <Copy className="w-5 h-5" /> Copiar Loadstring Farm
+                                </button>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 rounded-2xl p-6 border border-gray-600/30">
+                                <h4 className="text-lg font-bold mb-4 text-gray-300">Raw - Lista Users (Menu)</h4>
+                                <pre className="bg-black/60 p-3 rounded text-sm overflow-x-auto mb-4">{RAW_USERS}</pre>
+                                <button onClick={() => copyToClipboard(RAW_USERS)} className="w-full flex items-center justify-center gap-2 py-3 bg-gray-600 rounded-lg hover:bg-gray-500 transition-colors">
+                                    <Copy className="w-5 h-5" /> Copiar URL Raw Users
+                                </button>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 rounded-2xl p-6 border border-gray-600/30">
+                                <h4 className="text-lg font-bold mb-4 text-gray-300">Raw - Lista Users Farm</h4>
+                                <pre className="bg-black/60 p-3 rounded text-sm overflow-x-auto mb-4">{RAW_USERS_FARM}</pre>
+                                <button onClick={() => copyToClipboard(RAW_USERS_FARM)} className="w-full flex items-center justify-center gap-2 py-3 bg-gray-600 rounded-lg hover:bg-gray-500 transition-colors">
+                                    <Copy className="w-5 h-5" /> Copiar URL Raw Users Farm
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <>
@@ -532,8 +542,11 @@ export default function Dashboard() {
                                                     {u.expiration ? (days > 0 ? `${days}d ${hours}h` : `${hours}h`) : 'Vitalício'}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {isActive ? <div className="flex items-center gap-2 text-green-400"><Check className="w-4 h-4" /> Ativo</div>
-                                                        : <div className="flex items-center gap-2 text-red-400"><X className="w-4 h-4" /> Expirado</div>}
+                                                    {isActive ? (
+                                                        <div className="flex items-center gap-2 text-green-400"><Check className="w-4 h-4" /> Ativo</div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 text-red-400"><X className="w-4 h-4" /> Expirado</div>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <button onClick={() => openDeleteConfirm(activeTab, u.username)}>
@@ -562,16 +575,10 @@ export default function Dashboard() {
                                 Tem certeza que deseja remover o usuário <span className="text-purple-400 font-medium">{confirmDelete.username}</span>?
                             </p>
                             <div className="flex gap-4 justify-center">
-                                <button
-                                    onClick={cancelRemove}
-                                    className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-gray-300 transition-colors"
-                                >
+                                <button onClick={cancelRemove} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-gray-300 transition-colors">
                                     Cancelar
                                 </button>
-                                <button
-                                    onClick={confirmRemove}
-                                    className="px-6 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-white font-medium transition-colors"
-                                >
+                                <button onClick={confirmRemove} className="px-6 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-white font-medium transition-colors">
                                     Remover
                                 </button>
                             </div>
@@ -592,16 +599,10 @@ export default function Dashboard() {
                                 Tem certeza que deseja remover o revendedor <span className="text-purple-400 font-medium">{confirmDeleteReseller.name}</span>?
                             </p>
                             <div className="flex gap-4 justify-center">
-                                <button
-                                    onClick={cancelRemoveReseller}
-                                    className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-gray-300 transition-colors"
-                                >
+                                <button onClick={cancelRemoveReseller} className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-gray-300 transition-colors">
                                     Cancelar
                                 </button>
-                                <button
-                                    onClick={confirmRemoveReseller}
-                                    className="px-6 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-white font-medium transition-colors"
-                                >
+                                <button onClick={confirmRemoveReseller} className="px-6 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-white font-medium transition-colors">
                                     Remover
                                 </button>
                             </div>

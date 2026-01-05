@@ -1,8 +1,8 @@
 // src/pages/LandingPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
-    Bookmark, CheckCircle, Toolbox, Crosshair, Shield, Building2, Eye, CarFront
+    Bookmark, CheckCircle, Toolbox, Crosshair, Shield, Building2, Eye, CarFront, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { FaDiscord } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -190,7 +190,7 @@ function VideoShowcase() {
                         Funções Principais
                     </h2>
                     <p className="text-xl text-gray-400">
-                        Recursos mais solicitados pelos usuários avançados
+                        Recursos mais solicitados pelos usuários do nosso Discord
                     </p>
                 </motion.div>
                 <motion.div
@@ -499,9 +499,11 @@ function Revendedores({ resellers }) {
     );
 }
 
+
 function Termos() {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
+    const [currentPage, setCurrentPage] = useState(0);
 
     const termsSections = [
         {
@@ -571,6 +573,18 @@ function Termos() {
         },
     ];
 
+    const nextPage = () => {
+        if (currentPage < termsSections.length - 1) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const prevPage = () => {
+        if (currentPage > 0) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
     return (
         <section id="termos" ref={ref} className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111011] bg-gradient-to-b from-transparent via-purple-900/5 to-transparent">
             <div className="max-w-4xl mx-auto">
@@ -587,24 +601,84 @@ function Termos() {
                         Última atualização: 31 de dezembro de 2025
                     </p>
                 </motion.div>
-                <div className="space-y-4">
-                    {termsSections.map((section, index) => (
-                        <motion.details
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={isInView ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
-                            className="group bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-6 border border-purple-600/20 cursor-pointer hover:border-purple-600/50 transition-all"
-                        >
-                            <summary className="flex items-center gap-3 text-lg font-bold text-white">
-                                <section.icon className="w-6 h-6 text-purple-400 flex-shrink-0" />
-                                {section.title}
-                                <span className="ml-auto text-purple-400 group-open:rotate-180 transition-transform">▼</span>
-                            </summary>
-                            <p className="mt-4 text-gray-300 whitespace-pre-line">{section.content}</p>
-                        </motion.details>
-                    ))}
+
+                {/* Mini Livro */}
+                <div className="flex items-center justify-center gap-4 mb-8">
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={prevPage}
+                        disabled={currentPage === 0}
+                        className="p-3 rounded-full bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/20 disabled:opacity-30 disabled:cursor-not-allowed hover:border-purple-600/50 transition-all"
+                    >
+                        <ChevronLeft className="w-6 h-6 text-purple-400" />
+                    </motion.button>
+
+                    <div className="relative w-full max-w-2xl" style={{ perspective: '1000px' }}>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentPage}
+                                initial={{ rotateY: 90, opacity: 0 }}
+                                animate={{ rotateY: 0, opacity: 1 }}
+                                exit={{ rotateY: -90, opacity: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] rounded-2xl p-8 border border-purple-600/20 shadow-2xl min-h-[500px] flex flex-col"
+                                style={{ transformStyle: 'preserve-3d' }}
+                            >
+                                {/* Marcador de página */}
+                                <div className="absolute -top-2 right-8 w-8 h-12 bg-purple-600 rounded-b-lg shadow-lg" />
+
+                                {/* Efeito de papel */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl pointer-events-none" />
+
+                                {/* Cabeçalho da página */}
+                                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-purple-600/20">
+                                    <div className="p-2 bg-purple-600/20 rounded-lg">
+                                        <Bookmark className="w-6 h-6 text-purple-400" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white flex-1">
+                                        {termsSections[currentPage].title}
+                                    </h3>
+                                </div>
+
+                                {/* Conteúdo */}
+                                <div className="flex-1 overflow-y-auto">
+                                    <p className="text-gray-300 whitespace-pre-line leading-relaxed">
+                                        {termsSections[currentPage].content}
+                                    </p>
+                                </div>
+
+                                {/* Rodapé com número da página */}
+                                <div className="mt-6 pt-4 border-t border-purple-600/20 flex items-center justify-between text-sm text-gray-400">
+                                    <span>Página {currentPage + 1} de {termsSections.length}</span>
+                                    <div className="flex gap-1">
+                                        {termsSections.map((_, idx) => (
+                                            <div
+                                                key={idx}
+                                                className={`w-2 h-2 rounded-full transition-all ${idx === currentPage ? 'bg-purple-600 w-6' : 'bg-purple-600/30'
+                                                    }`}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+
+                        {/* Sombra do livro */}
+                        <div className="absolute inset-0 bg-black/50 blur-2xl -z-10 transform translate-y-4" />
+                    </div>
+
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={nextPage}
+                        disabled={currentPage === termsSections.length - 1}
+                        className="p-3 rounded-full bg-gradient-to-br from-[#2e2e2e] to-[#1a1a1a] border border-purple-600/20 disabled:opacity-30 disabled:cursor-not-allowed hover:border-purple-600/50 transition-all"
+                    >
+                        <ChevronRight className="w-6 h-6 text-purple-400" />
+                    </motion.button>
                 </div>
+
                 <p className="mt-12 text-center text-gray-400">
                     Para dúvidas, problemas técnicos ou suporte, utilize nossos canais oficiais disponíveis no site.<br />
                     Ao prosseguir com a compra, você declara estar ciente e de acordo com todos os termos acima.
@@ -613,6 +687,7 @@ function Termos() {
         </section>
     );
 }
+
 
 function Footer() {
     return (
@@ -627,11 +702,11 @@ function Footer() {
                                 className="w-24 h-24 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
                             />
                             <span className="font-bold text-xl bg-gradient-to-r from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent">
-                                DN Menu
+                                DN Softwares
                             </span>
                         </div>
                         <p className="text-gray-400 text-sm">
-                            O menu mais avançado para Roleplay no Roblox.
+                            Possuímos o menu mais avançado para Roleplay no Roblox.
                         </p>
                     </div>
                     <div>
