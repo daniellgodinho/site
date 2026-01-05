@@ -130,10 +130,10 @@ function Solution() {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     const features = [
-        { icon: CarFront, title: "Manipulação Avançada", description: "Controle total sobre veículos e itens." },
-        { icon: Crosshair, title: "Combate e Precisão", description: "Aimbot e silent aim configuráveis." },
-        { icon: Shield, title: "Proteção Máxima", description: "God mode e bypass anti-cheat." },
-        { icon: Eye, title: "Visão de águia", description: "ESP e chams personalizáveis." },
+        { icon: CarFront, title: "Manipulação Avançada", description: "Controle total sobre qualquer resource do jogo." },
+        { icon: Crosshair, title: "Exclusividade", description: "Funções únicas, nunca vistam antes no cenário." },
+        { icon: Shield, title: "Proteção Máxima", description: "Menu seguro e bypass anti-cheat na maioria das cidades." },
+        { icon: Eye, title: "Seja um vencedor", description: "Adquira DN Menu e vença conosco." },
     ];
 
     return (
@@ -626,7 +626,7 @@ function Footer() {
                                 alt="DN Menu Logo"
                                 className="w-24 h-24 object-contain drop-shadow-2xl drop-shadow-purple-600/50"
                             />
-                            <span className="font-bold text-xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
+                            <span className="font-bold text-xl bg-gradient-to-r from-[#BF7AFF] to-[#8A2BE2] bg-clip-text text-transparent">
                                 DN Menu
                             </span>
                         </div>
