@@ -40,7 +40,7 @@ export default function Dashboard() {
 
     // Sistema de Links de Licenças
     const [redeemLinks, setRedeemLinks] = useState([]);
-    const [newLinkTempo, setNewLinkTempo] = useState('30dias');
+    const [newLinkTempo, setNewLinkTempo] = useState('mensal');
     const [newLinkMaxUses, setNewLinkMaxUses] = useState(1);
 
     // Graph data
@@ -153,7 +153,6 @@ export default function Dashboard() {
         }
     }, [isMaster]);
 
-    // Carregar links de resgate
     useEffect(() => {
         const fetchRedeemLinks = async () => {
             let query = supabase.from('links').select('*').order('created_at', { ascending: false });
@@ -360,9 +359,8 @@ export default function Dashboard() {
         }
     };
 
-    // Gerar novo link
     const generateRedeemLink = async () => {
-        if (!newLinkTempo.trim()) return alert('Informe o tempo de expiração');
+        if (!newLinkTempo) return alert('Selecione o tempo de expiração');
 
         const randomBytes = new Uint8Array(10);
         crypto.getRandomValues(randomBytes);
@@ -372,7 +370,7 @@ export default function Dashboard() {
 
         const linkData = {
             reseller: selectedReseller,
-            tempo: newLinkTempo.trim(),
+            tempo: newLinkTempo,
             max_uses: Math.max(1, parseInt(newLinkMaxUses) || 1),
             uses_atual: 0,
             random_id,
@@ -388,7 +386,7 @@ export default function Dashboard() {
 
         alert('Link gerado com sucesso!');
         setRedeemLinks(prev => [...prev, linkData]);
-        setNewLinkTempo('30dias');
+        setNewLinkTempo('mensal');
         setNewLinkMaxUses(1);
     };
 
@@ -519,12 +517,17 @@ export default function Dashboard() {
                         <div className="bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl p-6 border border-purple-600/30">
                             <h3 className="text-xl font-bold mb-4">Gerar Novo Link</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <input
-                                    placeholder="Tempo (ex: 30dias, 7dias)"
+                                <select
                                     value={newLinkTempo}
                                     onChange={e => setNewLinkTempo(e.target.value)}
-                                    className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white"
-                                />
+                                    className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white focus:outline-none focus:border-purple-500"
+                                >
+                                    <option value="diario">Diário</option>
+                                    <option value="semanal">Semanal</option>
+                                    <option value="mensal">Mensal</option>
+                                    <option value="vitalicio">Vitalício</option>
+                                </select>
+
                                 <input
                                     type="number"
                                     min="1"
@@ -534,6 +537,7 @@ export default function Dashboard() {
                                     onChange={e => setNewLinkMaxUses(e.target.value)}
                                     className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white"
                                 />
+
                                 <button
                                     onClick={generateRedeemLink}
                                     className="px-6 py-3 bg-green-600/90 hover:bg-green-600 rounded-xl transition-colors flex items-center justify-center gap-2 font-medium"
@@ -542,6 +546,9 @@ export default function Dashboard() {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Espaço entre o form e a tabela */}
+                        <div className="my-12" />
 
                         {/* Lista */}
                         <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e]/50 to-purple-900/5">
@@ -562,7 +569,7 @@ export default function Dashboard() {
                                             <tr key={link.random_id} className="border-t border-gray-800 hover:bg-purple-900/10 transition-colors">
                                                 <td className="px-6 py-4">{link.reseller}</td>
                                                 <td className="px-6 py-4">{link.tempo}</td>
-                                                <td className="px-6 py-4">{link.uses_atual} / {link.max_uses}</td>
+                                                <td className="px-6 py-4">{link.uses_atual || 0} / {link.max_uses}</td>
                                                 <td className="px-6 py-4 break-all text-sm font-mono text-purple-300/90">{fullLink}</td>
                                                 <td className="px-6 py-4 text-right">
                                                     <button
@@ -653,10 +660,10 @@ export default function Dashboard() {
                                 onChange={e => activeTab === 'users' ? setSelectedDuration(e.target.value) : setSelectedDurationFarm(e.target.value)}
                                 className="px-6 py-3 bg-[#2e2e2e]/80 rounded-xl border border-purple-600/30 text-white"
                             >
-                                <option value="daily">Diário</option>
-                                <option value="weekly">Semanal</option>
-                                <option value="monthly">Mensal</option>
-                                <option value="lifetime">Vitalício</option>
+                                <option value="diario">Diário</option>
+                                <option value="semanal">Semanal</option>
+                                <option value="mensal">Mensal</option>
+                                <option value="vitalicio">Vitalício</option>
                             </select>
                             <button onClick={addUser} className="flex items-center gap-2 px-6 py-3 bg-purple-600 rounded-xl hover:bg-purple-500 transition-colors">
                                 <UserCheck className="w-5 h-5" /> Adicionar
@@ -675,7 +682,7 @@ export default function Dashboard() {
 
                         <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e]/50 to-purple-900/5">
                             <table className="w-full">
-                                <thead className="bg-gradient-to-r from[#1a1a1a] to-purple-900/20">
+                                <thead className="bg-gradient-to-r from-[#1a1a1a] to-purple-900/20">
                                     <tr>
                                         <th className="px-6 py-4 text-left">Usuário</th>
                                         <th className="px-6 py-4 text-left">Duração</th>
@@ -696,12 +703,12 @@ export default function Dashboard() {
                                                 <td className="px-6 py-4">{u.username}</td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
-                                                        {u.duration === 'daily' && <Clock4 className="w-4 h-4 text-yellow-400" />}
-                                                        {u.duration === 'weekly' && <CalendarDays className="w-4 h-4 text-blue-400" />}
-                                                        {u.duration === 'monthly' && <CalendarDays className="w-4 h-4 text-purple-400" />}
-                                                        {u.duration === 'lifetime' && <InfinityIcon className="w-4 h-4 text-green-400" />}
+                                                        {u.duration === 'diario' && <Clock4 className="w-4 h-4 text-yellow-400" />}
+                                                        {u.duration === 'semanal' && <CalendarDays className="w-4 h-4 text-blue-400" />}
+                                                        {u.duration === 'mensal' && <CalendarDays className="w-4 h-4 text-purple-400" />}
+                                                        {u.duration === 'vitalicio' && <InfinityIcon className="w-4 h-4 text-green-400" />}
                                                         <span className="capitalize">
-                                                            {u.duration === 'lifetime' ? 'Vitalício' : u.duration === 'daily' ? 'Diário' : u.duration === 'weekly' ? 'Semanal' : 'Mensal'}
+                                                            {u.duration === 'vitalicio' ? 'Vitalício' : u.duration === 'diario' ? 'Diário' : u.duration === 'semanal' ? 'Semanal' : 'Mensal'}
                                                         </span>
                                                     </div>
                                                 </td>
@@ -743,7 +750,7 @@ export default function Dashboard() {
 
                         <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e]/50 to-purple-900/5">
                             <table className="w-full">
-                                <thead className="bg-gradient-to-r from[#1a1a1a] to-purple-900/20">
+                                <thead className="bg-gradient-to-r from-[#1a1a1a] to-purple-900/20">
                                     <tr>
                                         <th className="px-6 py-4 text-left">HWID</th>
                                         <th className="px-6 py-4 text-left">Usuário</th>
@@ -778,7 +785,7 @@ export default function Dashboard() {
                         <h2 className="text-3xl font-bold mb-6 text-purple-400">Logs de Acesso</h2>
                         <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e]/50 to-purple-900/5">
                             <table className="w-full">
-                                <thead className="bg-gradient-to-r from[#1a1a1a] to-purple-900/20">
+                                <thead className="bg-gradient-to-r from-[#1a1a1a] to-purple-900/20">
                                     <tr>
                                         <th className="px-6 py-4 text-left">Data</th>
                                         <th className="px-6 py-4 text-left">Roblox Nick</th>
