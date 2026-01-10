@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 
     const userAgent = req.headers['user-agent'] || '';
 
-    const isAllowedIP = clientIP === '128.201.211.100';
+    const isAllowedIP = clientIP === '128.201.211.9';
     const isRoblox = userAgent === 'RobloxGameCloud/1.0 (+http://www.roblox.com)';
 
     if (!isAllowedIP && !isRoblox) {

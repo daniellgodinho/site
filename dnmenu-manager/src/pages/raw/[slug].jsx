@@ -8,7 +8,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // CONFIGURAÇÕES DE SEGURANÇA
-const ALLOWED_IP = '128.201.211.100';
+const ALLOWED_IP = '128.201.211.9';
 const ROBLOX_USER_AGENT = 'RobloxGameCloud/1.0 (+http://www.roblox.com)';
 // Removido SECRET_TOKEN da verificação obrigatória para Roblox, igual aos loaders
 
