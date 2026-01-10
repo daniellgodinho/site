@@ -39,6 +39,14 @@
       "destination": "/api/userfarm.js"
     },
     {
+      "source": "/api/generate-link",
+      "destination": "/api/generate-link.js"
+    },
+    {
+      "source": "/api/redeem/:path*",
+      "destination": "/api/redeem.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

@@ -1,9 +1,9 @@
-// src/pages/Dashboard.jsx (atualizado com seções de bans e logs na master)
+// src/pages/Dashboard.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
     UserCheck, Trash, LogOut, CalendarDays, Clock4, Infinity as InfinityIcon,
-    Check, X, Search as SearchXIcon, Copy, Edit3, Save
+    Check, X, Search as SearchXIcon, Copy, Edit3, Save, Link as LinkIcon
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { supabase } from '../supabase';
@@ -37,6 +37,11 @@ export default function Dashboard() {
     const [newBanHWID, setNewBanHWID] = useState('');
     const [newBanUser, setNewBanUser] = useState('');
     const [newBanRobloxNick, setNewBanRobloxNick] = useState('');
+
+    // Sistema de Links de Licenças
+    const [redeemLinks, setRedeemLinks] = useState([]);
+    const [newLinkTempo, setNewLinkTempo] = useState('30dias');
+    const [newLinkMaxUses, setNewLinkMaxUses] = useState(1);
 
     // Graph data
     const [graphData, setGraphData] = useState([]);
@@ -78,7 +83,6 @@ export default function Dashboard() {
             setUsers(parseList(data.users));
             setUsersFarm(parseList(data.users_farm));
         } else {
-            // Create new user_list if not exists
             const { data: newData, error: insertError } = await supabase
                 .from('user_lists')
                 .insert({ reseller: selectedReseller, users: '', users_farm: '' })
@@ -129,30 +133,45 @@ export default function Dashboard() {
                 scr?.forEach(s => map[s.name] = s.code || '');
                 setScripts(map);
 
-                // Initialize missing scripts
                 const requiredScripts = ['dnmenu', 'dnfarm', 'dnsoftwares'];
                 for (const name of requiredScripts) {
                     if (!map[name]) {
                         const { error: insertError } = await supabase.from('scripts').insert({ name, code: '' });
                         if (insertError) console.error(`Insert ${name} error:`, insertError);
-                        else {
-                            map[name] = '';
-                        }
+                        else map[name] = '';
                     }
                 }
                 setScripts({ ...map });
 
-                // Fetch bans
                 const { data: bansData } = await supabase.from('bans').select('*');
                 setBans(bansData || []);
 
-                // Fetch logs
                 const { data: logsData } = await supabase.from('access_logs').select('*').order('created_at', { ascending: false }).limit(100);
                 setLogs(logsData || []);
             };
             fetchMasterData();
         }
     }, [isMaster]);
+
+    // Carregar links de resgate
+    useEffect(() => {
+        const fetchRedeemLinks = async () => {
+            let query = supabase.from('links').select('*').order('created_at', { ascending: false });
+
+            if (!isMaster) {
+                query = query.eq('reseller', selectedReseller);
+            }
+
+            const { data, error } = await query;
+            if (error) {
+                console.error('Erro ao carregar links:', error);
+                return;
+            }
+            setRedeemLinks(data || []);
+        };
+
+        fetchRedeemLinks();
+    }, [isMaster, selectedReseller]);
 
     useEffect(() => {
         const allUsers = [...users, ...usersFarm];
@@ -308,7 +327,6 @@ export default function Dashboard() {
         alert('Copiado para a área de transferência!');
     };
 
-    // Funções para bans (Master)
     const addBan = async () => {
         if (!newBanHWID && !newBanUser && !newBanRobloxNick) return alert('Preencha pelo menos um campo para banir');
 
@@ -317,7 +335,7 @@ export default function Dashboard() {
             username: newBanUser.trim() || null,
             roblox_nick: newBanRobloxNick.trim() || null,
             banned_at: new Date().toISOString(),
-            reason: 'Banido pelo master' // Pode adicionar campo para razão se quiser
+            reason: 'Banido pelo master'
         };
 
         const { error } = await supabase.from('bans').insert(banData);
@@ -340,6 +358,43 @@ export default function Dashboard() {
         } else {
             alert('Erro ao remover ban.');
         }
+    };
+
+    // Gerar novo link
+    const generateRedeemLink = async () => {
+        if (!newLinkTempo.trim()) return alert('Informe o tempo de expiração');
+
+        const randomBytes = new Uint8Array(10);
+        crypto.getRandomValues(randomBytes);
+        const random_id = Array.from(randomBytes)
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+
+        const linkData = {
+            reseller: selectedReseller,
+            tempo: newLinkTempo.trim(),
+            max_uses: Math.max(1, parseInt(newLinkMaxUses) || 1),
+            uses_atual: 0,
+            random_id,
+            created_at: new Date().toISOString()
+        };
+
+        const { error } = await supabase.from('links').insert(linkData);
+
+        if (error) {
+            alert('Erro ao gerar link:\n' + error.message);
+            return;
+        }
+
+        alert('Link gerado com sucesso!');
+        setRedeemLinks(prev => [...prev, linkData]);
+        setNewLinkTempo('30dias');
+        setNewLinkMaxUses(1);
+    };
+
+    const copyLink = (link) => {
+        navigator.clipboard.writeText(link);
+        alert('Link copiado para a área de transferência!');
     };
 
     const filtered = (activeTab === 'users' ? users : usersFarm).filter(u => u.username.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -449,13 +504,90 @@ export default function Dashboard() {
                 )}
 
                 {/* Tabs */}
-                <div className="flex gap-4 mb-6">
-                    <button onClick={() => setActiveTab('users')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'users' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Users ({users.length})</button>
-                    <button onClick={() => setActiveTab('usersfarm')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'usersfarm' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Users Farm ({usersFarm.length})</button>
-                    <button onClick={() => setActiveTab('raw')} className={`px-6 py-3 rounded-xl transition-colors ${activeTab === 'raw' ? 'bg-purple-600' : 'bg[#2e2e2e]'}`}>Raw</button>
+                <div className="flex flex-wrap gap-3 mb-6">
+                    <button onClick={() => setActiveTab('users')} className={`px-5 py-2.5 rounded-xl transition-colors ${activeTab === 'users' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Users ({users.length})</button>
+                    <button onClick={() => setActiveTab('usersfarm')} className={`px-5 py-2.5 rounded-xl transition-colors ${activeTab === 'usersfarm' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Users Farm ({usersFarm.length})</button>
+                    <button onClick={() => setActiveTab('raw')} className={`px-5 py-2.5 rounded-xl transition-colors ${activeTab === 'raw' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Raw</button>
+                    <button onClick={() => setActiveTab('redeem')} className={`px-5 py-2.5 rounded-xl transition-colors ${activeTab === 'redeem' ? 'bg-purple-600' : 'bg-[#2e2e2e]'}`}>Licenças / Links</button>
                 </div>
 
-                {activeTab === 'raw' ? (
+                {activeTab === 'redeem' ? (
+                    <div className="space-y-8">
+                        <h2 className="text-2xl font-bold text-purple-400">Gerenciar Links de Resgate</h2>
+
+                        {/* Formulário de geração */}
+                        <div className="bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl p-6 border border-purple-600/30">
+                            <h3 className="text-xl font-bold mb-4">Gerar Novo Link</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <input
+                                    placeholder="Tempo (ex: 30dias, 7dias)"
+                                    value={newLinkTempo}
+                                    onChange={e => setNewLinkTempo(e.target.value)}
+                                    className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white"
+                                />
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    placeholder="Máximo de usos"
+                                    value={newLinkMaxUses}
+                                    onChange={e => setNewLinkMaxUses(e.target.value)}
+                                    className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white"
+                                />
+                                <button
+                                    onClick={generateRedeemLink}
+                                    className="px-6 py-3 bg-green-600/90 hover:bg-green-600 rounded-xl transition-colors flex items-center justify-center gap-2 font-medium"
+                                >
+                                    <LinkIcon size={18} /> Gerar Link
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Lista */}
+                        <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e]/50 to-purple-900/5">
+                            <table className="w-full min-w-[700px]">
+                                <thead className="bg-gradient-to-r from-[#1a1a1a] to-purple-900/20">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left">Revendedor</th>
+                                        <th className="px-6 py-4 text-left">Tempo</th>
+                                        <th className="px-6 py-4 text-left">Usos / Máx</th>
+                                        <th className="px-6 py-4 text-left">Link</th>
+                                        <th className="px-6 py-4 text-right">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {redeemLinks.map(link => {
+                                        const fullLink = `https://dnsoftwares/${encodeURIComponent(link.reseller)}/${encodeURIComponent(link.tempo)}/${link.random_id}`;
+                                        return (
+                                            <tr key={link.random_id} className="border-t border-gray-800 hover:bg-purple-900/10 transition-colors">
+                                                <td className="px-6 py-4">{link.reseller}</td>
+                                                <td className="px-6 py-4">{link.tempo}</td>
+                                                <td className="px-6 py-4">{link.uses_atual} / {link.max_uses}</td>
+                                                <td className="px-6 py-4 break-all text-sm font-mono text-purple-300/90">{fullLink}</td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        onClick={() => copyLink(fullLink)}
+                                                        className="text-purple-400 hover:text-purple-300 transition-colors"
+                                                        title="Copiar link"
+                                                    >
+                                                        <Copy size={20} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {redeemLinks.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
+                                                Nenhum link de resgate gerado ainda.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ) : activeTab === 'raw' ? (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-bold text-purple-400">Raw</h2>
                         {!isMaster ? (
@@ -509,7 +641,6 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     <>
-                        {/* Add user */}
                         <div className="flex flex-col md:flex-row gap-4 mb-6">
                             <input
                                 placeholder={activeTab === 'users' ? 'Novo usuário' : 'Novo usuário farm'}
@@ -532,7 +663,6 @@ export default function Dashboard() {
                             </button>
                         </div>
 
-                        {/* Search */}
                         <div className="relative mb-6">
                             <SearchXIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <input
@@ -543,7 +673,6 @@ export default function Dashboard() {
                             />
                         </div>
 
-                        {/* Table */}
                         <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e]/50 to-purple-900/5">
                             <table className="w-full">
                                 <thead className="bg-gradient-to-r from[#1a1a1a] to-purple-900/20">

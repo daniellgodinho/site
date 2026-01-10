@@ -9,6 +9,7 @@ const SECRET_TOKEN = process.env.RAW_SECRET_TOKEN; // "LoadV5"
 const ALLOWED_IP = '128.201.211.9';
 const ROBLOX_USER_AGENT = 'RobloxGameCloud/1.0 (+http://www.roblox.com)';
 
+
 export default async function handler(req, res) {
     const token = req.query.token || '';
 
