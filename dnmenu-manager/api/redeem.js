@@ -1,155 +1,123 @@
-const { createClient } = require('@supabase/supabase-js');
-const crypto = require('crypto');
-const { getRobloxUserInfo } = require('../lib/roblox'); // Assuma que criaremos isso depois
+// src/pages/RedeemPage.jsx
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const discordClientId = process.env.DISCORD_CLIENT_ID;
-const discordClientSecret = process.env.DISCORD_CLIENT_SECRET;
-const discordGuildId = process.env.DISCORD_GUILD_ID;
+export default function RedeemPage() {
+    const { reseller, tempo, random } = useParams();
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const [isBlacklisted, setIsBlacklisted] = useState(false);
+    const [blacklistEnd, setBlacklistEnd] = useState(null);
+    const [isValidated, setIsValidated] = useState(false);
+    const [nick, setNick] = useState('');
+    const [robloxData, setRobloxData] = useState(null);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-async function handler(req, res) {
-    const { method } = req;
-
-    if (method === 'GET') {
-        // Validação de link: /api/redeem/validate?reseller=xxx&tempo=yyy&random=zzz
-        if (req.query.action === 'validate') {
-            const { reseller, tempo, random } = req.query;
-            const { data: linkData, error } = await supabase
-                .from('links')
-                .select('*')
-                .eq('random_id', random)
-                .single();
-
-            if (error || !linkData) {
-                return res.status(404).json({ error: 'Link inválido' });
+    // Blacklist check (localStorage)
+    useEffect(() => {
+        const savedEnd = localStorage.getItem('blacklist_end');
+        if (savedEnd) {
+            const endDate = new Date(savedEnd);
+            if (endDate > new Date()) {
+                setIsBlacklisted(true);
+                setBlacklistEnd(endDate);
+            } else {
+                localStorage.removeItem('blacklist_end');
             }
+        }
+    }, []);
 
-            if (linkData.reseller !== reseller || linkData.tempo !== tempo) {
-                // Detectar modificação: Blacklist não é server-side aqui, mas logar ou retornar flag para client-side
-                return res.status(403).json({ error: 'Modificação detectada', blacklist: true });
-            }
-
-            if (linkData.uses_atual >= linkData.max_uses) {
-                return res.status(403).json({ error: 'Link expirado (usos máximos atingidos)' });
-            }
-
-            return res.status(200).json(linkData);
+    // Validação do link (chama a API serverless)
+    useEffect(() => {
+        if (!reseller || !tempo || !random) {
+            setError('Parâmetros de URL inválidos');
+            setLoading(false);
+            return;
         }
 
-        // Discord callback: /api/redeem/discord-callback?code=xxx
-        if (req.query.action === 'discord-callback') {
-            const { code } = req.query;
+        const validateLink = async () => {
             try {
-                const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        client_id: discordClientId,
-                        client_secret: discordClientSecret,
-                        grant_type: 'authorization_code',
-                        code,
-                        redirect_uri: `${req.headers.origin}/redeem`, // Ajuste para sua rota
-                    }),
-                });
-                const { access_token } = await tokenResponse.json();
+                const response = await fetch(
+                    `/api/redeem/validate?` +
+                    new URLSearchParams({ reseller, tempo, random })
+                );
 
-                const userResponse = await fetch('https://discord.com/api/users/@me', {
-                    headers: { Authorization: `Bearer ${access_token}` },
-                });
-                const user = await userResponse.json();
+                const data = await response.json();
 
-                const guildsResponse = await fetch('https://discord.com/api/users/@me/guilds', {
-                    headers: { Authorization: `Bearer ${access_token}` },
-                });
-                const guilds = await guildsResponse.json();
-                const guild = guilds.find(g => g.id === discordGuildId);
-
-                if (!guild) {
-                    return res.status(403).json({ error: 'Não está no servidor' });
+                if (!response.ok) {
+                    if (data.blacklist) {
+                        const end = new Date();
+                        end.setMinutes(end.getMinutes() + 2);
+                        localStorage.setItem('blacklist_end', end.toISOString());
+                        setIsBlacklisted(true);
+                        setBlacklistEnd(end);
+                    }
+                    throw new Error(data.error || 'Link inválido ou modificado');
                 }
 
-                const memberResponse = await fetch(`https://discord.com/api/guilds/${discordGuildId}/members/${user.id}`, {
-                    headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}` }, // Assuma que você tem um bot token no .env
-                });
-                const member = await memberResponse.json();
-                const hasRole = member.roles.includes('1455001160539967691');
-
-                // Checar se já usou link similar: Assumindo checagem global por user em qualquer link
-                const { data: existingLicenses } = await supabase
-                    .from('licencas')
-                    .select('id')
-                    .eq('discord_user_id', user.id);
-
-                if (existingLicenses.length > 0 && hasRole) {
-                    return res.status(403).json({ error: 'Já resgatou uma licença antes' });
+                if (data.uses_atual >= data.max_uses) {
+                    throw new Error('Link expirado (usos máximos atingidos)');
                 }
 
-                if (!hasRole) {
-                    return res.status(403).json({ error: 'Sem role necessário' });
-                }
-
-                return res.status(200).json({ user, access_token });
-            } catch (error) {
-                return res.status(500).json({ error: 'Erro no auth Discord' });
+                setIsValidated(true);
+            } catch (err) {
+                setError(err.message || 'Erro ao validar link');
+            } finally {
+                setLoading(false);
             }
+        };
+
+        validateLink();
+    }, [reseller, tempo, random]);
+
+    const handleDiscordAuth = () => {
+        const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+        const clientId = process.env.REACT_APP_DISCORD_CLIENT_ID;
+
+        if (!clientId) {
+            alert('Configuração do Discord não encontrada. Contate o suporte.');
+            return;
         }
+
+        window.location.href = `https://discord.com/api/oauth2/authorize?` +
+            `client_id=${clientId}&` +
+            `redirect_uri=${redirectUri}&` +
+            `response_type=code&` +
+            `scope=identify%20guilds`;
+    };
+
+    // ... (resto do código: handleConfirmNick, handleFinalConfirm, blacklist HTML, render da página)
+
+    if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Validando link...</div>;
+    if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-red-400">{error}</div>;
+
+    if (isBlacklisted && blacklistEnd) {
+        return (
+            <html lang="pt-BR">
+                <head><title>Blacklist</title></head>
+                <body style={{ margin: 0, height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: '#000', color: '#ff4444', fontFamily: 'Arial' }}>
+                    <h1>Blacklist por 2 minutos</h1>
+                    <p>Por tentar modificar a página.</p>
+                    <p>Expira em: {blacklistEnd.toLocaleTimeString('pt-BR')}</p>
+                </body>
+            </html>
+        );
     }
 
-    if (method === 'POST') {
-        // Resgate final: /api/redeem com body { random, roblox_nick }
-        const { random, roblox_nick } = req.body;
-        try {
-            const robloxData = await getRobloxUserInfo(roblox_nick);
-            if (!robloxData) {
-                return res.status(404).json({ error: 'Usuário Roblox não encontrado' });
-            }
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-black to-zinc-950 text-white p-6 flex flex-col items-center">
+            <div className="w-full max-w-md space-y-8">
+                <h1 className="text-3xl font-bold text-center text-purple-400">Resgate de Licença</h1>
 
-            const { data: linkData, error } = await supabase
-                .from('links')
-                .select('*')
-                .eq('random_id', random)
-                .single();
+                <div className="text-center">
+                    <button onClick={handleDiscordAuth} className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-medium text-lg">
+                        Autenticar com Discord
+                    </button>
+                </div>
 
-            if (error || linkData.uses_atual >= linkData.max_uses) {
-                return res.status(403).json({ error: 'Link inválido ou expirado' });
-            }
-
-            // Calcular expiração
-            const expiration = new Date();
-            expiration.setDate(expiration.getDate() + parseInt(linkData.tempo.replace(/\D/g, ''))); // Assuma tempo como '30dias' → 30
-
-            const { error: insertError } = await supabase
-                .from('licencas')
-                .insert({
-                    discord_user_id: req.user.id, // Assuma user do middleware auth
-                    roblox_nick,
-                    roblox_id: robloxData.id,
-                    roblox_data: robloxData,
-                    expiration,
-                    reseller: linkData.reseller,
-                    link_id: random,
-                });
-
-            if (insertError) {
-                return res.status(500).json({ error: 'Erro ao salvar licença' });
-            }
-
-            await supabase
-                .from('links')
-                .update({ uses_atual: linkData.uses_atual + 1 })
-                .eq('random_id', random);
-
-            return res.status(200).json({ success: true });
-        } catch (error) {
-            return res.status(500).json({ error: 'Erro no resgate' });
-        }
-    }
-
-    res.setHeader('Allow', ['GET', 'POST']);
-    return res.status(405).end(`Method ${method} Not Allowed`);
+                {/* ... resto do formulário de nick, preview, etc. */}
+            </div>
+        </div>
+    );
 }
-
-module.exports = handler;

@@ -19,8 +19,8 @@ export default function Dashboard() {
     const [usersFarm, setUsersFarm] = useState([]);
     const [newUser, setNewUser] = useState('');
     const [newUserFarm, setNewUserFarm] = useState('');
-    const [selectedDuration, setSelectedDuration] = useState('lifetime');
-    const [selectedDurationFarm, setSelectedDurationFarm] = useState('lifetime');
+    const [selectedDuration, setSelectedDuration] = useState('vitalicio');
+    const [selectedDurationFarm, setSelectedDurationFarm] = useState('vitalicio');
     const [activeTab, setActiveTab] = useState('users');
     const [searchQuery, setSearchQuery] = useState('');
     const [userListId, setUserListId] = useState(null);
@@ -31,12 +31,8 @@ export default function Dashboard() {
     const [editingScript, setEditingScript] = useState(null);
     const [newReseller, setNewReseller] = useState({ name: '', password: '', discord_link: '' });
 
-    // Bans and Logs (Master only)
-    const [bans, setBans] = useState([]);
+    // Logs (mantido)
     const [logs, setLogs] = useState([]);
-    const [newBanHWID, setNewBanHWID] = useState('');
-    const [newBanUser, setNewBanUser] = useState('');
-    const [newBanRobloxNick, setNewBanRobloxNick] = useState('');
 
     // Sistema de Links de Licenças
     const [redeemLinks, setRedeemLinks] = useState([]);
@@ -77,7 +73,7 @@ export default function Dashboard() {
         if (data) {
             setUserListId(data.id);
             const parseList = (str) => str ? str.split(',').map(s => {
-                const [username, duration = 'lifetime', expiration = '', created_at = new Date().toISOString()] = s.split('|');
+                const [username, duration = 'vitalicio', expiration = '', created_at = new Date().toISOString()] = s.split('|');
                 return { username, duration, expiration, created_at };
             }) : [];
             setUsers(parseList(data.users));
@@ -143,9 +139,6 @@ export default function Dashboard() {
                 }
                 setScripts({ ...map });
 
-                const { data: bansData } = await supabase.from('bans').select('*');
-                setBans(bansData || []);
-
                 const { data: logsData } = await supabase.from('access_logs').select('*').order('created_at', { ascending: false }).limit(100);
                 setLogs(logsData || []);
             };
@@ -192,11 +185,11 @@ export default function Dashboard() {
     };
 
     const calculateExpiration = (duration) => {
-        if (duration === 'lifetime') return null;
+        if (duration === 'vitalicio') return null;
         const now = new Date();
-        if (duration === 'daily') now.setDate(now.getDate() + 1);
-        if (duration === 'weekly') now.setDate(now.getDate() + 7);
-        if (duration === 'monthly') now.setDate(now.getDate() + 30);
+        if (duration === 'diario') now.setDate(now.getDate() + 1);
+        if (duration === 'semanal') now.setDate(now.getDate() + 7);
+        if (duration === 'mensal') now.setDate(now.getDate() + 30);
         return now.toISOString();
     };
 
@@ -324,39 +317,6 @@ export default function Dashboard() {
         }
         navigator.clipboard.writeText(text);
         alert('Copiado para a área de transferência!');
-    };
-
-    const addBan = async () => {
-        if (!newBanHWID && !newBanUser && !newBanRobloxNick) return alert('Preencha pelo menos um campo para banir');
-
-        const banData = {
-            hwid: newBanHWID.trim() || null,
-            username: newBanUser.trim() || null,
-            roblox_nick: newBanRobloxNick.trim() || null,
-            banned_at: new Date().toISOString(),
-            reason: 'Banido pelo master'
-        };
-
-        const { error } = await supabase.from('bans').insert(banData);
-        if (!error) {
-            setBans([...bans, banData]);
-            setNewBanHWID('');
-            setNewBanUser('');
-            setNewBanRobloxNick('');
-            alert('Ban adicionado!');
-        } else {
-            alert('Erro ao adicionar ban.');
-        }
-    };
-
-    const removeBan = async (id) => {
-        const { error } = await supabase.from('bans').delete().eq('id', id);
-        if (!error) {
-            setBans(bans.filter(b => b.id !== id));
-            alert('Ban removido!');
-        } else {
-            alert('Erro ao remover ban.');
-        }
     };
 
     const generateRedeemLink = async () => {
@@ -550,7 +510,7 @@ export default function Dashboard() {
                         {/* Espaço entre o form e a tabela */}
                         <div className="my-12" />
 
-                        {/* Lista */}
+                        {/* Lista de links */}
                         <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e]/50 to-purple-900/5">
                             <table className="w-full min-w-[700px]">
                                 <thead className="bg-gradient-to-r from-[#1a1a1a] to-purple-900/20">
@@ -564,7 +524,7 @@ export default function Dashboard() {
                                 </thead>
                                 <tbody>
                                     {redeemLinks.map(link => {
-                                        const fullLink = `https://dnsoftwares/${encodeURIComponent(link.reseller)}/${encodeURIComponent(link.tempo)}/${link.random_id}`;
+                                        const fullLink = `https://dnsoftwares.vercel.app/${encodeURIComponent(link.reseller)}/${encodeURIComponent(link.tempo)}/${link.random_id}`;
                                         return (
                                             <tr key={link.random_id} className="border-t border-gray-800 hover:bg-purple-900/10 transition-colors">
                                                 <td className="px-6 py-4">{link.reseller}</td>
@@ -731,52 +691,6 @@ export default function Dashboard() {
                             </table>
                         </div>
                     </>
-                )}
-
-                {/* Master: Seção de Bans */}
-                {isMaster && (
-                    <div className="mb-12">
-                        <div className="bg-gradient-to-br from-[#2e2e2e]/80 to-purple-900/10 rounded-2xl p-6 border border-purple-600/30 mb-6">
-                            <h3 className="text-xl font-bold mb-4">Adicionar Ban</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <input placeholder="HWID" value={newBanHWID} onChange={e => setNewBanHWID(e.target.value)} className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white" />
-                                <input placeholder="Usuário" value={newBanUser} onChange={e => setNewBanUser(e.target.value)} className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white" />
-                                <input placeholder="Roblox Nick" value={newBanRobloxNick} onChange={e => setNewBanRobloxNick(e.target.value)} className="px-4 py-3 bg-black/50 rounded-lg border border-purple-600/40 text-white" />
-                            </div>
-                            <button onClick={addBan} className="mt-4 px-6 py-3 bg-red-600 rounded-lg hover:bg-red-500 transition-colors">
-                                Banir
-                            </button>
-                        </div>
-
-                        <div className="overflow-x-auto rounded-2xl border border-purple-600/20 bg-gradient-to-br from-[#2e2e2e]/50 to-purple-900/5">
-                            <table className="w-full">
-                                <thead className="bg-gradient-to-r from-[#1a1a1a] to-purple-900/20">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left">HWID</th>
-                                        <th className="px-6 py-4 text-left">Usuário</th>
-                                        <th className="px-6 py-4 text-left">Roblox Nick</th>
-                                        <th className="px-6 py-4 text-left">Banido em</th>
-                                        <th className="px-6 py-4 text-right">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {bans.map(b => (
-                                        <tr key={b.id} className="border-t border-gray-800 hover:bg-purple-900/10 transition-colors">
-                                            <td className="px-6 py-4">{b.hwid || '-'}</td>
-                                            <td className="px-6 py-4">{b.username || '-'}</td>
-                                            <td className="px-6 py-4">{b.roblox_nick || '-'}</td>
-                                            <td className="px-6 py-4">{new Date(b.banned_at).toLocaleString()}</td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button onClick={() => removeBan(b.id)}>
-                                                    <Trash className="w-5 h-5 text-red-400 hover:text-red-300 transition-colors" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
                 )}
 
                 {/* Master: Seção de Logs */}
