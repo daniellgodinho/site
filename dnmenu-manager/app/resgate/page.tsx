@@ -5,11 +5,11 @@ export const dynamic = 'force-dynamic';
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Copy, Check, AlertCircle, Zap, Lock, Clock, Gift } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/Botao";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface ResgateLicenca {
     id: string;
@@ -52,7 +52,6 @@ const PaginaResgate = () => {
         e.preventDefault();
         setCarregando(true);
         setMensagem("");
-
         setTimeout(() => {
             if (chaveEntrada) {
                 setMensagem("✅ Licença resgatada com sucesso!");
@@ -78,7 +77,7 @@ const PaginaResgate = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#F8F9FC] via-white to-[#F3F0FF] pt-8">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 pt-8">
             <div className="max-w-6xl mx-auto px-4 space-y-12">
                 {/* Header */}
                 <motion.div
@@ -86,16 +85,15 @@ const PaginaResgate = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center"
                 >
-                    <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-600 px-4 py-2 rounded-full mb-4">
+                    <div className="inline-flex items-center gap-2 bg-purple-900/50 text-purple-400 px-4 py-2 rounded-full mb-4">
                         <Zap className="w-4 h-4" />
                         <span className="text-sm font-bold">Centro de Resgate</span>
                     </div>
-                    <h1 className="text-4xl font-bold text-gray-900 mb-2">Resgate sua Licença</h1>
-                    <p className="text-gray-600 text-lg">
+                    <h1 className="text-4xl font-bold text-white mb-2">Resgate sua Licença</h1>
+                    <p className="text-gray-400 text-lg">
                         Insira sua chave de ativação para acessar seus menus
                     </p>
                 </motion.div>
-
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column - Resgate Form */}
@@ -106,20 +104,20 @@ const PaginaResgate = () => {
                         className="lg:col-span-2 space-y-6"
                     >
                         {/* Resgate Card */}
-                        <Card className="border-2 border-purple-200">
+                        <Card className="border-2 border-purple-600/30 bg-gray-800">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Gift className="w-5 h-5 text-purple-600" />
+                                <CardTitle className="flex items-center gap-2 text-white">
+                                    <Gift className="w-5 h-5 text-purple-400" />
                                     Resgate sua Chave
                                 </CardTitle>
-                                <CardDescription>
+                                <CardDescription className="text-gray-400">
                                     Cole a chave fornecida para ativar sua licença
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={manipularResgate} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                                        <label className="block text-sm font-bold text-gray-300 mb-2">
                                             Chave de Licença
                                         </label>
                                         <Input
@@ -127,37 +125,34 @@ const PaginaResgate = () => {
                                             placeholder="DNMN-XXXX-XXXX-XXXX"
                                             value={chaveEntrada}
                                             onChange={(e) => setChaveEntrada(e.target.value.toUpperCase())}
-                                            className="w-full font-mono text-center tracking-wider"
+                                            className="w-full font-mono text-center tracking-wider bg-gray-900 text-gray-300 border-gray-700"
                                         />
                                         <p className="text-xs text-gray-500 mt-2">
                                             Formato: DNMN-XXXX-XXXX-XXXX
                                         </p>
                                     </div>
-
                                     {mensagem && (
                                         <motion.div
                                             initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             className={`p-3 rounded-lg text-sm font-medium ${mensagem.includes("✅")
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-red-100 text-red-700"
+                                                ? "bg-green-900/50 text-green-400"
+                                                : "bg-red-900/50 text-red-400"
                                                 }`}
                                         >
                                             {mensagem}
                                         </motion.div>
                                     )}
-
                                     <Button
-                                        variante="primario"
-                                        classe="w-full py-2.5 rounded-lg font-bold"
-                                        desabilitado={carregando || !chaveEntrada}
+                                        variant="default"
+                                        className="w-full py-2.5 rounded-lg font-bold bg-purple-600 hover:bg-purple-700"
+                                        disabled={carregando || !chaveEntrada}
                                     >
                                         {carregando ? "Processando..." : "Resgatar Licença"}
                                     </Button>
                                 </form>
                             </CardContent>
                         </Card>
-
                         {/* Info Cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {[
@@ -182,26 +177,25 @@ const PaginaResgate = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.2 + i * 0.1 }}
-                                    className="bg-white rounded-lg p-4 border border-gray-200 text-center"
+                                    className="bg-gray-800 rounded-lg p-4 border border-gray-700 text-center"
                                 >
-                                    <item.icone className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                                    <p className="font-bold text-sm text-gray-900">{item.titulo}</p>
-                                    <p className="text-xs text-gray-600">{item.descricao}</p>
+                                    <item.icone className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+                                    <p className="font-bold text-sm text-white">{item.titulo}</p>
+                                    <p className="text-xs text-gray-400">{item.descricao}</p>
                                 </motion.div>
                             ))}
                         </div>
                     </motion.div>
-
                     {/* Right Column - Active Licenses */}
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 }}
                     >
-                        <Card className="sticky top-8 border-2 border-green-200 bg-gradient-to-br from-green-50 to-white">
+                        <Card className="sticky top-8 border-2 border-green-600/30 bg-gradient-to-br from-green-900/30 to-gray-800">
                             <CardHeader>
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <Check className="w-5 h-5 text-green-600" />
+                                <CardTitle className="text-lg flex items-center gap-2 text-white">
+                                    <Check className="w-5 h-5 text-green-400" />
                                     Licenças Ativas
                                 </CardTitle>
                             </CardHeader>
@@ -212,44 +206,42 @@ const PaginaResgate = () => {
                                             key={licenca.id}
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            className="p-4 bg-white rounded-lg border border-green-200"
+                                            className="p-4 bg-gray-800 rounded-lg border border-green-600/30"
                                         >
                                             <div className="flex items-start justify-between mb-2">
-                                                <span className="font-mono text-xs text-gray-600">
+                                                <span className="font-mono text-xs text-gray-400">
                                                     {licenca.chave}
                                                 </span>
                                                 <Dialog>
                                                     <DialogTrigger asChild>
-                                                        <button className="p-1 hover:bg-gray-100 rounded transition">
+                                                        <button className="p-1 hover:bg-gray-700 rounded transition">
                                                             {copiada ? (
-                                                                <Check className="w-4 h-4 text-green-600" />
+                                                                <Check className="w-4 h-4 text-green-400" />
                                                             ) : (
                                                                 <Copy
-                                                                    className="w-4 h-4 text-gray-400 cursor-pointer"
+                                                                    className="w-4 h-4 text-gray-500 cursor-pointer"
                                                                     onClick={() => manipularCopia(licenca.chave)}
                                                                 />
                                                             )}
                                                         </button>
                                                     </DialogTrigger>
-                                                    <DialogContent>
+                                                    <DialogContent className="bg-gray-800 border-gray-700">
                                                         <DialogHeader>
-                                                            <DialogTitle>Chave Copiada</DialogTitle>
-                                                            <DialogDescription>
+                                                            <DialogTitle className="text-white">Chave Copiada</DialogTitle>
+                                                            <DialogDescription className="text-gray-400">
                                                                 Sua chave foi copiada para a área de transferência
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                     </DialogContent>
                                                 </Dialog>
                                             </div>
-
                                             <Badge
                                                 variant={obterCorStatusBadge(licenca.status)}
                                                 className="mb-2"
                                             >
                                                 {licenca.status}
                                             </Badge>
-
-                                            <div className="space-y-1 text-xs text-gray-600">
+                                            <div className="space-y-1 text-xs text-gray-400">
                                                 <p>
                                                     <span className="font-bold">Expira:</span>{" "}
                                                     {licenca.dataExpiracao}
@@ -261,8 +253,8 @@ const PaginaResgate = () => {
                                         </motion.div>
                                     ))
                                 ) : (
-                                    <div className="text-center py-6 text-gray-600">
-                                        <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                                    <div className="text-center py-6 text-gray-400">
+                                        <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-500" />
                                         <p className="text-sm">Nenhuma licença ativa</p>
                                     </div>
                                 )}
@@ -270,15 +262,14 @@ const PaginaResgate = () => {
                         </Card>
                     </motion.div>
                 </div>
-
                 {/* FAQ Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-white rounded-2xl border border-gray-200 p-8"
+                    className="bg-gray-800 rounded-2xl border border-gray-700 p-8"
                 >
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-2xl font-bold text-white mb-6">
                         Dúvidas Frequentes
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -308,8 +299,8 @@ const PaginaResgate = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 + i * 0.05 }}
                             >
-                                <h3 className="font-bold text-gray-900 mb-2">{item.pergunta}</h3>
-                                <p className="text-gray-600 text-sm">{item.resposta}</p>
+                                <h3 className="font-bold text-white mb-2">{item.pergunta}</h3>
+                                <p className="text-gray-400 text-sm">{item.resposta}</p>
                             </motion.div>
                         ))}
                     </div>

@@ -14,9 +14,9 @@ import {
     AlertCircle,
     Zap,
 } from "lucide-react";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/Botao";
-import { Badge } from "@/components/ui/Badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface ValidacaoAutenticacao {
     estaValido: boolean;
@@ -42,7 +42,6 @@ const PaginaAutenticacaoRevendedor = () => {
                 tipo: "erro",
             };
         }
-
         if (!chaveAcesso.trim()) {
             return {
                 estaValido: false,
@@ -50,7 +49,6 @@ const PaginaAutenticacaoRevendedor = () => {
                 tipo: "erro",
             };
         }
-
         if (nomeUsuario.length < 3) {
             return {
                 estaValido: false,
@@ -58,7 +56,6 @@ const PaginaAutenticacaoRevendedor = () => {
                 tipo: "aviso",
             };
         }
-
         if (chaveAcesso.length < 8) {
             return {
                 estaValido: false,
@@ -66,7 +63,6 @@ const PaginaAutenticacaoRevendedor = () => {
                 tipo: "aviso",
             };
         }
-
         return {
             estaValido: true,
             mensagem: "Credenciais válidas",
@@ -87,13 +83,11 @@ const PaginaAutenticacaoRevendedor = () => {
 
         try {
             await new Promise((resolve) => setTimeout(resolve, 1500));
-
             setValidacao({
                 estaValido: true,
                 mensagem: "✅ Autenticação realizada com sucesso!",
                 tipo: "sucesso",
             });
-
             setTimeout(() => {
                 router.push("/dashboard");
             }, 1000);
@@ -156,7 +150,6 @@ const PaginaAutenticacaoRevendedor = () => {
                     className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600 rounded-full opacity-10 blur-3xl"
                 />
             </div>
-
             {/* Main Content */}
             <motion.div
                 initial="escondido"
@@ -184,11 +177,10 @@ const PaginaAutenticacaoRevendedor = () => {
                         Portal de Autenticação Seguro para Revendedores
                     </p>
                 </motion.div>
-
                 {/* Main Card */}
                 <motion.div
                     variants={varianteItem}
-                    className="bg-white/5 backdrop-blur-2xl rounded-2xl p-8 border border-white/10 shadow-2xl"
+                    className="bg-gray-800/90 backdrop-blur-2xl rounded-2xl p-8 border border-gray-700 shadow-2xl"
                 >
                     {/* Title */}
                     <div className="mb-8">
@@ -199,17 +191,16 @@ const PaginaAutenticacaoRevendedor = () => {
                             Faça login com suas credenciais de revendedor
                         </p>
                     </div>
-
                     {/* Validation Message */}
                     {validacao && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             className={`p-4 rounded-xl mb-6 flex items-start gap-3 ${validacao.tipo === "sucesso"
-                                ? "bg-green-500/10 border border-green-500/30"
+                                ? "bg-green-900/50 border border-green-600/30"
                                 : validacao.tipo === "erro"
-                                    ? "bg-red-500/10 border border-red-500/30"
-                                    : "bg-yellow-500/10 border border-yellow-500/30"
+                                    ? "bg-red-900/50 border border-red-600/30"
+                                    : "bg-yellow-900/50 border border-yellow-600/30"
                                 }`}
                         >
                             {validacao.tipo === "sucesso" ? (
@@ -229,7 +220,6 @@ const PaginaAutenticacaoRevendedor = () => {
                             </p>
                         </motion.div>
                     )}
-
                     {/* Form */}
                     <form onSubmit={manipularAutenticacao} className="space-y-5 mb-6">
                         {/* Username Field */}
@@ -242,10 +232,9 @@ const PaginaAutenticacaoRevendedor = () => {
                                 placeholder="seu_usuario"
                                 value={nomeUsuario}
                                 onChange={(e) => setNomeUsuario(e.target.value)}
-                                className="w-full bg-white/5 border-white/10 text-white placeholder-gray-500 focus:bg-white/10 focus:border-purple-500/50 rounded-lg py-2.5 px-4 text-sm"
+                                className="w-full bg-gray-900 border-gray-700 text-white placeholder-gray-500 focus:bg-gray-800 focus:border-purple-500/50 rounded-lg py-2.5 px-4 text-sm"
                             />
                         </motion.div>
-
                         {/* Password Field */}
                         <motion.div variants={varianteItem}>
                             <label className="block text-xs font-bold text-gray-300 mb-2">
@@ -257,12 +246,12 @@ const PaginaAutenticacaoRevendedor = () => {
                                     placeholder="••••••••••••"
                                     value={chaveAcesso}
                                     onChange={(e) => setChaveAcesso(e.target.value)}
-                                    className="w-full bg-white/5 border-white/10 text-white placeholder-gray-500 focus:bg-white/10 focus:border-purple-500/50 rounded-lg py-2.5 px-4 pr-12 text-sm"
+                                    className="w-full bg-gray-900 border-gray-700 text-white placeholder-gray-500 focus:bg-gray-800 focus:border-purple-500/50 rounded-lg py-2.5 px-4 pr-12 text-sm"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setMostraSenha(!mostraSenha)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-400 transition"
                                 >
                                     {mostraSenha ? (
                                         <EyeOff className="w-4 h-4" />
@@ -272,16 +261,15 @@ const PaginaAutenticacaoRevendedor = () => {
                                 </button>
                             </div>
                         </motion.div>
-
                         {/* Submit Button */}
                         <motion.div
                             variants={varianteItem}
                             className="pt-2"
                         >
                             <Button
-                                variante="primario"
-                                classe="w-full py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2"
-                                desabilitado={carregando}
+                                variant="default"
+                                className="w-full py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700"
+                                disabled={carregando}
                             >
                                 {carregando ? (
                                     <>
@@ -305,11 +293,10 @@ const PaginaAutenticacaoRevendedor = () => {
                             </Button>
                         </motion.div>
                     </form>
-
                     {/* Security Info */}
                     <motion.div
                         variants={varianteItem}
-                        className="space-y-3 pt-4 border-t border-white/10"
+                        className="space-y-3 pt-4 border-t border-gray-700"
                     >
                         <h3 className="text-xs font-bold text-gray-300 flex items-center gap-2">
                             <Shield className="w-3.5 h-3.5 text-purple-400" />
@@ -331,7 +318,6 @@ const PaginaAutenticacaoRevendedor = () => {
                         </div>
                     </motion.div>
                 </motion.div>
-
                 {/* Support Link */}
                 <motion.div
                     variants={varianteItem}
@@ -344,17 +330,16 @@ const PaginaAutenticacaoRevendedor = () => {
                         </a>
                     </p>
                 </motion.div>
-
                 {/* Status Badge */}
                 <motion.div
                     variants={varianteItem}
                     className="flex justify-center gap-3 mt-6"
                 >
-                    <Badge variant="default" className="bg-green-500/20 text-green-400 border-green-500/30">
+                    <Badge variant="default" className="bg-green-900/50 text-green-400 border-green-600/30">
                         <Zap className="w-3 h-3 mr-1" />
                         Sistema Online
                     </Badge>
-                    <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                    <Badge variant="secondary" className="bg-blue-900/50 text-blue-400 border-blue-600/30">
                         Seguro TLS 1.3
                     </Badge>
                 </motion.div>

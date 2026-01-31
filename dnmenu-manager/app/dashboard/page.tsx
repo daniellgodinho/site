@@ -18,10 +18,10 @@ import {
     Bell,
     ChevronDown,
 } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/Botao";
-import { Input } from "@/components/ui/Input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Estatistica {
     rotulo: string;
@@ -109,16 +109,15 @@ const PaginaDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#F8F9FC] flex">
+        <div className="min-h-screen bg-gray-900 flex">
             {/* Sidebar */}
-            <aside className="w-72 bg-white border-r hidden lg:flex flex-col p-6">
+            <aside className="w-72 bg-gray-800 border-r border-gray-700 hidden lg:flex flex-col p-6">
                 <div className="flex items-center gap-3 mb-12 px-2">
                     <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
                         <Zap className="text-white w-5 h-5" />
                     </div>
-                    <span className="text-xl font-bold tracking-tight">DNMENU</span>
+                    <span className="text-xl font-bold tracking-tight text-white">DNMENU</span>
                 </div>
-
                 <nav className="space-y-1 flex-1">
                     {[
                         {
@@ -146,8 +145,8 @@ const PaginaDashboard = () => {
                             key={item.id}
                             onClick={() => setAbaDirecao(item.id)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${abaDirecao === item.id
-                                ? "bg-purple-100 text-purple-600"
-                                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                ? "bg-purple-900/50 text-purple-400"
+                                : "text-gray-300 hover:bg-gray-700 hover:text-white"
                                 }`}
                         >
                             {item.icone}
@@ -155,63 +154,58 @@ const PaginaDashboard = () => {
                         </button>
                     ))}
                 </nav>
-
-                <div className="pt-6 border-t">
-                    <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all">
+                <div className="pt-6 border-t border-gray-700">
+                    <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-900/30 transition-all">
                         <LogOut className="w-5 h-5" />
                         Sair da Conta
                     </button>
                 </div>
             </aside>
-
             {/* Main Content */}
             <main className="flex-1 flex flex-col">
                 {/* Header */}
-                <header className="h-20 bg-white border-b px-8 flex items-center justify-between sticky top-0 z-10">
+                <header className="h-20 bg-gray-800 border-b border-gray-700 px-8 flex items-center justify-between sticky top-0 z-10">
                     <div className="relative w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                         <Input
                             type="text"
                             placeholder="Pesquisar..."
                             value={termoBusca}
                             onChange={(e) => setTermoBusca(e.target.value)}
-                            className="w-full bg-gray-50 border-transparent focus:bg-white focus:border-purple-600/20 rounded-xl py-2.5 pl-10 pr-4 text-sm"
+                            className="w-full bg-gray-900 border-transparent focus:bg-gray-800 focus:border-purple-600/20 rounded-xl py-2.5 pl-10 pr-4 text-sm text-gray-300"
                         />
                     </div>
-
                     <div className="flex items-center gap-4">
-                        <button className="p-2.5 rounded-xl hover:bg-gray-100 relative transition-colors">
-                            <Bell className="w-5 h-5 text-gray-600" />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-600 rounded-full border-2 border-white" />
+                        <button className="p-2.5 rounded-xl hover:bg-gray-700 relative transition-colors">
+                            <Bell className="w-5 h-5 text-gray-400" />
+                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-600 rounded-full border-2 border-gray-800" />
                         </button>
-                        <div className="h-8 w-px bg-gray-200 mx-2" />
-                        <button className="flex items-center gap-3 p-1.5 pr-3 rounded-xl hover:bg-gray-100 transition-colors">
-                            <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">
+                        <div className="h-8 w-px bg-gray-700 mx-2" />
+                        <button className="flex items-center gap-3 p-1.5 pr-3 rounded-xl hover:bg-gray-700 transition-colors">
+                            <div className="w-8 h-8 rounded-lg bg-purple-900 text-purple-400 flex items-center justify-center font-bold text-xs">
                                 JD
                             </div>
                             <div className="text-left hidden sm:block">
-                                <p className="text-xs font-bold leading-none">John Doe</p>
-                                <p className="text-[10px] text-gray-500 mt-1">Administrador</p>
+                                <p className="text-xs font-bold leading-none text-white">John Doe</p>
+                                <p className="text-[10px] text-gray-400 mt-1">Administrador</p>
                             </div>
-                            <ChevronDown className="w-4 h-4 text-gray-600" />
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
                         </button>
                     </div>
                 </header>
-
                 {/* Dashboard Content */}
-                <div className="p-8 space-y-8">
+                <div className="p-8 space-y-8 bg-gray-900">
                     <div className="flex justify-between items-end">
                         <div>
-                            <h1 className="text-2xl font-bold">Olá, John! 👋</h1>
-                            <p className="text-gray-600 mt-1">
+                            <h1 className="text-2xl font-bold text-white">Olá, John! 👋</h1>
+                            <p className="text-gray-400 mt-1">
                                 Aqui está o que está acontecendo hoje.
                             </p>
                         </div>
-                        <Button variante="primario" classe="flex items-center gap-2">
+                        <Button variant="default" className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700">
                             <Plus className="w-4 h-4" /> Novo Menu
                         </Button>
                     </div>
-
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {estatisticas.map((stat, i) => (
@@ -220,10 +214,10 @@ const PaginaDashboard = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
-                                className="bg-white p-6 rounded-2xl border border-gray-200 hover:border-purple-300 transition-colors shadow-sm"
+                                className="bg-gray-800 p-6 rounded-2xl border border-gray-700 hover:border-purple-500 transition-colors shadow-sm"
                             >
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="p-2.5 bg-purple-100 text-purple-600 rounded-xl">
+                                    <div className="p-2.5 bg-purple-900/50 text-purple-400 rounded-xl">
                                         {stat.icone}
                                     </div>
                                     <Badge
@@ -232,56 +226,53 @@ const PaginaDashboard = () => {
                                         }
                                         className={
                                             stat.mudanca.startsWith("+")
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-blue-100 text-blue-700"
+                                                ? "bg-green-900/50 text-green-400"
+                                                : "bg-blue-900/50 text-blue-400"
                                         }
                                     >
                                         {stat.mudanca}
                                     </Badge>
                                 </div>
-                                <p className="text-sm text-gray-600 font-medium">{stat.rotulo}</p>
-                                <p className="text-2xl font-bold mt-1">{stat.valor}</p>
+                                <p className="text-sm text-gray-400 font-medium">{stat.rotulo}</p>
+                                <p className="text-2xl font-bold text-white mt-1">{stat.valor}</p>
                             </motion.div>
                         ))}
                     </div>
-
                     {/* Tabs for different sections */}
                     <Tabs
                         value={abaDirecao}
                         onValueChange={setAbaDirecao}
                         className="space-y-6"
                     >
-                        <TabsList className="grid w-full grid-cols-2 lg:w-fit">
+                        <TabsList className="grid w-full grid-cols-2 lg:w-fit bg-gray-800">
                             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
                             <TabsTrigger value="users">Usuários</TabsTrigger>
                         </TabsList>
-
                         <TabsContent value="overview" className="space-y-8">
                             {/* Recent Activity & Chart Placeholder */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                                <div className="lg:col-span-2 bg-gray-800 rounded-2xl border border-gray-700 shadow-sm p-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h3 className="font-bold text-lg">
+                                        <h3 className="font-bold text-lg text-white">
                                             Desempenho de Vendas
                                         </h3>
-                                        <select className="bg-gray-100 border-none rounded-lg text-xs font-bold py-1.5 px-3 outline-none">
+                                        <select className="bg-gray-900 border-none rounded-lg text-xs font-bold py-1.5 px-3 outline-none text-gray-300">
                                             <option>Últimos 7 dias</option>
                                             <option>Últimos 30 dias</option>
                                         </select>
                                     </div>
-                                    <div className="h-64 bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300">
-                                        <TrendingUp className="w-12 h-12 text-gray-400" />
+                                    <div className="h-64 bg-gray-900 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-700">
+                                        <TrendingUp className="w-12 h-12 text-gray-500" />
                                     </div>
                                 </div>
-
                                 <motion.div
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6"
+                                    className="bg-gray-800 rounded-2xl border border-gray-700 shadow-sm p-6"
                                 >
                                     <div className="flex justify-between items-center mb-6">
-                                        <h3 className="font-bold text-lg">Usuários Recentes</h3>
-                                        <button className="text-purple-600 text-xs font-bold hover:underline">
+                                        <h3 className="font-bold text-lg text-white">Usuários Recentes</h3>
+                                        <button className="text-purple-400 text-xs font-bold hover:underline">
                                             Ver todos
                                         </button>
                                     </div>
@@ -292,12 +283,12 @@ const PaginaDashboard = () => {
                                                 className="flex items-center justify-between"
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-xs text-gray-600">
+                                                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs text-gray-400">
                                                         {usuario.nome.charAt(0)}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-bold">{usuario.nome}</p>
-                                                        <p className="text-[11px] text-gray-500">
+                                                        <p className="text-sm font-bold text-white">{usuario.nome}</p>
+                                                        <p className="text-[11px] text-gray-400">
                                                             {usuario.email}
                                                         </p>
                                                     </div>
@@ -319,14 +310,13 @@ const PaginaDashboard = () => {
                                 </motion.div>
                             </div>
                         </TabsContent>
-
                         <TabsContent value="users" className="space-y-6">
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6"
+                                className="bg-gray-800 rounded-2xl border border-gray-700 shadow-sm p-6"
                             >
-                                <h3 className="font-bold text-lg mb-6">Gerenciar Usuários</h3>
+                                <h3 className="font-bold text-lg mb-6 text-white">Gerenciar Usuários</h3>
                                 <div className="space-y-4">
                                     {usuariosRecentes.map((usuario, i) => (
                                         <motion.div
@@ -334,23 +324,23 @@ const PaginaDashboard = () => {
                                             initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: i * 0.1 }}
-                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-purple-300 transition-colors"
+                                            className="flex items-center justify-between p-4 bg-gray-900 rounded-xl border border-gray-700 hover:border-purple-500 transition-colors"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center font-bold text-purple-600 text-sm">
+                                                <div className="w-10 h-10 rounded-full bg-purple-900 flex items-center justify-center font-bold text-purple-400 text-sm">
                                                     {usuario.nome.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <p className="font-semibold text-sm">{usuario.nome}</p>
-                                                    <p className="text-xs text-gray-500">{usuario.email}</p>
+                                                    <p className="font-semibold text-sm text-white">{usuario.nome}</p>
+                                                    <p className="text-xs text-gray-400">{usuario.email}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <Badge variant={obterCorStatusBadge(usuario.status)}>
                                                     {usuario.status}
                                                 </Badge>
-                                                <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
-                                                    <MoreVertical className="w-4 h-4 text-gray-600" />
+                                                <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+                                                    <MoreVertical className="w-4 h-4 text-gray-400" />
                                                 </button>
                                             </div>
                                         </motion.div>

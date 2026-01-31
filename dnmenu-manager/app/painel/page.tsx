@@ -6,8 +6,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { Navbar } from "@/components/Navbar";
-import { Botao } from "@/components/Botao";
+import { Navbar } from "@/components/navbar";
+import { Button } from "@/components/ui/button";
 import { Trash2, Plus, LogOut } from "lucide-react";
 
 interface Usuario {
@@ -97,7 +97,6 @@ export default function PaginaPainel() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-black text-white">
             <Navbar estaAutenticado={true} usuarioNome={nomeRevendedor} />
-
             <div className="pt-24 px-4 max-w-7xl mx-auto">
                 {/* Header */}
                 <motion.div
@@ -110,17 +109,16 @@ export default function PaginaPainel() {
                             <h1 className="text-4xl font-bold text-purple-400 mb-2">Painel de Controle</h1>
                             <p className="text-gray-400">Gerenciar licenças e usuários</p>
                         </div>
-                        <Botao
-                            variante="perigo"
+                        <Button
+                            variant="destructive"
                             onClick={manipuladorSaida}
-                            classe="flex items-center gap-2"
+                            className="flex items-center gap-2"
                         >
                             <LogOut size={18} />
                             Sair
-                        </Botao>
+                        </Button>
                     </div>
                 </motion.div>
-
                 {/* Abas */}
                 <div className="flex gap-4 mb-8">
                     <button
@@ -142,7 +140,6 @@ export default function PaginaPainel() {
                         Farm
                     </button>
                 </div>
-
                 {/* Conteúdo da Aba */}
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -171,14 +168,13 @@ export default function PaginaPainel() {
                                     onChange={(e) => setNovaDataExpi(e.target.value)}
                                     className="px-4 py-2 bg-black/50 border border-purple-500/30 rounded-lg text-white focus:outline-none focus:border-purple-400"
                                 />
-                                <Botao classe="w-full">
+                                <Button className="w-full bg-purple-600 hover:bg-purple-700">
                                     <Plus size={18} className="inline mr-2" />
                                     Adicionar
-                                </Botao>
+                                </Button>
                             </div>
                         </form>
                     </div>
-
                     {/* Lista de Usuários */}
                     <div className="bg-black/50 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6">
                         <h2 className="text-xl font-bold text-purple-400 mb-6">
