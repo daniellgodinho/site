@@ -32,10 +32,6 @@
     {
       "source": "/api/redeem/:path*",
       "destination": "/api/redeem"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/"
     }
   ],
   "headers": [
