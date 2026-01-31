@@ -44,7 +44,7 @@ const PaginaDashboard = () => {
     const estatisticas: Estatistica[] = [
         {
             rotulo: "Receita Total",
-            valor: "R$ 12.450",
+            valor: "R$ 12.420",
             mudanca: "+12.5%",
             icone: <CreditCard className="w-5 h-5" />,
         },
