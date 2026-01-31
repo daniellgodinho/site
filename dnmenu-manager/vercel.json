@@ -1,54 +1,37 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
-    },
-    {
-      "src": "api/**",
-      "use": "@vercel/node"
-    }
-  ],
+  "framework": "nextjs",
   "rewrites": [
     {
       "source": "/loadermenu",
-      "destination": "/api/loadermenu.js"
+      "destination": "/api/loadermenu"
     },
     {
       "source": "/loaderfarm",
-      "destination": "/api/loaderfarm.js"
+      "destination": "/api/loaderfarm"
     },
     {
       "source": "/dnmenu",
-      "destination": "/api/raw/[slug].js?slug=dnmenu"
+      "destination": "/api/raw/dnmenu"
     },
     {
       "source": "/dnfarm",
-      "destination": "/api/raw/[slug].js?slug=dnfarm"
+      "destination": "/api/raw/dnfarm"
     },
     {
       "source": "/usermenu",
-      "destination": "/api/usermenu.js"
+      "destination": "/api/usermenu"
     },
     {
       "source": "/userfarm",
-      "destination": "/api/userfarm.js"
+      "destination": "/api/userfarm"
     },
     {
       "source": "/api/generate-link",
-      "destination": "/api/generate-link.js"
+      "destination": "/api/generate-link"
     },
     {
       "source": "/api/redeem/:path*",
-      "destination": "/api/redeem.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/api/redeem"
     }
   ],
   "headers": [
