@@ -1,56 +1,11 @@
 {
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
   "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/loadermenu",
-      "destination": "/api/loadermenu"
-    },
-    {
-      "source": "/loaderfarm",
-      "destination": "/api/loaderfarm"
-    },
-    {
-      "source": "/dnmenu",
-      "destination": "/api/raw/dnmenu"
-    },
-    {
-      "source": "/dnfarm",
-      "destination": "/api/raw/dnfarm"
-    },
-    {
-      "source": "/usermenu",
-      "destination": "/api/usermenu"
-    },
-    {
-      "source": "/userfarm",
-      "destination": "/api/userfarm"
-    },
-    {
-      "source": "/api/generate-link",
-      "destination": "/api/generate-link"
-    },
-    {
-      "source": "/api/redeem/:path*",
-      "destination": "/api/redeem"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(dnmenu|dnfarm|usermenu|userfarm|loadermenu|loaderfarm)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        },
-        {
-          "key": "Pragma",
-          "value": "no-cache"
-        },
-        {
-          "key": "Expires",
-          "value": "0"
-        }
-      ]
-    }
-  ]
+  "nodeVersion": "20.x",
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_key"
+  }
 }
