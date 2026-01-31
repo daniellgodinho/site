@@ -23,6 +23,18 @@ const variantesAnimacao = {
 function SecaoHero() {
     return (
         <section className="relative min-h-screen pt-24 px-4 flex items-center overflow-hidden">
+            {/* Background - React Bits Pixel Blast */}
+            <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    backgroundImage: "url('https://reactbits.dev/backgrounds/pixel-blast?variant=triangle&color=7800f0')",
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    opacity: 0.12,
+                }}
+            />
+
             {/* Background Gradients */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div
@@ -248,8 +260,8 @@ function SecaoPrecos() {
                             transition={{ delay: i * 0.1 }}
                             viewport={{ once: true }}
                             className={`relative rounded-2xl p-8 border transition-all ${plano.destaque
-                                    ? "border-purple-600 bg-gradient-to-br from-purple-50 to-white ring-2 ring-purple-200"
-                                    : "border-gray-200 bg-white hover:border-purple-300"
+                                ? "border-purple-600 bg-gradient-to-br from-purple-50 to-white ring-2 ring-purple-200"
+                                : "border-gray-200 bg-white hover:border-purple-300"
                                 }`}
                         >
                             {plano.destaque && (
