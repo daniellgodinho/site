@@ -122,7 +122,7 @@ const PaginaAutenticacaoRevendedor = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden text-foreground">
             {/* Animated Background */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div
@@ -135,7 +135,7 @@ const PaginaAutenticacaoRevendedor = () => {
                         repeat: Infinity,
                         ease: "easeInOut",
                     }}
-                    className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full opacity-10 blur-3xl"
+                    className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
                 />
                 <motion.div
                     animate={{
@@ -163,14 +163,14 @@ const PaginaAutenticacaoRevendedor = () => {
                     className="text-center mb-8"
                 >
                     <div className="flex items-center justify-center gap-3 mb-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-400 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-600/30">
-                            <Shield className="text-white w-7 h-7" />
+                        <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
+                            <Shield className="text-primary-foreground w-7 h-7" />
                         </div>
                         <div className="text-left">
-                            <h1 className="text-2xl font-black bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                            <h1 className="text-2xl font-black text-foreground">
                                 DNMENU
                             </h1>
-                            <p className="text-xs text-gray-400">Revendedor</p>
+                            <p className="text-xs text-muted-foreground">Revendedor</p>
                         </div>
                     </div>
                     <p className="text-gray-400 text-sm">
@@ -180,14 +180,14 @@ const PaginaAutenticacaoRevendedor = () => {
                 {/* Main Card */}
                 <motion.div
                     variants={varianteItem}
-                    className="bg-gray-800/90 backdrop-blur-2xl rounded-2xl p-8 border border-gray-700 shadow-2xl"
+                    className="bg-card/90 backdrop-blur-2xl rounded-2xl p-8 border border-border shadow-2xl"
                 >
                     {/* Title */}
                     <div className="mb-8">
                         <h2 className="text-2xl font-black text-white mb-2">
                             Acesso Revendedor
                         </h2>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-muted-foreground text-sm">
                             Faça login com suas credenciais de revendedor
                         </p>
                     </div>
@@ -224,7 +224,7 @@ const PaginaAutenticacaoRevendedor = () => {
                     <form onSubmit={manipularAutenticacao} className="space-y-5 mb-6">
                         {/* Username Field */}
                         <motion.div variants={varianteItem}>
-                            <label className="block text-xs font-bold text-gray-300 mb-2">
+                            <label className="block text-xs font-bold text-muted-foreground mb-2">
                                 Nome de Usuário
                             </label>
                             <Input
@@ -232,7 +232,7 @@ const PaginaAutenticacaoRevendedor = () => {
                                 placeholder="seu_usuario"
                                 value={nomeUsuario}
                                 onChange={(e) => setNomeUsuario(e.target.value)}
-                                className="w-full bg-gray-900 border-gray-700 text-white placeholder-gray-500 focus:bg-gray-800 focus:border-purple-500/50 rounded-lg py-2.5 px-4 text-sm"
+                                className="w-full bg-card border-border text-foreground placeholder-muted-foreground focus:bg-card focus:border-primary/50 rounded-lg py-2.5 px-4 text-sm"
                             />
                         </motion.div>
                         {/* Password Field */}
@@ -246,12 +246,12 @@ const PaginaAutenticacaoRevendedor = () => {
                                     placeholder="••••••••••••"
                                     value={chaveAcesso}
                                     onChange={(e) => setChaveAcesso(e.target.value)}
-                                    className="w-full bg-gray-900 border-gray-700 text-white placeholder-gray-500 focus:bg-gray-800 focus:border-purple-500/50 rounded-lg py-2.5 px-4 pr-12 text-sm"
+                                    className="w-full bg-card border-border text-foreground placeholder-muted-foreground focus:bg-card focus:border-primary/50 rounded-lg py-2.5 px-4 pr-12 text-sm"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setMostraSenha(!mostraSenha)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-400 transition"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
                                 >
                                     {mostraSenha ? (
                                         <EyeOff className="w-4 h-4" />
@@ -268,7 +268,7 @@ const PaginaAutenticacaoRevendedor = () => {
                         >
                             <Button
                                 variant="default"
-                                className="w-full py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700"
+                                className="w-full py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 bg-primary hover:bg-primary/90"
                                 disabled={carregando}
                             >
                                 {carregando ? (

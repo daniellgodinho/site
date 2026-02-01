@@ -77,7 +77,7 @@ const PaginaResgate = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 pt-8">
+        <div className="min-h-screen bg-background pt-8 text-foreground">
             <div className="max-w-6xl mx-auto px-4 space-y-12">
                 {/* Header */}
                 <motion.div
@@ -85,7 +85,7 @@ const PaginaResgate = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center"
                 >
-                    <div className="inline-flex items-center gap-2 bg-purple-900/50 text-purple-400 px-4 py-2 rounded-full mb-4">
+                    <div className="inline-flex items-center gap-2 bg-card/50 text-primary px-4 py-2 rounded-full mb-4">
                         <Zap className="w-4 h-4" />
                         <span className="text-sm font-bold">Centro de Resgate</span>
                     </div>
@@ -104,7 +104,7 @@ const PaginaResgate = () => {
                         className="lg:col-span-2 space-y-6"
                     >
                         {/* Resgate Card */}
-                        <Card className="border-2 border-purple-600/30 bg-gray-800">
+                        <Card className="border-2 border-primary/30 bg-card">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-white">
                                     <Gift className="w-5 h-5 text-purple-400" />
@@ -125,7 +125,7 @@ const PaginaResgate = () => {
                                             placeholder="DNMN-XXXX-XXXX-XXXX"
                                             value={chaveEntrada}
                                             onChange={(e) => setChaveEntrada(e.target.value.toUpperCase())}
-                                            className="w-full font-mono text-center tracking-wider bg-gray-900 text-gray-300 border-gray-700"
+                                            className="w-full font-mono text-center tracking-wider bg-card text-muted-foreground border-border"
                                         />
                                         <p className="text-xs text-gray-500 mt-2">
                                             Formato: DNMN-XXXX-XXXX-XXXX
@@ -177,11 +177,11 @@ const PaginaResgate = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.2 + i * 0.1 }}
-                                    className="bg-gray-800 rounded-lg p-4 border border-gray-700 text-center"
+                                    className="bg-card rounded-lg p-4 border border-border text-center"
                                 >
-                                    <item.icone className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-                                    <p className="font-bold text-sm text-white">{item.titulo}</p>
-                                    <p className="text-xs text-gray-400">{item.descricao}</p>
+                                    <item.icone className="w-6 h-6 text-primary mx-auto mb-2" />
+                                    <p className="font-bold text-sm text-foreground">{item.titulo}</p>
+                                    <p className="text-xs text-muted-foreground">{item.descricao}</p>
                                 </motion.div>
                             ))}
                         </div>

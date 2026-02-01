@@ -54,7 +54,7 @@ const PaginaEntrar = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-900 to-purple-700 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
             {/* Animação de Fundo */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div
@@ -67,7 +67,7 @@ const PaginaEntrar = () => {
                         repeat: Infinity,
                         ease: "easeInOut",
                     }}
-                    className="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full opacity-20 blur-3xl"
+                    className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl"
                 />
                 <motion.div
                     animate={{
@@ -109,12 +109,12 @@ const PaginaEntrar = () => {
                 {/* Card */}
                 <motion.div
                     variants={varianteItem}
-                    className="bg-gray-800/90 backdrop-blur rounded-2xl p-8 shadow-2xl border border-gray-700"
+                    className="bg-card/90 backdrop-blur rounded-2xl p-8 shadow-2xl border border-border"
                 >
                     {/* Header */}
                     <div className="mb-8">
                         <h1 className="text-2xl font-bold text-white">Bem-vindo</h1>
-                        <p className="text-gray-400 text-sm mt-2">
+                        <p className="text-muted-foreground text-sm mt-2">
                             Entre com sua conta para continuar
                         </p>
                     </div>
@@ -135,13 +135,13 @@ const PaginaEntrar = () => {
                                 Email
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <Input
                                     type="email"
                                     placeholder="seu@email.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-gray-900 border-transparent focus:bg-gray-800 focus:border-purple-600/20 rounded-lg py-2.5 pl-10 pr-4 text-sm text-gray-300"
+                                    className="w-full bg-card border-transparent focus:bg-card focus:border-primary/20 rounded-lg py-2.5 pl-10 pr-4 text-sm text-muted-foreground"
                                 />
                             </div>
                         </motion.div>
@@ -150,13 +150,13 @@ const PaginaEntrar = () => {
                                 Senha
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <Input
                                     type="password"
                                     placeholder="••••••••"
                                     value={senha}
                                     onChange={(e) => setSenha(e.target.value)}
-                                    className="w-full bg-gray-900 border-transparent focus:bg-gray-800 focus:border-purple-600/20 rounded-lg py-2.5 pl-10 pr-4 text-sm text-gray-300"
+                                    className="w-full bg-card border-transparent focus:bg-card focus:border-primary/20 rounded-lg py-2.5 pl-10 pr-4 text-sm text-muted-foreground"
                                 />
                             </div>
                         </motion.div>
@@ -170,9 +170,9 @@ const PaginaEntrar = () => {
                                     type="checkbox"
                                     checked={lembrarme}
                                     onChange={(e) => setLembrarme(e.target.checked)}
-                                    className="w-4 h-4 rounded border-gray-600 text-purple-600 accent-purple-600 bg-gray-900"
+                                    className="w-4 h-4 rounded border-border text-primary accent-primary bg-card"
                                 />
-                                <span className="text-gray-300 font-medium">Lembre-me</span>
+                                <span className="text-muted-foreground font-medium">Lembre-me</span>
                             </label>
                             <Link
                                 href="/esqueci-senha"
@@ -188,7 +188,7 @@ const PaginaEntrar = () => {
                         >
                             <Button
                                 variant="default"
-                                className="w-full py-2.5 rounded-lg font-bold text-sm bg-purple-600 hover:bg-purple-700"
+                                className="w-full py-2.5 rounded-lg font-bold text-sm bg-primary hover:bg-primary/90"
                                 disabled={carregando}
                             >
                                 {carregando ? "Entrando..." : "Entrar"}

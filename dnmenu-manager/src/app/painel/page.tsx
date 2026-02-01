@@ -84,18 +84,18 @@ export default function PaginaPainel() {
 
     if (carregando) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-black flex items-center justify-center">
+            <div className="min-h-screen bg-background flex items-center justify-center">
                 <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 2 }}
-                    className="w-12 h-12 border-4 border-purple-600/30 border-t-purple-600 rounded-full"
+                    className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full"
                 />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-black text-white">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar estaAutenticado={true} usuarioNome={nomeRevendedor} />
             <div className="pt-24 px-4 max-w-7xl mx-auto">
                 {/* Header */}
@@ -106,8 +106,8 @@ export default function PaginaPainel() {
                 >
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h1 className="text-4xl font-bold text-purple-400 mb-2">Painel de Controle</h1>
-                            <p className="text-gray-400">Gerenciar licenças e usuários</p>
+                            <h1 className="text-4xl font-bold text-primary mb-2">Painel de Controle</h1>
+                            <p className="text-muted-foreground">Gerenciar licenças e usuários</p>
                         </div>
                         <Button
                             variant="destructive"
@@ -124,8 +124,8 @@ export default function PaginaPainel() {
                     <button
                         onClick={() => setAbaDirecao("usuarios")}
                         className={`px-6 py-2 rounded-lg font-semibold transition ${abaDirecao === "usuarios"
-                            ? "bg-purple-600 text-white"
-                            : "bg-black/50 text-gray-400 hover:text-white"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card/50 text-muted-foreground hover:text-foreground"
                             }`}
                     >
                         Usuários
@@ -133,8 +133,8 @@ export default function PaginaPainel() {
                     <button
                         onClick={() => setAbaDirecao("farm")}
                         className={`px-6 py-2 rounded-lg font-semibold transition ${abaDirecao === "farm"
-                            ? "bg-purple-600 text-white"
-                            : "bg-black/50 text-gray-400 hover:text-white"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card/50 text-muted-foreground hover:text-foreground"
                             }`}
                     >
                         Farm
@@ -148,7 +148,7 @@ export default function PaginaPainel() {
                     className="space-y-8"
                 >
                     {/* Adicionar Novo */}
-                    <div className="bg-black/50 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6">
+                    <div className="bg-card/50 backdrop-blur-xl border border-primary/30 rounded-2xl p-6">
                         <h2 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
                             <Plus size={20} />
                             Adicionar Novo Usuário
@@ -160,15 +160,15 @@ export default function PaginaPainel() {
                                     value={novoUsuario}
                                     onChange={(e) => setNovoUsuario(e.target.value)}
                                     placeholder="Nome do usuário"
-                                    className="px-4 py-2 bg-black/50 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-400"
+                                    className="px-4 py-2 bg-card/50 border border-primary/30 rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary"
                                 />
                                 <input
                                     type="date"
                                     value={novaDataExpi}
                                     onChange={(e) => setNovaDataExpi(e.target.value)}
-                                    className="px-4 py-2 bg-black/50 border border-purple-500/30 rounded-lg text-white focus:outline-none focus:border-purple-400"
+                                    className="px-4 py-2 bg-card/50 border border-primary/30 rounded-lg text-foreground focus:outline-none focus:border-primary"
                                 />
-                                <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                                <Button className="w-full bg-primary hover:bg-primary/90">
                                     <Plus size={18} className="inline mr-2" />
                                     Adicionar
                                 </Button>
