@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 const LandingPage = () => {
     const features = [
         {
-            title: "Gestão Simplificada",
+            title: "Gestão  Simplificada",
             description: "Controle total sobre seus menus e usuários em uma interface intuitiva.",
             icon: <LayoutDashboard className="w-6 h-6 text-primary" />,
         },
